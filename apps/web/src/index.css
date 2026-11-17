@@ -1,0 +1,81 @@
+@import "tailwindcss";
+
+/* Tokens visuales de §5.1. Toda la interfaz usa estos nombres; ningún componente escribe colores sueltos. */
+@theme {
+  --color-bg: #06152b;
+  --color-surface: #0a1f3d;
+  --color-surface-2: #0d2b52;
+  --color-primary: #087fe5;
+  --color-cyan: #20c8f5;
+  --color-violet: #8b4dff;
+  --color-teal: #00bfa6;
+  --color-danger: #ff5c7a;
+  --color-warning: #ffb547;
+  --color-text: #eaf2ff; /* blanco frío para títulos */
+  --color-muted: #8ea3c2; /* gris azulado para etiquetas (contraste AA sobre surface) */
+  --color-line: rgb(32 140 245 / 0.22); /* borde azul translúcido de 1 px */
+
+  --font-sans: "Inter", ui-sans-serif, system-ui, "Segoe UI", sans-serif;
+  --radius-panel: 14px;
+}
+
+@layer base {
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+  body {
+    background: var(--color-bg);
+    color: var(--color-text);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+  }
+  :focus-visible {
+    outline: 2px solid var(--color-cyan);
+    outline-offset: 2px;
+  }
+}
+
+@layer components {
+  /* Panel: superficie con borde translúcido y brillo moderado (§5.1). */
+  .panel {
+    background: linear-gradient(180deg, rgb(13 43 82 / 0.55), rgb(10 31 61 / 0.85));
+    border: 1px solid var(--color-line);
+    border-radius: var(--radius-panel);
+    box-shadow: 0 0 0 1px rgb(8 127 229 / 0.04), 0 8px 30px -12px rgb(8 127 229 / 0.35);
+  }
+  .panel-glow {
+    box-shadow: 0 0 0 1px rgb(32 200 245 / 0.12), 0 0 32px -6px rgb(32 200 245 / 0.28);
+  }
+  .field {
+    width: 100%;
+    background: rgb(6 21 43 / 0.7);
+    border: 1px solid var(--color-line);
+    border-radius: 10px;
+    padding: 0.55rem 0.75rem;
+    color: var(--color-text);
+    font-size: 0.875rem;
+  }
+  .field:focus {
+    outline: none;
+    border-color: var(--color-cyan);
+    box-shadow: 0 0 0 3px rgb(32 200 245 / 0.18);
+  }
+  .label {
+    display: block;
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--color-muted);
+    margin-bottom: 0.35rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

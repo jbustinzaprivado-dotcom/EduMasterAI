@@ -1,0 +1,16 @@
+# Entornos y secretos
+.env
+**/.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Datos locales (base SQLite de desarrollo, datasets, modelos: §15.2 prohíbe subirlos a Git)
+data/
+ml/data/
+mlruns/
+
+# Frontend
+node_modules/
+apps/web/dist/
+*.tsbuildinfo

@@ -1,0 +1,142 @@
+import {
+  Activity,
+  Award,
+  BarChart3,
+  BookOpen,
+  Bot,
+  Building2,
+  ClipboardCheck,
+  Grid3x3,
+  LayoutDashboard,
+  MessagesSquare,
+  Network,
+  Route,
+  Sparkles,
+  Users,
+  type LucideIcon,
+} from "lucide-react";
+
+/** Catálogo de módulos de §4. `phase` es la fase de §14 en que el módulo queda operativo;
+ *  `ready` indica si ya funciona. Los pendientes muestran su plan, nunca datos inventados. */
+export interface ModuleDef {
+  path: string;
+  label: string;
+  icon: LucideIcon;
+  section: "Aprendizaje" | "Inteligencia" | "Gestión";
+  phase: number;
+  ready: boolean;
+  permission: string;
+  docRef: string;
+  summary: string;
+  features: string[];
+}
+
+export const MODULES: ModuleDef[] = [
+  {
+    path: "/", label: "Resumen", icon: LayoutDashboard, section: "Aprendizaje", phase: 1, ready: true,
+    permission: "dashboard.read", docRef: "§4.1",
+    summary: "KPIs con valor, variación, fuente y fecha de actualización.",
+    features: [],
+  },
+  {
+    path: "/rutas", label: "Rutas de aprendizaje", icon: Route, section: "Aprendizaje", phase: 2, ready: false,
+    permission: "dashboard.read", docRef: "§4.2",
+    summary: "Secuencias de cursos con objetivos, competencias y prerrequisitos.",
+    features: ["Crear rutas con duración y criterios de logro", "Asignar por estudiante, grupo o cohorte",
+      "Avance por etapa y fecha objetivo", "Historial de cambios de ruta"],
+  },
+  {
+    path: "/cursos", label: "Cursos", icon: BookOpen, section: "Aprendizaje", phase: 2, ready: false,
+    permission: "dashboard.read", docRef: "§4.3",
+    summary: "Catálogo de cursos, unidades, lecciones y recursos con versionado.",
+    features: ["Código, nivel, docente, fechas, etiquetas y competencias", "Unidades, lecciones y archivos",
+      "Control de publicación y versiones", "Búsqueda, filtros, importación y exportación"],
+  },
+  {
+    path: "/evaluaciones", label: "Evaluaciones", icon: ClipboardCheck, section: "Aprendizaje", phase: 2,
+    ready: false, permission: "dashboard.read", docRef: "§4.6",
+    summary: "Bancos de preguntas, rúbricas, intentos y ponderaciones.",
+    features: ["Opción múltiple, V/F, respuesta corta, archivo y práctica", "Registro de intentos",
+      "Nota oficial separada de la estimación de IA", "Reglas de evaluación por curso"],
+  },
+  {
+    path: "/certificados", label: "Certificados", icon: Award, section: "Aprendizaje", phase: 3, ready: false,
+    permission: "dashboard.read", docRef: "§4.7",
+    summary: "Emisión con folio único, PDF y código QR verificable.",
+    features: ["Plantillas configurables", "Estados borrador, emitido, anulado y expirado",
+      "Portal público de verificación con datos mínimos", "Auditoría de emisión y anulación"],
+  },
+  {
+    path: "/comunidad", label: "Comunidad", icon: MessagesSquare, section: "Aprendizaje", phase: 3, ready: false,
+    permission: "dashboard.read", docRef: "§4.8",
+    summary: "Anuncios, debates y comentarios por curso con moderación.",
+    features: ["Espacios por curso", "Moderación y reportes", "Preferencias de notificación"],
+  },
+  {
+    path: "/analitica", label: "Analítica", icon: BarChart3, section: "Inteligencia", phase: 4, ready: false,
+    permission: "dashboard.read", docRef: "§4.4",
+    summary: "Participación, progreso, finalización y tendencias según permisos.",
+    features: ["Panel por institución, curso, cohorte y estudiante", "Definición documentada de cada indicador",
+      "Exportación CSV/XLSX/PDF auditada"],
+  },
+  {
+    path: "/habilidades", label: "Dominio de habilidades", icon: Grid3x3, section: "Inteligencia", phase: 4,
+    ready: false, permission: "dashboard.read", docRef: "§4.9",
+    summary: "Heatmap de competencias en 5 niveles de dominio.",
+    features: ["Catálogo jerárquico de competencias", "Evidencia por actividad",
+      "Nivel estimado por IA separado del validado por el docente"],
+  },
+  {
+    path: "/red-neuronal", label: "Red neuronal", icon: Network, section: "Inteligencia", phase: 1, ready: true,
+    permission: "dashboard.read", docRef: "§4.10",
+    summary: "Topología del modelo multitarea; estados reales desde la Fase 5.",
+    features: [],
+  },
+  {
+    path: "/tutor", label: "IA Tutor", icon: Bot, section: "Inteligencia", phase: 6, ready: false,
+    permission: "dashboard.read", docRef: "§4.5",
+    summary: "Sugerencias de recursos y actividades según brechas de competencia.",
+    features: ["Motivo explicado de cada sugerencia", "Aceptar, descartar o marcar como útil",
+      "Revisión del docente"],
+  },
+  {
+    path: "/recomendaciones", label: "Recomendaciones", icon: Sparkles, section: "Inteligencia", phase: 6,
+    ready: false, permission: "dashboard.read", docRef: "§4.11",
+    summary: "Acciones priorizadas con impacto esperado y estado.",
+    features: ["Estados nueva, aceptada, descartada, completada y expirada",
+      "Medición de aceptación y utilidad, no solo clics"],
+  },
+  {
+    path: "/actividad", label: "Actividad y auditoría", icon: Activity, section: "Gestión", phase: 1, ready: true,
+    permission: "dashboard.read", docRef: "§4.12, §11.1",
+    summary: "Feed de acciones registradas en la bitácora.",
+    features: [],
+  },
+  {
+    path: "/administracion/usuarios", label: "Usuarios y roles", icon: Users, section: "Gestión", phase: 1,
+    ready: true, permission: "user.read", docRef: "§3, §4.13",
+    summary: "Altas, estados y roles de la institución.",
+    features: [],
+  },
+  {
+    path: "/administracion/instituciones", label: "Instituciones", icon: Building2, section: "Gestión", phase: 1,
+    ready: true, permission: "org.manage", docRef: "§3",
+    summary: "Instituciones de la plataforma (multi-tenant).",
+    features: [],
+  },
+];
+
+/** Fases de §14 para la hoja de ruta. */
+export const PHASES = [
+  { n: 0, name: "Descubrimiento" },
+  { n: 1, name: "Fundaciones" },
+  { n: 2, name: "Core académico" },
+  { n: 3, name: "Dashboard y tiempo real" },
+  { n: 4, name: "Dataset y analítica" },
+  { n: 5, name: "Modelo neuronal" },
+  { n: 6, name: "IA en producto" },
+  { n: 7, name: "Endurecimiento" },
+  { n: 8, name: "Producción" },
+];
+
+export const CURRENT_PHASE = 1;
