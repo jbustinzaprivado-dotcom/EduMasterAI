@@ -36,6 +36,9 @@ ACTION_LABELS = {
     "model.published": "Aprobó y publicó un modelo de IA",
     "predictions.generated": "Generó predicciones de riesgo",
     "prediction.reviewed": "Revisó una alerta de riesgo",
+    "certificate.issued": "Emitió un certificado",
+    "certificate.revoked": "Anuló un certificado",
+    "certificate.downloaded": "Descargó un certificado",
 }
 
 

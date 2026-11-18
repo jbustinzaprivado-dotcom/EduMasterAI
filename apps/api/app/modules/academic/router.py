@@ -40,6 +40,8 @@ from app.modules.academic.schemas import (
     UnitOut,
 )
 from app.modules.audit.service import record
+from app.modules.certificates.service import try_auto_issue
+from app.modules.notifications.service import notify
 from app.modules.identity.models import Role, User
 
 router = APIRouter(tags=["académico"])
@@ -207,6 +209,10 @@ def enroll(offering_id: uuid.UUID, body: EnrollIn, db: DB, principal: Principal 
         created += 1
     record(db, action="enrollment.created", resource="offering", resource_id=offering.id, actor_id=principal.user.id,
            organization_id=offering.organization_id, details={"students": created})
+    notify(db, [s.id for s in students if s.id not in already], organization_id=offering.organization_id,
+           kind="enrollment.created", title=f"Te matricularon en {offering.course.title}",
+           body=f"{offering.cohort} · {offering.period} · Docente: {offering.instructor.full_name}",
+           link=f"/cursos/{offering.id}")
     db.commit()
     return {"created": created, "skipped": len(students) - created}
 
@@ -295,6 +301,11 @@ def create_assessment(offering_id: uuid.UUID, body: AssessmentIn, db: DB, princi
     db.flush()
     record(db, action="assessment.created", resource="assessment", resource_id=a.id, actor_id=principal.user.id,
            organization_id=a.organization_id, details={"title": a.title, "weight": a.weight})
+    students = db.scalars(select(Enrollment.student_id).where(Enrollment.offering_id == offering.id,
+                                                              Enrollment.status == "active"))
+    notify(db, list(students), organization_id=a.organization_id, kind="assessment.created",
+           title=f"Nueva evaluación: {a.title}", body=f"{offering.course.title} · peso {round(a.weight * 100)} %",
+           link="/evaluaciones")
     db.commit()
     db.refresh(a)
     return _assessment_out(db, principal, a)
@@ -361,5 +372,14 @@ def grade(attempt_id: uuid.UUID, body: GradeIn, db: DB, principal: CurrentPrinci
     record(db, action="grade.recorded", resource="attempt", resource_id=t.id, actor_id=principal.user.id,
            organization_id=t.assessment.organization_id,
            details={"assessment": t.assessment.title, "student": t.student.full_name, "score": [previous, body.score]})
+    notify(db, [t.student_id], organization_id=t.assessment.organization_id, kind="grade.recorded",
+           title=f"Nota publicada: {t.assessment.title}",
+           body=f"{body.score:g}/{t.assessment.max_score:g}" + (f" · {body.feedback}" if body.feedback else ""),
+           link="/evaluaciones")
+    enrollment = db.scalar(select(Enrollment).where(Enrollment.offering_id == t.assessment.offering_id,
+                                                    Enrollment.student_id == t.student_id))
+    if enrollment is not None:
+        db.flush()
+        try_auto_issue(db, enrollment)  # una nota puede completar los criterios del certificado
     db.commit()
     return _attempt_out(t)

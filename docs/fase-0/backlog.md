@@ -33,7 +33,10 @@ Priorizado por valor y riesgo, en el orden obligatorio del manual (§14.1). Cada
 ## Fase 3 · Dashboard y tiempo real (🔄)
 - ✅ KPIs académicos con variación (activos 7 días, horas 30 días, finalización, matrículas).
 - ✅ Tendencia semanal y finalización de cursos.
-- ⏳ Mapa agregado, certificados y notificaciones por WebSocket/SSE.
+- ✅ Notificaciones en vivo por SSE con reconexión y recuperación (nota publicada, evaluación nueva, matrícula,
+  curso completado, certificado, alertas de riesgo, modelo publicado).
+- ✅ Certificados: emisión automática, folio único, PDF con QR, anulación con motivo, reemisión y verificación pública.
+- ⏳ Mapa agregado por región y comunidad (§4.8).
 
 ## Fase 4 · Dataset y analítica ✅ (17-11-2026, salvo reportes exportables)
 - ✅ Generador DEMO de ~13 400 matrículas con comportamiento latente (desconexión progresiva y pausas).

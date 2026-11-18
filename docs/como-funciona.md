@@ -94,18 +94,36 @@ para encontrar rápido qué pasó.
 - El modelo de riesgo solo decide qué tan arriba va «retomar»; el estudiante nunca ve su puntaje.
 - El docente ve las sugerencias de su grupo, y la coordinación mide aceptación y utilidad (no solo clics).
 
-## 9. Honestidad de los datos
+## 9. Notificaciones en vivo: el timbre
+
+- Cuando pasa algo que te importa (te ponen nota, hay una evaluación nueva, se emite tu certificado, aparecen
+  alertas en tu curso), la campana suma un número y sale un aviso al instante, sin recargar la página.
+- Funciona con **Server-Sent Events**: el navegador deja una línea abierta y el servidor "toca el timbre".
+- La notificación se guarda junto con la acción; solo se anuncia si la acción se guardó de verdad.
+- Si se corta internet, al volver el navegador pide "lo que me perdí desde el último aviso".
+- Cada persona recibe solo lo suyo: no hay un canal general con datos de todos (§10.4).
+
+## 10. Certificados: el diploma con código
+
+- Se emite solo al completar todas las actividades obligatorias, con nota final de 11 o más y al menos la mitad
+  del peso ya calificado. La IA no interviene.
+- Tiene **folio único** y un **código de 10 letras** con QR. Cualquiera lo verifica en `/verificar/<código>` sin
+  iniciar sesión, y solo ve nombre, curso, institución, folio y estado (sin notas ni correos).
+- Si hay un error, la administración lo **anula** con motivo; la verificación pasa a decir "ANULADO" y se puede
+  emitir uno nuevo. Emisión, descarga y anulación quedan en la bitácora.
+
+## 11. Honestidad de los datos
 
 - Las instituciones y personas son **DEMO** (ficticias) y así se rotulan.
 - Un panel sin datos reales muestra **en qué fase se construye**, nunca números inventados.
 - La red neuronal se ve como **diseño**. Su animación solo aparece al pulsar "Simular", con la etiqueta
   "SIMULACIÓN DEMO" mientras la institución no aprueba un modelo (§1, §5.4).
 
-## 10. Cómo se comprueba que funciona
+## 12. Cómo se comprueba que funciona
 
-- **43 pruebas automáticas de la API**: login, robo de sesión, permisos, aislamiento entre instituciones,
-  bitácora, cursos, eventos idempotentes, entregas, notas, panel, aprobación del modelo, predicción, revisión
-  y recomendaciones.
+- **53 pruebas automáticas de la API**: login, robo de sesión, permisos, aislamiento entre instituciones,
+  bitácora, cursos, eventos idempotentes, entregas, notas, panel, aprobación del modelo, predicción, revisión,
+  recomendaciones, notificaciones en vivo y certificados.
 - **5 pruebas de ML**: sin fuga de información, definición de la etiqueta, simulación reproducible y
   NumPy = PyTorch.
 - **GitHub Actions (CI)** repite las pruebas contra PostgreSQL real, verifica las migraciones y que la

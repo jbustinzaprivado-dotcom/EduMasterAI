@@ -115,6 +115,22 @@ export async function logout(): Promise<void> {
   }
 }
 
+/** Token vigente para el canal en vivo (se envía en la cabecera, nunca en la URL). */
+export async function currentAccessToken(): Promise<string | null> {
+  if (!accessToken) await refreshSession();
+  return accessToken;
+}
+
+/** Descarga binaria autenticada (PDF de certificados). */
+export async function apiBlob(path: string, retry = true): Promise<Blob> {
+  const headers = new Headers({ "X-Correlation-ID": newCorrelationId() });
+  if (accessToken) headers.set("Authorization", `Bearer ${accessToken}`);
+  const r = await fetch(`/api/v1${path}`, { headers, credentials: "same-origin" });
+  if (r.status === 401 && retry && (await refreshSession())) return apiBlob(path, false);
+  if (!r.ok) throw await parseError(r);
+  return r.blob();
+}
+
 export async function api<T>(path: string, init: RequestInit = {}, retry = true): Promise<T> {
   const headers = new Headers(init.headers);
   headers.set("X-Correlation-ID", newCorrelationId());

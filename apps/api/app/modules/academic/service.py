@@ -107,6 +107,15 @@ def recompute_progress(db: Session, enrollment: Enrollment, *, actor_id: uuid.UU
             record(db, action="course.completed", resource="enrollment", resource_id=enrollment.id,
                    actor_id=actor_id or enrollment.student_id, organization_id=enrollment.organization_id,
                    details={"offering_id": str(enrollment.offering_id)})
+            from app.modules.notifications.service import notify
+
+            notify(db, [enrollment.student_id], organization_id=enrollment.organization_id, kind="course.completed",
+                   title=f"¡Completaste {enrollment.offering.course.title}!",
+                   body="Terminaste todas las actividades obligatorias.", link=f"/cursos/{enrollment.offering_id}")
+        db.flush()
+        from app.modules.certificates.service import try_auto_issue  # evita import circular
+
+        try_auto_issue(db, enrollment)
 
 
 def ingest_event(

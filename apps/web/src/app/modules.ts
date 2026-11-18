@@ -61,7 +61,7 @@ export const MODULES: ModuleDef[] = [
       "Nota oficial separada de la estimación de IA", "Reglas de evaluación por curso"],
   },
   {
-    path: "/certificados", label: "Certificados", icon: Award, section: "Aprendizaje", phase: 3, ready: false,
+    path: "/certificados", label: "Certificados", icon: Award, section: "Aprendizaje", phase: 3, ready: true,
     permission: "dashboard.read", docRef: "§4.7",
     summary: "Emisión con folio único, PDF y código QR verificable.",
     features: ["Plantillas configurables", "Estados borrador, emitido, anulado y expirado",
@@ -140,7 +140,7 @@ export const PHASES: { n: number; name: string; status: PhaseStatus; note?: stri
   { n: 0, name: "Descubrimiento", status: "done" },
   { n: 1, name: "Fundaciones", status: "done" },
   { n: 2, name: "Core académico", status: "done", note: "rutas pospuestas" },
-  { n: 3, name: "Dashboard y tiempo real", status: "partial", note: "falta mapa y notificaciones en vivo" },
+  { n: 3, name: "Dashboard y tiempo real", status: "partial", note: "notificaciones en vivo y certificados sí; falta mapa y comunidad" },
   { n: 4, name: "Dataset y analítica", status: "done", note: "dataset DEMO versionado" },
   { n: 5, name: "Modelo neuronal", status: "done", note: "riesgo de abandono" },
   { n: 6, name: "IA en producto", status: "done", note: "alertas, recomendaciones e IA Tutor (reglas-v1)" },

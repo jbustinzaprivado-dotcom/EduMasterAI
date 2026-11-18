@@ -7,6 +7,7 @@ import { useAuth } from "../lib/auth";
 import { OrganizationsPage } from "../modules/administration/OrganizationsPage";
 import { UsersPage } from "../modules/administration/UsersPage";
 import { ActivityPage } from "../modules/audit/ActivityPage";
+import { CertificatesPage, VerifyPage } from "../modules/certificates/CertificatesPage";
 import { AssessmentsPage } from "../modules/courses/AssessmentsPage";
 import { CoursesPage } from "../modules/courses/CoursesPage";
 import { OfferingPage } from "../modules/courses/OfferingPage";
@@ -48,6 +49,7 @@ const READY: Record<string, ReactNode> = {
   "/tutor": <TutorPage />,
   "/cursos": <CoursesPage />,
   "/evaluaciones": <AssessmentsPage />,
+  "/certificados": <CertificatesPage />,
   "/actividad": <ActivityPage />,
   "/administracion/usuarios": <UsersPage />,
   "/administracion/instituciones": <OrganizationsPage />,
@@ -57,6 +59,8 @@ export function App() {
   return (
     <Routes>
       <Route path="/login" element={<LoginPage />} />
+      <Route path="/verificar" element={<VerifyPage />} />
+      <Route path="/verificar/:code" element={<VerifyPage />} />
       <Route element={<RequireAuth><AppShell /></RequireAuth>}>
         {MODULES.map((m) => (
           <Route key={m.path} path={m.path}

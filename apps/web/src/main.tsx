@@ -6,6 +6,7 @@ import { App } from "./app/App";
 import "./index.css";
 import { ApiError } from "./lib/api";
 import { AuthProvider } from "./lib/auth";
+import { LiveProvider } from "./lib/live";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -22,7 +23,9 @@ createRoot(document.getElementById("root")!).render(
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
         <AuthProvider>
-          <App />
+          <LiveProvider>
+            <App />
+          </LiveProvider>
         </AuthProvider>
       </BrowserRouter>
     </QueryClientProvider>

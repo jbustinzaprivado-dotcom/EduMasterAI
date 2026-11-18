@@ -24,7 +24,9 @@ from app.modules.ml.features import (
     compute,
 )
 from app.modules.ml.inference import RiskModel
+from app.modules.identity.models import Role, User
 from app.modules.ml.models import ModelDeployment, ModelVersion, Prediction
+from app.modules.notifications.service import notify
 
 REGISTRY = ROOT / "ml" / "registry"
 LAST_RUN: dict[uuid.UUID, dict] = {}  # última ejecución por institución (latencia para el panel de estado)
@@ -76,6 +78,11 @@ def publish(db: Session, version: ModelVersion, organization_id: uuid.UUID, appr
     record(db, action="model.published", resource="model", resource_id=version.id, actor_id=approver,
            organization_id=organization_id,
            details={"model": version.name, "version": version.version, "replaces": str(current.model_version_id) if current else None})
+    staff = db.scalars(select(User.id).where(User.organization_id == organization_id, User.status == "active",
+                                             User.roles.any(Role.code.in_(["ml_engineer", "admin", "coordinador"]))))
+    notify(db, list(staff), organization_id=organization_id, kind="model.published",
+           title=f"Modelo {version.name} v{version.version} publicado",
+           body="Ya se pueden generar alertas de riesgo en la institución.", link="/modelos")
     return deployment
 
 
@@ -138,6 +145,15 @@ def score_enrollments(db: Session, organization_id: uuid.UUID, enrollments: list
     elapsed_ms = (time.perf_counter() - started) * 1000
     LAST_RUN[organization_id] = {"at": now, "count": len(created),
                                  "latency_ms": round(elapsed_ms / max(len(created), 1), 2), "version": version.version}
+    by_offering: dict = {}
+    for p in created:
+        if p.risk_level == "alto":
+            by_offering[p.offering_id] = by_offering.get(p.offering_id, 0) + 1
+    for offering_id, count in by_offering.items():
+        offering = db.get(CourseOffering, offering_id)
+        notify(db, [offering.instructor_id], organization_id=organization_id, kind="risk.alerts",
+               title=f"{count} alerta{'s' if count > 1 else ''} de riesgo en {offering.course.title}",
+               body="Revísalas y márcalas como atendidas o descártalas con un motivo.", link=f"/cursos/{offering_id}")
     record(db, action="predictions.generated", resource="model", resource_id=version.id, actor_id=actor_id,
            organization_id=organization_id,
            details={"count": len(created), "alto": sum(p.risk_level == "alto" for p in created)})

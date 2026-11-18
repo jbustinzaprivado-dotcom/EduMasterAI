@@ -1,10 +1,12 @@
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Bell, ChevronsLeft, LogOut, Menu, Search, X } from "lucide-react";
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { NavLink, Outlet, useLocation, useNavigate } from "react-router";
 import { MODULES, type ModuleDef } from "../../app/modules";
 import { ROLE_LABELS, useAuth } from "../../lib/auth";
-import { formatTime } from "../../lib/format";
+import { api } from "../../lib/api";
+import { formatTime, relativeTime } from "../../lib/format";
+import { useLive, type LiveNotification } from "../../lib/live";
 import { Badge, cx } from "../ui";
 
 function Logo({ compact }: { compact?: boolean }) {
@@ -87,11 +89,14 @@ function ConnectionStatus() {
     refetchInterval: 30_000,
     retry: false,
   });
+  const { status } = useLive();
   const ok = health.isSuccess && !health.isError;
+  const live = status === "en vivo";
   return (
-    <div className="hidden items-center gap-2 text-xs text-muted md:flex" aria-live="polite">
-      <span className={cx("size-2 rounded-full", ok ? "bg-teal shadow-[0_0_8px_var(--color-teal)]" : "bg-danger")} />
-      {ok ? `Conectado · ${formatTime(health.data.at)}` : health.isPending ? "Conectando…" : "Sin conexión"}
+    <div className="hidden items-center gap-2 text-xs text-muted md:flex" aria-live="polite"
+      title={`Canal en vivo: ${status}. Comprobación del servidor cada 30 s.`}>
+      <span className={cx("size-2 rounded-full", ok && live ? "bg-teal shadow-[0_0_8px_var(--color-teal)]" : ok ? "bg-warning" : "bg-danger")} />
+      {!ok ? (health.isPending ? "Conectando…" : "Sin conexión") : live ? `En vivo · ${formatTime(health.data.at)}` : `Conectado · ${status}`}
     </div>
   );
 }
@@ -163,6 +168,103 @@ function Popover({ button, children }: { button: (toggle: () => void, open: bool
   );
 }
 
+interface NotificationList { items: LiveNotification[]; unread: number }
+
+/** Centro de notificaciones (§4.12): lista, no leídas y marcado. Se refresca solo con el canal en vivo. */
+function NotificationCenter() {
+  const qc = useQueryClient();
+  const navigate = useNavigate();
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+  const list = useQuery({ queryKey: ["notifications"], queryFn: () => api<NotificationList>("/notifications?limit=12") });
+  const markAll = useMutation({
+    mutationFn: () => api("/notifications/read-all", { method: "POST" }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["notifications"] }),
+  });
+  useEffect(() => {
+    if (!open) return;
+    const close = (e: MouseEvent) => !ref.current?.contains(e.target as Node) && setOpen(false);
+    const esc = (e: KeyboardEvent) => e.key === "Escape" && setOpen(false);
+    document.addEventListener("mousedown", close);
+    document.addEventListener("keydown", esc);
+    return () => {
+      document.removeEventListener("mousedown", close);
+      document.removeEventListener("keydown", esc);
+    };
+  }, [open]);
+  const unread = list.data?.unread ?? 0;
+
+  async function openItem(n: LiveNotification) {
+    if (!n.read_at) {
+      await api(`/notifications/${n.id}/read`, { method: "POST" });
+      qc.invalidateQueries({ queryKey: ["notifications"] });
+    }
+    setOpen(false);
+    if (n.link) navigate(n.link);
+  }
+
+  return (
+    <div className="relative" ref={ref}>
+      <button onClick={() => setOpen((v) => !v)} aria-expanded={open}
+        aria-label={unread ? `Notificaciones, ${unread} sin leer` : "Notificaciones"}
+        className="relative rounded-lg border border-line p-2 text-muted hover:text-cyan">
+        <Bell className="size-4" />
+        {unread > 0 && (
+          <span className="absolute -top-1.5 -right-1.5 flex min-w-4 items-center justify-center rounded-full bg-danger px-1 text-[10px] font-bold text-white">
+            {unread > 9 ? "9+" : unread}
+          </span>
+        )}
+      </button>
+      {open && (
+        <div className="panel panel-solid absolute top-12 right-0 z-30 w-80 p-2 sm:w-96">
+          <div className="flex items-center justify-between px-2 py-1.5">
+            <p className="text-sm font-semibold">Notificaciones</p>
+            {unread > 0 && (
+              <button className="text-xs text-cyan hover:underline" onClick={() => markAll.mutate()}>Marcar todas como leídas</button>
+            )}
+          </div>
+          {list.data?.items.length === 0 && <p className="px-2 py-6 text-center text-xs text-muted">No tienes notificaciones.</p>}
+          <ul className="max-h-96 overflow-y-auto">
+            {list.data?.items.map((n) => (
+              <li key={n.id}>
+                <button onClick={() => openItem(n)}
+                  className={cx("flex w-full gap-2 rounded-lg px-2 py-2 text-left hover:bg-surface-2", !n.read_at && "bg-primary/10")}>
+                  <span className={cx("mt-1.5 size-2 shrink-0 rounded-full", n.read_at ? "bg-transparent" : "bg-cyan")} />
+                  <span className="min-w-0">
+                    <span className="block text-sm">{n.title}</span>
+                    {n.body && <span className="block truncate text-xs text-muted">{n.body}</span>}
+                    <span className="block text-[10px] text-muted">{relativeTime(n.created_at)}</span>
+                  </span>
+                </button>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/** Avisos emergentes de las notificaciones que llegan en vivo. */
+function Toasts() {
+  const { toasts, dismiss } = useLive();
+  const navigate = useNavigate();
+  return (
+    <div className="pointer-events-none fixed right-4 bottom-4 z-50 flex w-80 flex-col gap-2" aria-live="polite">
+      {toasts.map((t) => (
+        <div key={t.id} className="panel panel-solid panel-glow pointer-events-auto flex gap-3 p-3">
+          <Bell className="mt-0.5 size-4 shrink-0 text-cyan" aria-hidden />
+          <button className="min-w-0 flex-1 text-left" onClick={() => { dismiss(t.id); if (t.link) navigate(t.link); }}>
+            <p className="text-sm font-medium">{t.title}</p>
+            {t.body && <p className="truncate text-xs text-muted">{t.body}</p>}
+          </button>
+          <button onClick={() => dismiss(t.id)} aria-label="Cerrar aviso" className="text-muted hover:text-text"><X className="size-4" /></button>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 function Topbar({ onMenu }: { onMenu: () => void }) {
   const { user, signOut } = useAuth();
   const location = useLocation();
@@ -181,20 +283,7 @@ function Topbar({ onMenu }: { onMenu: () => void }) {
       </div>
       <ConnectionStatus />
       <ModuleSearch />
-      <Popover
-        button={(toggle, open) => (
-          <button onClick={toggle} aria-expanded={open} aria-label="Notificaciones"
-            className="rounded-lg border border-line p-2 text-muted hover:text-cyan">
-            <Bell className="size-4" />
-          </button>
-        )}
-      >
-        <p className="text-sm font-semibold">Centro de notificaciones</p>
-        <p className="mt-1 text-xs text-muted">
-          Las notificaciones en tiempo real (WebSocket/SSE) se construyen en la Fase 3. Mientras tanto, la actividad
-          registrada está en "Actividad y auditoría".
-        </p>
-      </Popover>
+      <NotificationCenter />
       <Popover
         button={(toggle, open) => (
           <button onClick={toggle} aria-expanded={open} aria-label="Perfil"
@@ -258,6 +347,7 @@ export function AppShell() {
         <main className="flex-1 px-4 py-5 sm:px-6 sm:py-6">
           <Outlet />
         </main>
+        <Toasts />
       </div>
     </div>
   );

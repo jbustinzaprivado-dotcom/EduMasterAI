@@ -186,6 +186,51 @@ function Roster({ offering }: { offering: Offering }) {
   );
 }
 
+interface EligibilityRow {
+  enrollment_id: string;
+  student_name: string;
+  progress: number;
+  eligible: boolean;
+  reason: string;
+  final_grade: number | null;
+  certificate: { id: string; folio: string; status: string } | null;
+}
+
+function OfferingCertificates({ offering }: { offering: Offering }) {
+  const qc = useQueryClient();
+  const rows = useQuery({
+    queryKey: ["certificates", "offering", offering.id],
+    queryFn: () => api<EligibilityRow[]>(`/certificates/offerings/${offering.id}`),
+  });
+  const issue = useMutation({
+    mutationFn: (enrollment_id: string) => api("/certificates", { method: "POST", body: JSON.stringify({ enrollment_id }) }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["certificates"] }),
+  });
+  const issued = rows.data?.filter((r) => r.certificate).length ?? 0;
+  return (
+    <Panel title="Certificados" subtitle={`Criterio oficial (D29): curso completo, nota ≥ 11 y ≥ 50 % del peso calificado · ${issued} emitidos`}>
+      {rows.isPending && <Skeleton className="h-32" />}
+      {rows.isError && <ErrorState error={rows.error} onRetry={() => rows.refetch()} />}
+      <ul className="divide-y divide-line">
+        {rows.data?.map((r) => (
+          <li key={r.enrollment_id} className="flex flex-wrap items-center gap-3 py-2 text-sm">
+            <span className="min-w-40 flex-1 font-medium">{r.student_name}</span>
+            {r.certificate ? (
+              <Badge tone={r.certificate.status === "emitido" ? "teal" : "danger"}>{r.certificate.folio}</Badge>
+            ) : r.eligible ? (
+              <Button className="px-2.5 py-1 text-xs" loading={issue.isPending && issue.variables === r.enrollment_id}
+                onClick={() => issue.mutate(r.enrollment_id)}>Emitir</Button>
+            ) : (
+              <span className="text-xs text-muted">{r.reason}</span>
+            )}
+          </li>
+        ))}
+      </ul>
+      {issue.isError && <p role="alert" className="mt-2 text-sm text-danger">{issue.error instanceof ApiError ? issue.error.message : "Error"}</p>}
+    </Panel>
+  );
+}
+
 function GroupRecommendations({ offering }: { offering: Offering }) {
   const recs = useQuery({
     queryKey: ["recommendations", "offering", offering.id],
@@ -273,6 +318,7 @@ export function OfferingPage() {
 
       {showRoster && <Panel title="Estudiantes" subtitle="Progreso, última actividad y nota oficial ponderada"><Roster offering={o} /></Panel>}
       {showRoster && <GroupRecommendations offering={o} />}
+      {showRoster && <OfferingCertificates offering={o} />}
       {enrolling && <EnrollDialog offering={o} onClose={() => setEnrolling(false)} />}
     </div>
   );
