@@ -20,6 +20,8 @@ import { formatNumber, formatTime, relativeTime, variation } from "../../lib/for
 import { Badge, EmptyState, ErrorState, Panel, Skeleton, cx } from "../../components/ui";
 import { ACTION_TONE, useActivity } from "../audit/activity";
 import { ModelStatus, NeuralNetwork, useArchitecture } from "../neural-visualizer/NeuralNetwork";
+import { RecommendationCard } from "../recommendations/RecommendationCard";
+import { MetricsTable, useMyRecommendations } from "../recommendations/RecommendationsPage";
 
 interface Kpi {
   key: string;
@@ -123,6 +125,27 @@ function CompletionPanel() {
           { label: "No iniciado", value: data.data.not_started, color: "#8b4dff" },
         ]} />
       ))}
+    </Panel>
+  );
+}
+
+function RecommendationsPanel() {
+  const { can } = useAuth();
+  const student = can("learning") && !can("course.read.all");
+  const recs = useMyRecommendations(undefined, false);
+  return (
+    <Panel title="Recomendaciones de IA" subtitle={student ? "Tus próximos pasos, con su motivo" : "Aceptación y utilidad (§4.11)"}
+      actions={<Link to="/recomendaciones" className="text-xs text-cyan hover:underline">Ver todo</Link>}>
+      {student ? (
+        <>
+          {recs.isPending && <Skeleton className="h-36" />}
+          {recs.isError && <ErrorState error={recs.error} onRetry={() => recs.refetch()} />}
+          {recs.data?.length === 0 && <EmptyState icon={Sparkles} title="Todo al día" description="No hay sugerencias pendientes." />}
+          <div className="flex flex-col gap-3">{recs.data?.slice(0, 2).map((r) => <RecommendationCard key={r.id} r={r} compact />)}</div>
+        </>
+      ) : can("ml.read") || can("course.read.all") ? <MetricsTable /> : (
+        <p className="text-sm text-muted">Las sugerencias de tu grupo están en el detalle de cada curso.</p>
+      )}
     </Panel>
   );
 }
@@ -232,10 +255,7 @@ export function DashboardPage() {
           <EmptyState icon={Grid3x3} phase={4} title="Evidencias de evaluación"
             description="El nivel estimado por IA se mostrará separado del validado por el docente." />
         </Panel>
-        <Panel title="Recomendaciones de IA" subtitle="Sugerencias priorizadas y explicadas">
-          <EmptyState icon={Sparkles} phase={6} title="Recomendaciones de recursos: pendiente"
-            description="Ya funcionan las alertas de riesgo (en cada curso, para el docente). Las sugerencias de recursos llegan después." />
-        </Panel>
+        <RecommendationsPanel />
       </div>
 
       {/* Fila 4: actividad + hoja de ruta */}

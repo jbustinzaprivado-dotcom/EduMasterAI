@@ -31,6 +31,7 @@ Cuando una decisión completa algo que el documento deja abierto, se indica la s
 | D24 | La API predice con **NumPy** usando los pesos exportados (sin PyTorch en el servidor). Una prueba verifica que da lo mismo que PyTorch. | §9.4 "inferencia en servicio separado" |
 | D25 | Probabilidades **calibradas** con Platt en validación. El umbral de alerta se elige en validación: mejor F1 con recall ≥ 0,6. | §9.4, §9.5 |
 | D26 | Regla de publicación: la red se publica solo si supera al baseline logístico en PR-AUC de validación (≥ 0,005) sin empeorar el Brier; si no, se publica el baseline. | §9.1 "Importante" |
+| D27 | Recomendaciones con un **motor de reglas explicable** (`reglas-v1`): siguiente actividad, entrega próxima, reforzar tras nota baja y retomar tras inactividad. El modelo de riesgo solo sube la prioridad de «retomar» (sin mostrar el puntaje, D22). La cabeza D de §9.1 (ranking aprendido) se entrenará con el feedback que este motor recoge. | §4.5, §4.11, §9.1 |
 
 ## Decisiones aún abiertas (§17.1)
 

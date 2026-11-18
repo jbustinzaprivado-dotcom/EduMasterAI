@@ -13,6 +13,7 @@ import { OfferingPage } from "../modules/courses/OfferingPage";
 import { LoginPage } from "../modules/auth/LoginPage";
 import { DashboardPage } from "../modules/dashboard/DashboardPage";
 import { ModelsPage } from "../modules/ml/ModelsPage";
+import { RecommendationsPage, TutorPage } from "../modules/recommendations/RecommendationsPage";
 import { NeuralPage } from "../modules/neural-visualizer/NeuralPage";
 import { PendingModulePage } from "../modules/pending/PendingModulePage";
 import { MODULES } from "./modules";
@@ -43,6 +44,8 @@ const READY: Record<string, ReactNode> = {
   "/": <DashboardPage />,
   "/red-neuronal": <NeuralPage />,
   "/modelos": <ModelsPage />,
+  "/recomendaciones": <RecommendationsPage />,
+  "/tutor": <TutorPage />,
   "/cursos": <CoursesPage />,
   "/evaluaciones": <AssessmentsPage />,
   "/actividad": <ActivityPage />,

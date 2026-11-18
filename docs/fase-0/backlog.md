@@ -47,11 +47,14 @@ Priorizado por valor y riesgo, en el orden obligatorio del manual (§14.1). Cada
 - ✅ Calibración, umbral en validación, evaluación por segmento y model card con limitaciones.
 - ✅ Selección con regla explícita (D26): la red ganó por poco (PR-AUC en prueba 0,625 vs. 0,610).
 
-## Fase 6 · IA en producto (🔄)
+## Fase 6 · IA en producto ✅ (18-11-2026, ranking aprendido pendiente)
 - ✅ Registro de versiones, aprobación por institución, inferencia con NumPy y explicación de factores.
 - ✅ Alertas de riesgo en la lista del docente con revisión humana (atendida / descartada con motivo).
 - ✅ Visualizador neuronal con estado, métricas y latencia reales.
-- ⏳ Recomendaciones de recursos e IA Tutor.
+- ✅ Recomendaciones explicadas (reglas-v1) con estados nueva/aceptada/descartada/completada/expirada y feedback de utilidad.
+- ✅ IA Tutor: el estudiante pregunta «¿qué hago ahora?» por curso; el docente ve las sugerencias de su grupo.
+- ✅ Métricas de aceptación y utilidad por tipo (no solo clics).
+- ⏳ Ranking aprendido (cabeza D de §9.1) cuando haya feedback suficiente.
 
 ## Fase 7 · Endurecimiento (⏳)
 Seguridad (OWASP, rate limits), accesibilidad, carga, respaldo y restauración.

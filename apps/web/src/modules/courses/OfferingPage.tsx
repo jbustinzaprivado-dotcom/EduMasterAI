@@ -9,6 +9,7 @@ import { useAuth } from "../../lib/auth";
 import { formatDateTime, relativeTime } from "../../lib/format";
 import { KIND_LABEL, LEVEL_LABEL, STATUS_LABEL, sendEvent, type Activity, type Offering, type RosterRow } from "./api";
 import { EnrollDialog } from "./CoursesPage";
+import { KIND_META, STATUS_TONE, type Recommendation } from "../recommendations/RecommendationCard";
 
 const KIND_ICON = { lectura: BookOpenText, video: PlayCircle, practica: Code2 };
 
@@ -185,6 +186,34 @@ function Roster({ offering }: { offering: Offering }) {
   );
 }
 
+function GroupRecommendations({ offering }: { offering: Offering }) {
+  const recs = useQuery({
+    queryKey: ["recommendations", "offering", offering.id],
+    queryFn: () => api<Recommendation[]>(`/offerings/${offering.id}/recommendations`),
+  });
+  const open = recs.data?.filter((r) => r.status === "nueva" || r.status === "aceptada") ?? [];
+  return (
+    <Panel title="Recomendaciones del grupo" subtitle="Lo que el motor sugiere a cada estudiante (§4.5). Tu criterio prevalece.">
+      {recs.isPending && <Skeleton className="h-32" />}
+      {recs.isError && <ErrorState error={recs.error} onRetry={() => recs.refetch()} />}
+      {recs.data && (open.length === 0 ? <p className="text-sm text-muted">No hay sugerencias vigentes.</p> : (
+        <ul className="divide-y divide-line">
+          {open.map((r) => (
+            <li key={r.id} className="flex flex-wrap items-start gap-3 py-2.5 text-sm">
+              <Badge tone={KIND_META[r.kind].tone}>{KIND_META[r.kind].label}</Badge>
+              <div className="min-w-0 flex-1">
+                <p><span className="font-medium">{r.student_name}</span> · {r.title}</p>
+                <p className="text-xs text-muted">{r.reason}</p>
+              </div>
+              <Badge tone={STATUS_TONE[r.status]}>{r.status}</Badge>
+            </li>
+          ))}
+        </ul>
+      ))}
+    </Panel>
+  );
+}
+
 export function OfferingPage() {
   const { offeringId = "" } = useParams();
   const { can } = useAuth();
@@ -243,6 +272,7 @@ export function OfferingPage() {
       </div>
 
       {showRoster && <Panel title="Estudiantes" subtitle="Progreso, última actividad y nota oficial ponderada"><Roster offering={o} /></Panel>}
+      {showRoster && <GroupRecommendations offering={o} />}
       {enrolling && <EnrollDialog offering={o} onClose={() => setEnrolling(false)} />}
     </div>
   );

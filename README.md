@@ -4,8 +4,8 @@ Plataforma empresarial de aprendizaje inteligente: gestión académica, analíti
 supervisión humana. Proyecto académico grupal construido según la *Especificación funcional y técnica v1.0*
 (12-11-2026), citada como **§N**.
 
-> **Estado:** Fases 0, 1, 2, 4 y 5 ✅ · Fases 3 y 6 parciales · pendientes: rutas, mapa, notificaciones en vivo,
-> recomendaciones de recursos y Fases 7-8.
+> **Estado:** Fases 0, 1, 2, 4, 5 y 6 ✅ · Fase 3 parcial · pendientes: rutas, mapa, notificaciones en vivo,
+> ranking aprendido y Fases 7-8.
 > La hoja de ruta completa está en [docs/fase-0/backlog.md](docs/fase-0/backlog.md).
 
 ## Qué funciona hoy
@@ -22,6 +22,7 @@ supervisión humana. Proyecto académico grupal construido según la *Especifica
 | Panel | KPIs académicos reales con variación, tendencia semanal, finalización, alertas abiertas y actividad. |
 | Modelo de IA | Riesgo de abandono: baselines vs. red con GRU, model card, calibración y aprobación por institución. |
 | Alertas | El docente ve el riesgo de sus estudiantes con los factores que lo explican y lo marca atendido o descartado. |
+| Recomendaciones e IA Tutor | Sugerencias explicadas (siguiente actividad, entrega próxima, reforzar, retomar) con feedback y métricas de utilidad. |
 | Administración | Usuarios, roles e instituciones. |
 | Operación | Logs JSON con `correlation_id`, health checks, errores normalizados, CI en GitHub Actions. |
 
@@ -83,6 +84,8 @@ cd ml && .venv/Scripts/python -m pytest
 2. `docente@andino.demo` → **Cursos** → PY-101 → **Actualizar riesgo con IA**.
 3. Abre la alerta de `Valeria Mendoza` (perfil en riesgo): probabilidad, factores y **Marcar atendida**.
 4. **Red neuronal** muestra el modelo publicado, sus métricas y la latencia de la última inferencia.
+5. `estudiante@andino.demo` → **IA Tutor** → «¿Qué hago ahora?»: sugerencias con su motivo; acepta o valora una.
+6. De vuelta como docente, el curso muestra las **recomendaciones del grupo**.
 
 Documentación: [cómo funciona (explicación sencilla)](docs/como-funciona.md) ·
 [decisiones](docs/fase-0/decisiones.md) · [bitácora de desarrollo](docs/bitacora.md) ·

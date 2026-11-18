@@ -100,7 +100,7 @@ export const MODULES: ModuleDef[] = [
     features: [],
   },
   {
-    path: "/tutor", label: "IA Tutor", icon: Bot, section: "Inteligencia", phase: 6, ready: false,
+    path: "/tutor", label: "IA Tutor", icon: Bot, section: "Inteligencia", phase: 6, ready: true,
     permission: "dashboard.read", docRef: "§4.5",
     summary: "Sugerencias de recursos y actividades según brechas de competencia.",
     features: ["Motivo explicado de cada sugerencia", "Aceptar, descartar o marcar como útil",
@@ -108,7 +108,7 @@ export const MODULES: ModuleDef[] = [
   },
   {
     path: "/recomendaciones", label: "Recomendaciones", icon: Sparkles, section: "Inteligencia", phase: 6,
-    ready: false, permission: "dashboard.read", docRef: "§4.11",
+    ready: true, permission: "dashboard.read", docRef: "§4.11",
     summary: "Acciones priorizadas con impacto esperado y estado.",
     features: ["Estados nueva, aceptada, descartada, completada y expirada",
       "Medición de aceptación y utilidad, no solo clics"],
@@ -143,7 +143,7 @@ export const PHASES: { n: number; name: string; status: PhaseStatus; note?: stri
   { n: 3, name: "Dashboard y tiempo real", status: "partial", note: "falta mapa y notificaciones en vivo" },
   { n: 4, name: "Dataset y analítica", status: "done", note: "dataset DEMO versionado" },
   { n: 5, name: "Modelo neuronal", status: "done", note: "riesgo de abandono" },
-  { n: 6, name: "IA en producto", status: "partial", note: "alertas sí; recomendaciones no" },
+  { n: 6, name: "IA en producto", status: "done", note: "alertas, recomendaciones e IA Tutor (reglas-v1)" },
   { n: 7, name: "Endurecimiento", status: "pending" },
   { n: 8, name: "Producción", status: "pending" },
 ];

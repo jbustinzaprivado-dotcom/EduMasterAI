@@ -81,17 +81,31 @@ para encontrar rápido qué pasó.
 7. **Ligero en el servidor:** la API no carga PyTorch; usa los pesos exportados con NumPy y una prueba
    confirma que da el mismo resultado.
 
-## 8. Honestidad de los datos
+## 8. Recomendaciones e IA Tutor: un GPS de estudio
+
+- El estudiante pregunta «¿qué hago ahora?» y el tutor revisa su situación real en el curso:
+  - **Siguiente actividad** obligatoria, indicando si va atrasado frente al calendario.
+  - **Entrega próxima** que vence en menos de 7 días y aún no envía.
+  - **Reforzar** un tema si su nota oficial quedó por debajo del 55 %.
+  - **Retomar** con la actividad más corta si lleva 7 días o más sin entrar.
+- Cada sugerencia dice **por qué** y qué ganaría. El estudiante la acepta, la descarta o dice si le sirvió.
+- Cuando cumple (completa la actividad o entrega), la sugerencia se cierra sola como «completada»; si la
+  situación cambia sin hacerlo, queda «expirada». Lo descartado no se vuelve a insistir.
+- El modelo de riesgo solo decide qué tan arriba va «retomar»; el estudiante nunca ve su puntaje.
+- El docente ve las sugerencias de su grupo, y la coordinación mide aceptación y utilidad (no solo clics).
+
+## 9. Honestidad de los datos
 
 - Las instituciones y personas son **DEMO** (ficticias) y así se rotulan.
 - Un panel sin datos reales muestra **en qué fase se construye**, nunca números inventados.
 - La red neuronal se ve como **diseño**. Su animación solo aparece al pulsar "Simular", con la etiqueta
   "SIMULACIÓN DEMO" mientras la institución no aprueba un modelo (§1, §5.4).
 
-## 9. Cómo se comprueba que funciona
+## 10. Cómo se comprueba que funciona
 
-- **38 pruebas automáticas de la API**: login, robo de sesión, permisos, aislamiento entre instituciones,
-  bitácora, cursos, eventos idempotentes, entregas, notas, panel, aprobación del modelo, predicción y revisión.
+- **43 pruebas automáticas de la API**: login, robo de sesión, permisos, aislamiento entre instituciones,
+  bitácora, cursos, eventos idempotentes, entregas, notas, panel, aprobación del modelo, predicción, revisión
+  y recomendaciones.
 - **5 pruebas de ML**: sin fuga de información, definición de la etiqueta, simulación reproducible y
   NumPy = PyTorch.
 - **GitHub Actions (CI)** repite las pruebas contra PostgreSQL real, verifica las migraciones y que la
