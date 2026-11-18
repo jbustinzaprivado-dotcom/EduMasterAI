@@ -4,10 +4,11 @@ Plataforma empresarial de aprendizaje inteligente: gestión académica, analíti
 supervisión humana. Proyecto académico grupal construido según la *Especificación funcional y técnica v1.0*
 (12-11-2026), citada como **§N**.
 
-> **Estado:** Fase 0 (descubrimiento) ✅ · Fase 1 (fundaciones) ✅ · siguiente: Fase 2 (core académico).
+> **Estado:** Fases 0, 1 y 2 ✅ (rutas de aprendizaje pospuestas) · Fase 3 en curso · siguiente: Fases 4-5
+> (dataset y modelo de riesgo de abandono).
 > La hoja de ruta completa está en [docs/fase-0/backlog.md](docs/fase-0/backlog.md).
 
-## Qué funciona hoy (Fase 1)
+## Qué funciona hoy
 
 | Área | Detalle |
 |---|---|
@@ -15,7 +16,10 @@ supervisión humana. Proyecto académico grupal construido según la *Especifica
 | Roles y permisos | Los 8 roles de §3. El backend valida cada petición; ocultar botones es solo comodidad. |
 | Multi-institución | Cada institución ve solo sus datos. Probado con pruebas automáticas de aislamiento. |
 | Bitácora | Toda acción crítica queda registrada. En PostgreSQL no se puede editar ni borrar. |
-| Panel | KPIs reales (usuarios, accesos con variación), arquitectura neuronal y estado de cada módulo. |
+| Cursos | Catálogo con unidades y actividades, publicación, ofertas por periodo y cohorte, matrículas. |
+| Aprendizaje | El estudiante marca actividades; cada evento es idempotente y recalcula su progreso. |
+| Evaluaciones | Pesos que suman hasta 100 %, entregas con control de intentos y plazo, nota oficial del docente (0-20). |
+| Panel | KPIs académicos reales con variación, tendencia semanal, finalización, actividad y arquitectura neuronal. |
 | Administración | Usuarios, roles e instituciones. |
 | Operación | Logs JSON con `correlation_id`, health checks, errores normalizados, CI en GitHub Actions. |
 
@@ -40,7 +44,11 @@ La contraseña común está en `.env` (`EDUMASTER_DEMO_PASSWORD`). La pantalla d
 | ANDINO | docente@andino.demo | Docente |
 | ANDINO | estudiante@andino.demo | Estudiante |
 | ANDINO | analista@andino.demo · ml@andino.demo · auditoria@andino.demo | Analista · ML Engineer · Auditor |
+| ANDINO | docente2@andino.demo · estudiante2@ … estudiante13@andino.demo | Más docentes y estudiantes |
 | PACIFICO | admin@pacifico.demo · docente@ · estudiante@ | Otra institución (para probar el aislamiento) |
+
+Datos académicos DEMO: PY-101 (casi termina), DS-201 y ML-301 (a mitad de ciclo) y un borrador WEB-110.
+La estudiante DEMO `estudiante@andino.demo` tiene un perfil "en riesgo" para mostrar alertas en vivo.
 
 ## Demostración pública
 

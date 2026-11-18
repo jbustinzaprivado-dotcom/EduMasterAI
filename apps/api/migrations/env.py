@@ -4,11 +4,19 @@ from alembic import context
 
 from app.core.config import get_settings
 from app.core.database import engine
+from app.db.base import UTCDateTime
 from app.db.models import Base
 
 config = context.config
 config.set_main_option("sqlalchemy.url", get_settings().database_url.replace("%", "%%"))
 target_metadata = Base.metadata
+
+
+def render_item(type_, obj, autogen_context):
+    """UTCDateTime se escribe en las migraciones como DateTime con zona (las migraciones no importan la app)."""
+    if type_ == "type" and isinstance(obj, UTCDateTime):
+        return "sa.DateTime(timezone=True)"
+    return False
 
 
 def run_migrations_offline() -> None:
@@ -21,7 +29,7 @@ def run_migrations_offline() -> None:
 def run_migrations_online() -> None:
     with engine.connect() as connection:  # mismo motor que la API (crea la carpeta de SQLite si falta)
         context.configure(connection=connection, target_metadata=target_metadata,
-                          render_as_batch=connection.dialect.name == "sqlite")
+                          render_as_batch=connection.dialect.name == "sqlite", render_item=render_item)
         with context.begin_transaction():
             context.run_migrations()
 

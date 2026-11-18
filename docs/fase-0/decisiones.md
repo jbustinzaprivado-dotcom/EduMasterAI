@@ -19,6 +19,11 @@ Cuando una decisión completa algo que el documento deja abierto, se indica la s
 | D12 | Python 3.13 (cumple "3.12+"), React 19 + TypeScript estricto + Vite. | §6.1 |
 | D13 | Pruebas rápidas en SQLite en memoria; la CI las repite contra **PostgreSQL** y valida migraciones. | §13 |
 | D14 | Paneles sin datos todavía muestran **en qué fase se construyen**, nunca cifras inventadas. La red neuronal se muestra como diseño y su animación solo como "SIMULACIÓN DEMO". | §1, §5.4, §13.1 |
+| D15 | La **cohorte** se modela como el grupo de cada oferta de curso (campo `cohort`), no como entidad aparte. Suficiente para asignar y filtrar; se separa si un grupo cursa varias ofertas juntas. | §7.1 |
+| D16 | La historia DEMO (6-9 semanas de eventos, entregas y notas) se genera con **perfiles sintéticos** (45 % constante, 35 % irregular, 20 % en riesgo), semilla fija y rótulo `demo`. | §8.1 |
+| D17 | Gráficos con **SVG propio** (tendencia y dona) en lugar de ECharts/Recharts: menos peso para la demo por túnel. Tienen leyenda, unidades, tooltip y estados vacío/carga/error. | §6.1 (RECOMENDADO), §5.2 |
+| D18 | Escala de notas **vigesimal (0-20)** por defecto, la usual en Perú; cuenta el mejor intento calificado y el promedio se pondera por peso. | §4.6 ("reglas configurables") |
+| D19 | **Rutas de aprendizaje (§4.2) pospuestas**: la Fase 2 entrega cursos, ofertas, matrículas, evaluaciones y eventos; las rutas se suman después porque no bloquean al modelo. | §14.1 (orden) |
 
 ## Decisiones aún abiertas (§17.1)
 

@@ -25,6 +25,14 @@ ACTION_LABELS = {
     "user.created": "Creó un usuario",
     "user.updated": "Modificó un usuario",
     "user.roles_changed": "Cambió los roles de un usuario",
+    "course.created": "Creó un curso",
+    "course.status_changed": "Cambió el estado de un curso",
+    "offering.created": "Abrió una oferta de curso",
+    "enrollment.created": "Matriculó estudiantes",
+    "course.completed": "Completó un curso",
+    "assessment.created": "Creó una evaluación",
+    "assessment.submitted": "Entregó una evaluación",
+    "grade.recorded": "Registró una nota oficial",
 }
 
 

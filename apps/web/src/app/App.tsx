@@ -7,6 +7,9 @@ import { useAuth } from "../lib/auth";
 import { OrganizationsPage } from "../modules/administration/OrganizationsPage";
 import { UsersPage } from "../modules/administration/UsersPage";
 import { ActivityPage } from "../modules/audit/ActivityPage";
+import { AssessmentsPage } from "../modules/courses/AssessmentsPage";
+import { CoursesPage } from "../modules/courses/CoursesPage";
+import { OfferingPage } from "../modules/courses/OfferingPage";
 import { LoginPage } from "../modules/auth/LoginPage";
 import { DashboardPage } from "../modules/dashboard/DashboardPage";
 import { NeuralPage } from "../modules/neural-visualizer/NeuralPage";
@@ -38,6 +41,8 @@ function PermissionGate({ permission, children }: { permission: string; children
 const READY: Record<string, ReactNode> = {
   "/": <DashboardPage />,
   "/red-neuronal": <NeuralPage />,
+  "/cursos": <CoursesPage />,
+  "/evaluaciones": <AssessmentsPage />,
   "/actividad": <ActivityPage />,
   "/administracion/usuarios": <UsersPage />,
   "/administracion/instituciones": <OrganizationsPage />,
@@ -52,6 +57,7 @@ export function App() {
           <Route key={m.path} path={m.path}
             element={<PermissionGate permission={m.permission}>{READY[m.path] ?? <PendingModulePage module={m} />}</PermissionGate>} />
         ))}
+        <Route path="/cursos/:offeringId" element={<OfferingPage />} />
         <Route path="*" element={
           <div className="pt-10 text-center text-sm text-muted">
             Página no encontrada. <Link to="/" className="text-cyan hover:underline">Volver al resumen</Link>

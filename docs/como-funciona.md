@@ -52,16 +52,27 @@ desde qué IP y un `correlation_id`. En PostgreSQL la tabla **no permite modific
 El `correlation_id` es como el número de seguimiento de un paquete: une la petición, los logs y el error,
 para encontrar rápido qué pasó.
 
-## 6. Honestidad de los datos
+## 6. Cursos, progreso y notas: el cuaderno de control
+
+- **Curso** = el libro (unidades y actividades). **Oferta** = el salón que lo dicta este periodo, con su
+  docente y su grupo (cohorte). **Matrícula** = el estudiante sentado en ese salón.
+- Cada vez que el estudiante abre o termina una actividad, se envía un **evento** con un número único
+  (`event_id`). Si por mala conexión llega dos veces, se cuenta una sola: como un ticket que ya fue sellado.
+- **Progreso** = actividades obligatorias terminadas ÷ total. Al llegar al 100 % la matrícula pasa a "Completado".
+- **Nota oficial**: la pone el docente (escala 0-20) y cada cambio queda en la bitácora. La IA nunca califica.
+- Cada rol ve lo que le corresponde: el docente solo sus salones, el estudiante solo los suyos y el analista
+  solo totales, sin notas con nombre (§3).
+
+## 7. Honestidad de los datos
 
 - Las instituciones y personas son **DEMO** (ficticias) y así se rotulan.
 - Un panel sin datos reales muestra **en qué fase se construye**, nunca números inventados.
 - La red neuronal se ve como **diseño**. Su animación solo aparece al pulsar "Simular", con la etiqueta
   "SIMULACIÓN DEMO", porque aún no hay un modelo entrenado (§1, §5.4).
 
-## 7. Cómo se comprueba que funciona
+## 8. Cómo se comprueba que funciona
 
-- **24 pruebas automáticas de la API**: login, robo de sesión, permisos, aislamiento entre instituciones,
-  bitácora y panel.
+- **33 pruebas automáticas de la API**: login, robo de sesión, permisos, aislamiento entre instituciones,
+  bitácora, cursos, eventos idempotentes, entregas, notas y panel.
 - **GitHub Actions (CI)** repite las pruebas contra PostgreSQL real, verifica las migraciones y que la
   bitácora rechace borrados, y compila la web.

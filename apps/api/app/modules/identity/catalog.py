@@ -13,6 +13,11 @@ PERMISSIONS: dict[str, str] = {
     "audit.read": "Consultar la bitácora de la institución",
     "audit.read.own": "Consultar la propia actividad",
     "dashboard.read": "Ver el panel de resumen",
+    # Fase 2 · core académico
+    "course.read.all": "Consultar todos los cursos, ofertas y matrículas de la institución",
+    "course.manage": "Crear cursos y ofertas, publicar y matricular",
+    "assessment.manage": "Crear evaluaciones y registrar notas oficiales (docente: solo sus ofertas)",
+    "learning": "Participar en los cursos donde está matriculado",
 }
 
 # (nombre visible, descripción, permisos)
@@ -21,32 +26,34 @@ ROLES: dict[str, tuple[str, str, list[str]]] = {
         "Superadministrador",
         "Gobierno global de la plataforma.",
         ["platform.global", "org.read", "org.manage", "user.read", "user.manage", "role.read",
-         "audit.read", "dashboard.read"],
+         "audit.read", "dashboard.read", "course.read.all", "course.manage", "assessment.manage"],
     ),
     "admin": (
         "Administrador institucional",
         "Operación de una institución.",
-        ["org.read", "user.read", "user.manage", "role.read", "audit.read", "dashboard.read"],
+        ["org.read", "user.read", "user.manage", "role.read", "audit.read", "dashboard.read",
+         "course.read.all", "course.manage", "assessment.manage"],
     ),
     "coordinador": (
         "Director / coordinador",
         "Seguimiento académico.",
-        ["org.read", "user.read", "role.read", "audit.read.own", "dashboard.read"],
+        ["org.read", "user.read", "role.read", "audit.read.own", "dashboard.read",
+         "course.read.all", "course.manage", "assessment.manage"],
     ),
     "docente": (
         "Docente / instructor",
         "Gestión de enseñanza.",
-        ["org.read", "audit.read.own", "dashboard.read"],
+        ["org.read", "audit.read.own", "dashboard.read", "assessment.manage"],
     ),
     "estudiante": (
         "Estudiante",
         "Aprendizaje personal.",
-        ["org.read", "audit.read.own", "dashboard.read"],
+        ["org.read", "audit.read.own", "dashboard.read", "learning"],
     ),
     "analista": (
         "Analista de datos",
         "Analítica y dataset.",
-        ["org.read", "audit.read.own", "dashboard.read"],
+        ["org.read", "audit.read.own", "dashboard.read", "course.read.all"],
     ),
     "ml_engineer": (
         "Científico de datos / ML Engineer",
@@ -56,7 +63,7 @@ ROLES: dict[str, tuple[str, str, list[str]]] = {
     "auditor": (
         "Auditor",
         "Control y cumplimiento, solo lectura.",
-        ["org.read", "user.read", "role.read", "audit.read", "dashboard.read"],
+        ["org.read", "user.read", "role.read", "audit.read", "dashboard.read", "course.read.all"],
     ),
 }
 

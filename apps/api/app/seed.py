@@ -13,6 +13,7 @@ from sqlalchemy.orm import Session
 from app.core.config import get_settings
 from app.core.database import SessionLocal
 from app.core.security import hash_password
+from app.demo import academic
 from app.modules.identity.models import Organization, User
 from app.modules.identity.service import roles_by_code, sync_catalog
 
@@ -48,7 +49,7 @@ ACCOUNTS += [
 ]
 
 
-def run(db: Session, password: str) -> tuple[int, int]:
+def run(db: Session, password: str) -> tuple[int, int, int]:
     sync_catalog(db)
     orgs = {o.code: o for o in db.scalars(select(Organization))}
     for code, name, is_platform in ORGANIZATIONS:
@@ -68,7 +69,8 @@ def run(db: Session, password: str) -> tuple[int, int]:
                     password_hash=password_hash, roles=roles_by_code(db, roles)))
         created += 1
     db.commit()
-    return len(orgs), created
+    events = academic.run(db)  # cursos, ofertas, matrículas, evaluaciones e historia DEMO
+    return len(orgs), created, events
 
 
 def main() -> None:
@@ -76,8 +78,9 @@ def main() -> None:
     if not password or len(password) < 10:
         sys.exit("Define EDUMASTER_DEMO_PASSWORD (mínimo 10 caracteres) en el archivo .env de la raíz.")
     with SessionLocal() as db:
-        orgs, created = run(db, password)
-    print(f"Instituciones: {orgs}. Cuentas DEMO nuevas: {created} (de {len(ACCOUNTS)}).")
+        orgs, created, events = run(db, password)
+    print(f"Instituciones: {orgs}. Cuentas DEMO nuevas: {created} (de {len(ACCOUNTS)}). "
+          f"Eventos de aprendizaje DEMO nuevos: {events}.")
 
 
 if __name__ == "__main__":

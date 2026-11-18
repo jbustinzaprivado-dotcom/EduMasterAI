@@ -14,6 +14,7 @@ from app.core.config import get_settings
 from app.core.context import client_ip, correlation_id
 from app.core.database import SessionLocal
 from app.core.logging import configure_logging
+from app.modules.academic.router import router as academic_router
 from app.modules.audit.router import router as audit_router
 from app.modules.dashboard.router import router as dashboard_router
 from app.modules.identity.router_admin import router as admin_router
@@ -71,7 +72,8 @@ def create_app() -> FastAPI:
         return response
 
     api = APIRouter(prefix="/api/v1")
-    for router in (system_router, auth_router, admin_router, audit_router, dashboard_router, ml_router):
+    for router in (system_router, auth_router, admin_router, audit_router, dashboard_router, ml_router,
+                   academic_router):
         api.include_router(router)
     app.include_router(api)
 

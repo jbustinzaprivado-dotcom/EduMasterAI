@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { Link } from "react-router";
 import { CURRENT_PHASE, PHASES } from "../../app/modules";
+import { Donut, TrendChart } from "../../components/charts";
 import { api } from "../../lib/api";
 import { useAuth } from "../../lib/auth";
 import { formatNumber, formatTime, relativeTime, variation } from "../../lib/format";
@@ -42,7 +43,9 @@ function KpiCard({ kpi }: { kpi: Kpi }) {
     <div className="panel flex flex-col gap-1 p-4">
       <p className="text-xs text-muted">{kpi.label}</p>
       <div className="flex items-end gap-2">
-        <p className="text-2xl font-semibold tracking-tight">{formatNumber(kpi.value)}</p>
+        <p className="text-2xl font-semibold tracking-tight">
+          {formatNumber(kpi.value)}{kpi.unit === "%" && <span className="text-base text-muted"> %</span>}
+        </p>
         {delta !== null && (
           <span className={cx("mb-1 inline-flex items-center text-xs font-medium", delta >= 0 ? "text-teal" : "text-danger")}>
             {delta >= 0 ? <ArrowUpRight className="size-3.5" /> : <ArrowDownRight className="size-3.5" />}
@@ -75,10 +78,52 @@ function KpiGrid() {
     <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 xl:grid-cols-2">
       {summary.data.kpis.map((k) => <KpiCard key={k.key} kpi={k} />)}
       <div className="col-span-full rounded-xl border border-dashed border-line p-3 text-[11px] text-muted">
-        Cursos, horas de aprendizaje, certificaciones y finalización se suman con el core académico (Fase 2-3).
+        Calculado desde eventos y matrículas reales de la base (datos de instituciones DEMO).
         Alcance: <span className="text-text">{summary.data.scope}</span>.
       </div>
     </div>
+  );
+}
+
+interface WeekPoint { week_start: string; active_students: number; activities_completed: number; hours: number }
+interface Completion { completed: number; in_progress: number; not_started: number; total: number }
+
+function ProgressPanel() {
+  const series = useQuery({ queryKey: ["dashboard", "series"], queryFn: () => api<WeekPoint[]>("/dashboard/progress-series?weeks=8") });
+  const fmt = new Intl.DateTimeFormat("es-PE", { day: "2-digit", month: "short" });
+  return (
+    <Panel className="lg:col-span-2" title="Progreso de aprendizaje" subtitle="Últimas 8 semanas · desde learning_events">
+      {series.isPending && <Skeleton className="h-52" />}
+      {series.isError && <ErrorState error={series.error} onRetry={() => series.refetch()} />}
+      {series.data && (series.data.every((p) => p.active_students === 0) ? (
+        <EmptyState icon={LineChart} title="Sin actividad registrada" description="Aún no hay eventos de aprendizaje en tus cursos." />
+      ) : (
+        <TrendChart labels={series.data.map((p) => fmt.format(new Date(p.week_start)))} series={[
+          { key: "act", label: "Actividades completadas", unit: "act.", color: "#20c8f5", values: series.data.map((p) => p.activities_completed) },
+          { key: "stu", label: "Estudiantes activos", unit: "est.", color: "#8b4dff", values: series.data.map((p) => p.active_students) },
+          { key: "hrs", label: "Horas", unit: "h", color: "#00bfa6", values: series.data.map((p) => p.hours) },
+        ]} />
+      ))}
+    </Panel>
+  );
+}
+
+function CompletionPanel() {
+  const data = useQuery({ queryKey: ["dashboard", "completion"], queryFn: () => api<Completion>("/dashboard/completion") });
+  return (
+    <Panel title="Finalización de cursos" subtitle="Estado de las matrículas vigentes">
+      {data.isPending && <Skeleton className="h-36" />}
+      {data.isError && <ErrorState error={data.error} onRetry={() => data.refetch()} />}
+      {data.data && (data.data.total === 0 ? (
+        <EmptyState icon={PieChart} title="Sin matrículas" description="Todavía no hay matrículas en tus cursos." />
+      ) : (
+        <Donut center={`${Math.round((100 * data.data.completed) / data.data.total)} %`} slices={[
+          { label: "Completado", value: data.data.completed, color: "#00bfa6" },
+          { label: "En progreso", value: data.data.in_progress, color: "#087fe5" },
+          { label: "No iniciado", value: data.data.not_started, color: "#8b4dff" },
+        ]} />
+      ))}
+    </Panel>
   );
 }
 
@@ -175,10 +220,7 @@ export function DashboardPage() {
 
       {/* Fila 2: tendencias y mapa */}
       <div className="grid gap-4 lg:grid-cols-3">
-        <Panel className="lg:col-span-2" title="Progreso de aprendizaje" subtitle="Series temporales por periodo">
-          <EmptyState icon={LineChart} phase={3} title="Se alimenta de eventos de aprendizaje"
-            description="Requiere cursos, matrículas y tracking (Fase 2). Sin eventos reales no se dibuja una tendencia." />
-        </Panel>
+        <ProgressPanel />
         <Panel title="Mapa de progreso" subtitle="Distribución geográfica agregada">
           <EmptyState icon={Map} phase={3} title="Agregado por región"
             description="Solo datos geográficos permitidos y agregados; nunca ubicaciones individuales." />
@@ -187,9 +229,7 @@ export function DashboardPage() {
 
       {/* Fila 3: finalización, habilidades, recomendaciones */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        <Panel title="Finalización de cursos" subtitle="Completado · en progreso · no iniciado">
-          <EmptyState icon={PieChart} phase={3} title="Depende de matrículas" description="Se calcula desde el estado de progreso de cada matrícula." />
-        </Panel>
+        <CompletionPanel />
         <Panel title="Dominio de habilidades" subtitle="Heatmap por competencia y nivel">
           <EmptyState icon={Grid3x3} phase={4} title="Evidencias de evaluación"
             description="El nivel estimado por IA se mostrará separado del validado por el docente." />

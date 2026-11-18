@@ -19,13 +19,21 @@ Priorizado por valor y riesgo, en el orden obligatorio del manual (§14.1). Cada
 | F1-07 | Como equipo, cada cambio pasa pruebas y migraciones en la CI. | GitHub Actions en verde. |
 | F1-08 | Como operador, cada error y log lleva un `correlation_id`. | Errores con `code`, `message`, `details`, `correlation_id`. |
 
-## Fase 2 · Core académico (⏳)
-Cursos y ofertas, cohortes, matrículas, unidades y contenidos, rutas de aprendizaje, evaluaciones e
-intentos, ingesta idempotente de `learning_events`.
+## Fase 2 · Core académico ✅ (17-11-2026, salvo rutas)
+| ID | Historia de usuario | Estado |
+|---|---|---|
+| F2-01 | Como administrador, creo cursos con unidades y actividades y los publico. | ✅ |
+| F2-02 | Como administrador, abro ofertas (periodo, docente, cohorte) y matriculo estudiantes. | ✅ |
+| F2-03 | Como estudiante, veo mis cursos y marco actividades; mi progreso se recalcula. | ✅ |
+| F2-04 | Como sistema, recibo eventos idempotentes (`event_id`) y rechazo los inválidos. | ✅ |
+| F2-05 | Como docente, creo evaluaciones (pesos ≤ 100 %), recibo entregas y registro la nota oficial. | ✅ |
+| F2-06 | Como docente, veo a mis estudiantes con progreso, última actividad y nota ponderada. | ✅ |
+| F2-07 | Como coordinador, creo rutas de aprendizaje. | ⏳ pospuesta (D19) |
 
-## Fase 3 · Dashboard y tiempo real (⏳)
-KPIs académicos con variación, tendencias, mapa agregado, finalización, actividad y notificaciones por
-WebSocket/SSE con reconexión.
+## Fase 3 · Dashboard y tiempo real (🔄)
+- ✅ KPIs académicos con variación (activos 7 días, horas 30 días, finalización, matrículas).
+- ✅ Tendencia semanal y finalización de cursos.
+- ⏳ Mapa agregado, certificados y notificaciones por WebSocket/SSE.
 
 ## Fase 4 · Dataset y analítica (⏳)
 Generador DEMO, pipeline de 10 pasos de §8.4, split temporal, datasheet y reportes exportables.

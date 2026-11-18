@@ -46,7 +46,7 @@ export const MODULES: ModuleDef[] = [
       "Avance por etapa y fecha objetivo", "Historial de cambios de ruta"],
   },
   {
-    path: "/cursos", label: "Cursos", icon: BookOpen, section: "Aprendizaje", phase: 2, ready: false,
+    path: "/cursos", label: "Cursos", icon: BookOpen, section: "Aprendizaje", phase: 2, ready: true,
     permission: "dashboard.read", docRef: "§4.3",
     summary: "Catálogo de cursos, unidades, lecciones y recursos con versionado.",
     features: ["Código, nivel, docente, fechas, etiquetas y competencias", "Unidades, lecciones y archivos",
@@ -54,7 +54,7 @@ export const MODULES: ModuleDef[] = [
   },
   {
     path: "/evaluaciones", label: "Evaluaciones", icon: ClipboardCheck, section: "Aprendizaje", phase: 2,
-    ready: false, permission: "dashboard.read", docRef: "§4.6",
+    ready: true, permission: "dashboard.read", docRef: "§4.6",
     summary: "Bancos de preguntas, rúbricas, intentos y ponderaciones.",
     features: ["Opción múltiple, V/F, respuesta corta, archivo y práctica", "Registro de intentos",
       "Nota oficial separada de la estimación de IA", "Reglas de evaluación por curso"],
@@ -139,4 +139,4 @@ export const PHASES = [
   { n: 8, name: "Producción" },
 ];
 
-export const CURRENT_PHASE = 1;
+export const CURRENT_PHASE = 3; // 0-2 completas; 3 en curso
