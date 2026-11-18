@@ -15,7 +15,7 @@ export function NeuralPage() {
   const arch = useArchitecture();
   return (
     <div className="mx-auto max-w-6xl">
-      <PageHeader title="Arquitectura neuronal" description="Visualizador de §4.10. Hoy muestra el diseño; desde la Fase 5 mostrará los estados reales del modelo." />
+      <PageHeader title="Arquitectura neuronal" description="Visualizador de §4.10: topología y estado del modelo publicado en tu institución." />
       {arch.isPending && <Skeleton className="h-96" />}
       {arch.isError && <ErrorState error={arch.error} onRetry={() => arch.refetch()} />}
       {arch.data && (

@@ -12,7 +12,7 @@ import {
   Sparkles,
 } from "lucide-react";
 import { Link } from "react-router";
-import { CURRENT_PHASE, PHASES } from "../../app/modules";
+import { PHASES } from "../../app/modules";
 import { Donut, TrendChart } from "../../components/charts";
 import { api } from "../../lib/api";
 import { useAuth } from "../../lib/auth";
@@ -180,19 +180,17 @@ function RoadmapPanel() {
   return (
     <Panel title="Hoja de ruta" subtitle="Fases de §14 · avance real del proyecto">
       <ol className="space-y-2">
-        {PHASES.map((p) => {
-          const done = p.n < CURRENT_PHASE;
-          const current = p.n === CURRENT_PHASE;
-          return (
-            <li key={p.n} className="flex items-center gap-2.5 text-sm">
-              {done ? <CheckCircle2 className="size-4 text-teal" /> : current ? <CircleDot className="size-4 text-cyan" /> : <Circle className="size-4 text-muted/50" />}
-              <span className={cx(current ? "font-semibold text-cyan" : done ? "text-text" : "text-muted")}>
-                {p.n}. {p.name}
-              </span>
-              {current && <Badge tone="cyan">en curso</Badge>}
-            </li>
-          );
-        })}
+        {PHASES.map((p) => (
+          <li key={p.n} className="flex items-start gap-2.5 text-sm">
+            {p.status === "done" ? <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-teal" />
+              : p.status === "partial" ? <CircleDot className="mt-0.5 size-4 shrink-0 text-cyan" />
+              : <Circle className="mt-0.5 size-4 shrink-0 text-muted/50" />}
+            <span className={cx(p.status === "partial" ? "text-cyan" : p.status === "done" ? "text-text" : "text-muted")}>
+              {p.n}. {p.name}
+              {p.note && <span className="block text-[11px] text-muted">{p.note}</span>}
+            </span>
+          </li>
+        ))}
       </ol>
     </Panel>
   );
@@ -235,8 +233,8 @@ export function DashboardPage() {
             description="El nivel estimado por IA se mostrará separado del validado por el docente." />
         </Panel>
         <Panel title="Recomendaciones de IA" subtitle="Sugerencias priorizadas y explicadas">
-          <EmptyState icon={Sparkles} phase={6} title="Requiere un modelo validado"
-            description="Primero baselines y riesgo de abandono (Fase 5); luego recomendaciones con revisión humana." />
+          <EmptyState icon={Sparkles} phase={6} title="Recomendaciones de recursos: pendiente"
+            description="Ya funcionan las alertas de riesgo (en cada curso, para el docente). Las sugerencias de recursos llegan después." />
         </Panel>
       </div>
 

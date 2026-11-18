@@ -1,5 +1,5 @@
 import { CheckCircle2, Circle, CircleDot } from "lucide-react";
-import { CURRENT_PHASE, PHASES, type ModuleDef } from "../../app/modules";
+import { PHASES, type ModuleDef } from "../../app/modules";
 import { Badge, PageHeader, Panel, cx } from "../../components/ui";
 
 /** Página de un módulo aún no construido: muestra su alcance y en qué fase llega, sin datos ficticios. */
@@ -26,8 +26,8 @@ export function PendingModulePage({ module: m }: { module: ModuleDef }) {
           <ol className="space-y-2">
             {PHASES.map((p) => (
               <li key={p.n} className="flex items-center gap-2.5 text-sm">
-                {p.n < CURRENT_PHASE ? <CheckCircle2 className="size-4 text-teal" /> : p.n === CURRENT_PHASE ? <CircleDot className="size-4 text-cyan" /> : <Circle className="size-4 text-muted/50" />}
-                <span className={cx(p.n === m.phase ? "font-semibold text-[#b593ff]" : p.n === CURRENT_PHASE ? "text-cyan" : "text-muted")}>
+                {p.status === "done" ? <CheckCircle2 className="size-4 text-teal" /> : p.status === "partial" ? <CircleDot className="size-4 text-cyan" /> : <Circle className="size-4 text-muted/50" />}
+                <span className={cx(p.n === m.phase ? "font-semibold text-[#b593ff]" : p.status === "partial" ? "text-cyan" : "text-muted")}>
                   {p.n}. {p.name}
                 </span>
                 {p.n === m.phase && <Badge tone="violet">este módulo</Badge>}

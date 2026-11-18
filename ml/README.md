@@ -1,8 +1,24 @@
-# ml/ — Dataset y modelos (Fases 4 y 5)
+# ml/ — Dataset y modelo de riesgo de abandono (Fases 4-5)
 
-Aún vacío a propósito. Aquí vivirán, según §9 y §15.1:
+| Ruta | Contenido |
+|---|---|
+| `src/edumaster_ml/generate.py` | Simulador del dataset **sintético DEMO** (D06) y su ficha (datasheet). |
+| `src/edumaster_ml/train.py` | Baselines, red multitarea con GRU, calibración, selección (D26) y exportación. |
+| `registry/riesgo-abandono/<versión>/` | `model.json` (pesos para la API) y `model_card.json` (métricas, segmentos, límites). |
+| `datasets/*.datasheet.json` | Ficha del dataset: definición de la etiqueta, separación temporal y huella SHA-256. |
+| `tests/` | Sin fuga de información, etiqueta, reproducibilidad, NumPy = PyTorch. |
 
-- `src/datasets`: generador del dataset **sintético DEMO** (decisión D06) y pipeline de 10 pasos (§8.4).
-- `src/training`, `src/evaluation`: baselines (regresión logística, boosting) y la red multitarea,
-  empezando por **riesgo de abandono** (decisión D07).
-- `configs/`: configuración YAML versionada. `data/` y los modelos no se suben a Git (DVC u object storage).
+Las variables viven en `apps/api/app/modules/ml/features.py`: entrenamiento e inferencia usan el mismo código.
+
+## Reentrenar
+
+```bash
+cd ml
+python -m venv .venv
+.venv/Scripts/python -m pip install -r requirements.txt
+.venv/Scripts/python -m pip install torch==2.15.0 --index-url https://download.pytorch.org/whl/cpu
+.venv/Scripts/python -m edumaster_ml.train
+```
+
+Una versión nueva se registra sola al reiniciar la API, pero **no se usa hasta que un administrador la aprueba**
+en "Modelos de IA" (D23).

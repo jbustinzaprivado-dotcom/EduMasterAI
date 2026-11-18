@@ -63,16 +63,36 @@ para encontrar rápido qué pasó.
 - Cada rol ve lo que le corresponde: el docente solo sus salones, el estudiante solo los suyos y el analista
   solo totales, sin notas con nombre (§3).
 
-## 7. Honestidad de los datos
+## 7. La IA de riesgo de abandono: un termómetro, no un juez
+
+1. **Datos de práctica:** un simulador crea ~13 400 matrículas ficticias con comportamientos realistas
+   (quien estudia constante, quien se va desconectando, quien hace una pausa y vuelve). Todo es DEMO.
+2. **La pregunta:** ¿este estudiante pasará los próximos 14 días sin conectarse? Solo se miran datos de
+   *antes* del momento de la predicción (si no, sería "hacer trampa" mirando el futuro).
+3. **Competencia justa:** se entrenan tres modelos: regresión logística, Gradient Boosting y la red neuronal
+   (rama de números + GRU que "lee" las últimas 6 semanas como una película). La red solo se publica si le gana
+   al modelo simple; ganó por poco y así queda escrito en la model card.
+4. **Probabilidades honestas:** se calibran para que "80 %" signifique que, de cada 10 casos así, unos 8 se
+   desconectan.
+5. **Aprobación humana:** el ML Engineer entrena y registra; el administrador revisa la ficha y aprueba. Sin
+   esa firma, la IA no se usa en la institución.
+6. **Uso:** el docente ve "alto · 81 %" y los factores (por ejemplo, "varios días sin conectarse"). Decide él:
+   marca la alerta como atendida o la descarta explicando por qué. El estudiante no ve su puntaje.
+7. **Ligero en el servidor:** la API no carga PyTorch; usa los pesos exportados con NumPy y una prueba
+   confirma que da el mismo resultado.
+
+## 8. Honestidad de los datos
 
 - Las instituciones y personas son **DEMO** (ficticias) y así se rotulan.
 - Un panel sin datos reales muestra **en qué fase se construye**, nunca números inventados.
 - La red neuronal se ve como **diseño**. Su animación solo aparece al pulsar "Simular", con la etiqueta
-  "SIMULACIÓN DEMO", porque aún no hay un modelo entrenado (§1, §5.4).
+  "SIMULACIÓN DEMO" mientras la institución no aprueba un modelo (§1, §5.4).
 
-## 8. Cómo se comprueba que funciona
+## 9. Cómo se comprueba que funciona
 
-- **33 pruebas automáticas de la API**: login, robo de sesión, permisos, aislamiento entre instituciones,
-  bitácora, cursos, eventos idempotentes, entregas, notas y panel.
+- **38 pruebas automáticas de la API**: login, robo de sesión, permisos, aislamiento entre instituciones,
+  bitácora, cursos, eventos idempotentes, entregas, notas, panel, aprobación del modelo, predicción y revisión.
+- **5 pruebas de ML**: sin fuga de información, definición de la etiqueta, simulación reproducible y
+  NumPy = PyTorch.
 - **GitHub Actions (CI)** repite las pruebas contra PostgreSQL real, verifica las migraciones y que la
   bitácora rechace borrados, y compila la web.

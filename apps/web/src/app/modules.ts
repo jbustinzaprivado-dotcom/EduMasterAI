@@ -1,6 +1,7 @@
 import {
   Activity,
   Award,
+  BrainCircuit,
   BarChart3,
   BookOpen,
   Bot,
@@ -93,6 +94,12 @@ export const MODULES: ModuleDef[] = [
     features: [],
   },
   {
+    path: "/modelos", label: "Modelos de IA", icon: BrainCircuit, section: "Inteligencia", phase: 5, ready: true,
+    permission: "ml.read", docRef: "§9",
+    summary: "Versiones, métricas, model card y aprobación de publicación.",
+    features: [],
+  },
+  {
     path: "/tutor", label: "IA Tutor", icon: Bot, section: "Inteligencia", phase: 6, ready: false,
     permission: "dashboard.read", docRef: "§4.5",
     summary: "Sugerencias de recursos y actividades según brechas de competencia.",
@@ -126,17 +133,17 @@ export const MODULES: ModuleDef[] = [
   },
 ];
 
-/** Fases de §14 para la hoja de ruta. */
-export const PHASES = [
-  { n: 0, name: "Descubrimiento" },
-  { n: 1, name: "Fundaciones" },
-  { n: 2, name: "Core académico" },
-  { n: 3, name: "Dashboard y tiempo real" },
-  { n: 4, name: "Dataset y analítica" },
-  { n: 5, name: "Modelo neuronal" },
-  { n: 6, name: "IA en producto" },
-  { n: 7, name: "Endurecimiento" },
-  { n: 8, name: "Producción" },
-];
+export type PhaseStatus = "done" | "partial" | "pending";
 
-export const CURRENT_PHASE = 3; // 0-2 completas; 3 en curso
+/** Fases de §14 con su avance real (ver docs/fase-0/backlog.md). */
+export const PHASES: { n: number; name: string; status: PhaseStatus; note?: string }[] = [
+  { n: 0, name: "Descubrimiento", status: "done" },
+  { n: 1, name: "Fundaciones", status: "done" },
+  { n: 2, name: "Core académico", status: "done", note: "rutas pospuestas" },
+  { n: 3, name: "Dashboard y tiempo real", status: "partial", note: "falta mapa y notificaciones en vivo" },
+  { n: 4, name: "Dataset y analítica", status: "done", note: "dataset DEMO versionado" },
+  { n: 5, name: "Modelo neuronal", status: "done", note: "riesgo de abandono" },
+  { n: 6, name: "IA en producto", status: "partial", note: "alertas sí; recomendaciones no" },
+  { n: 7, name: "Endurecimiento", status: "pending" },
+  { n: 8, name: "Producción", status: "pending" },
+];

@@ -1,0 +1,5 @@
+# Entrenamiento del modelo de riesgo (§9.4). PyTorch CPU:
+#   pip install torch==2.15.0 --index-url https://download.pytorch.org/whl/cpu
+numpy==2.5.5
+scikit-learn==1.9.1
+pytest==9.2.0

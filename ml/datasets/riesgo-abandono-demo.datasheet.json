@@ -1,0 +1,54 @@
+{
+  "name": "riesgo-abandono-demo",
+  "version": "v1-seed2026",
+  "demo": true,
+  "description": "Dataset SINTÉTICO generado por simulación. No contiene personas reales ni permite afirmar validez educativa (§8.1).",
+  "requested_enrollments": 14000,
+  "rows": 13358,
+  "label": "target_dropout_risk = 1 si no hay eventos en los 14 días siguientes al corte y el curso no está completado.",
+  "population": "Matrículas con actividad en las 3 semanas previas al corte.",
+  "split": {
+    "method": "temporal por fecha de inicio de la cohorte",
+    "train": {
+      "rows": 7955,
+      "positives": 1006,
+      "positive_rate": 0.1265
+    },
+    "val": {
+      "rows": 2954,
+      "positives": 375,
+      "positive_rate": 0.1269
+    },
+    "test": {
+      "rows": 2449,
+      "positives": 299,
+      "positive_rate": 0.1221
+    }
+  },
+  "feature_schema_version": 1,
+  "tabular_features": [
+    "active_days_14d",
+    "sessions_14d",
+    "completion_ratio",
+    "pace_gap",
+    "assessment_mean",
+    "assessment_trend",
+    "late_submissions_30d",
+    "missed_assessments",
+    "content_engagement",
+    "days_since_last_activity",
+    "level_basico",
+    "level_intermedio",
+    "level_avanzado"
+  ],
+  "sequence": {
+    "weeks": 6,
+    "features": [
+      "active_days",
+      "sessions",
+      "completions",
+      "hours"
+    ]
+  },
+  "sha256": "8a99750c982c2325da0d9b6ad68376abd1ae6c7a84901da71ef728436faa1db1"
+}

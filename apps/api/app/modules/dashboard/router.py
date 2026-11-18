@@ -132,6 +132,10 @@ def summary(db: DB, principal: Principal = require("dashboard.read")) -> Summary
         kpi("logins_24h", "Accesos (24 h)", logins(d1, now, own=False), logins(d2, d1, own=False), "accesos",
             "audit_logs"),
     ]
+    alerts = _open_alerts(db, principal)
+    if alerts is not None:
+        kpis.insert(1, kpi("risk_alerts", "Alertas de riesgo por revisar", alerts, None, "estudiantes",
+                           "predictions (modelo publicado)"))
     if principal.is_global:
         orgs = db.scalar(select(func.count()).select_from(Organization)
                          .where(Organization.status == "active", Organization.is_platform.is_(False))) or 0
@@ -140,6 +144,21 @@ def summary(db: DB, principal: Principal = require("dashboard.read")) -> Summary
     if not principal.can("course.read.all"):
         scope = "mis cursos"  # docente: sus ofertas
     return Summary(scope=scope, generated_at=now, kpis=kpis)
+
+
+def _open_alerts(db, principal: Principal) -> int | None:
+    """Matrículas cuya última predicción es de riesgo alto y sigue pendiente de revisión. None si no hay modelo."""
+    from app.modules.ml.models import Prediction
+    from app.modules.ml.service import active_deployment
+
+    if active_deployment(db, principal.organization_id) is None:
+        return None
+    latest = {}
+    rows = db.scalars(select(Prediction).where(Prediction.offering_id.in_(_visible_offerings(principal)))
+                      .order_by(Prediction.created_at))
+    for p in rows:
+        latest[p.enrollment_id] = p
+    return sum(1 for p in latest.values() if p.risk_level == "alto" and p.review_status == "pendiente")
 
 
 @router.get("/progress-series", response_model=list[WeekPoint])

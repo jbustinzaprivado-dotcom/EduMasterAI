@@ -23,6 +23,8 @@ export interface Architecture {
   dataset: string | null;
   source: string;
   note: string;
+  metrics?: { roc_auc: number; pr_auc: number; brier: number; threshold: number } | null;
+  last_run?: { at: string; count: number; latency_ms: number } | null;
   layers: Layer[];
 }
 
@@ -129,8 +131,10 @@ export function NeuralNetwork({ arch, compact = false }: { arch: Architecture; c
   return (
     <div className="flex flex-col gap-3">
       <div className="flex flex-wrap items-center gap-2">
-        <Badge tone="violet">{arch.status_label}</Badge>
-        {running && <Badge tone="warning">SIMULACIÓN DEMO · no es un modelo en ejecución</Badge>}
+        <Badge tone={arch.status === "design" ? "violet" : "teal"}>{arch.status_label}</Badge>
+        {running && (arch.status === "design"
+          ? <Badge tone="warning">SIMULACIÓN DEMO · no es un modelo en ejecución</Badge>
+          : <Badge tone="cyan">Ilustración del recorrido de la inferencia</Badge>)}
         <div className="ml-auto flex items-center gap-2">
           {reduced ? (
             <span className="text-[11px] text-muted">Animación desactivada (movimiento reducido)</span>
@@ -215,13 +219,15 @@ export function NeuralNetwork({ arch, compact = false }: { arch: Architecture; c
 
 /** Panel de estado del modelo (§4.10): sin entrenamiento, los valores aparecen como "—". */
 export function ModelStatus({ arch }: { arch: Architecture }) {
+  const m = arch.metrics;
   const rows: [string, string][] = [
     ["Modelo", arch.model_name],
     ["Versión", arch.version ?? "—"],
     ["Dataset", arch.dataset ?? "—"],
-    ["Época / loss", "—"],
-    ["Métrica de validación", "—"],
-    ["Latencia de inferencia", "—"],
+    ["ROC-AUC / PR-AUC (prueba)", m ? `${m.roc_auc.toFixed(3)} / ${m.pr_auc.toFixed(3)}` : "—"],
+    ["Brier · umbral", m ? `${m.brier.toFixed(3)} · ${m.threshold}` : "—"],
+    ["Última inferencia", arch.last_run ? `${arch.last_run.count} matrículas` : "—"],
+    ["Latencia por matrícula", arch.last_run ? `${arch.last_run.latency_ms} ms` : "—"],
     ["Fuente", arch.source],
   ];
   return (

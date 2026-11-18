@@ -10,6 +10,9 @@ SQLAlchemy==2.1.9
 alembic==1.20.1
 psycopg[binary]==3.3.9
 
+# Inferencia del modelo con los pesos exportados (§9.7). PyTorch solo se usa al entrenar (ml/).
+numpy==2.5.5
+
 # Autenticación OAuth2 con tokens JWT (§10.1, decisión D08)
 PyJWT==2.15.1
 

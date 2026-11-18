@@ -35,15 +35,23 @@ Priorizado por valor y riesgo, en el orden obligatorio del manual (§14.1). Cada
 - ✅ Tendencia semanal y finalización de cursos.
 - ⏳ Mapa agregado, certificados y notificaciones por WebSocket/SSE.
 
-## Fase 4 · Dataset y analítica (⏳)
-Generador DEMO, pipeline de 10 pasos de §8.4, split temporal, datasheet y reportes exportables.
+## Fase 4 · Dataset y analítica ✅ (17-11-2026, salvo reportes exportables)
+- ✅ Generador DEMO de ~13 400 matrículas con comportamiento latente (desconexión progresiva y pausas).
+- ✅ Variables de §8.3 calculadas sin fuga (solo hechos anteriores al corte), con el mismo código en entrenamiento e inferencia.
+- ✅ Separación temporal por cohorte (train < 2025-07 ≤ val < 2026-01 ≤ test) y datasheet con huella SHA-256.
+- ⏳ Módulo de analítica con exportación CSV/XLSX/PDF.
 
-## Fase 5 · Modelo neuronal (⏳)
-Baselines (regresión logística, boosting) y la red de §9.1 empezando por **riesgo de abandono**;
-MLflow y model card.
+## Fase 5 · Modelo neuronal ✅ (17-11-2026)
+- ✅ Baselines: regresión logística y Gradient Boosting.
+- ✅ Red multitarea (rama densa + GRU + fusión + LayerNorm + Dropout) con early stopping; cabeza de riesgo activa.
+- ✅ Calibración, umbral en validación, evaluación por segmento y model card con limitaciones.
+- ✅ Selección con regla explícita (D26): la red ganó por poco (PR-AUC en prueba 0,625 vs. 0,610).
 
-## Fase 6 · IA en producto (⏳)
-Servicio de inferencia, recomendaciones explicadas, feedback y visualizador neuronal con estados reales.
+## Fase 6 · IA en producto (🔄)
+- ✅ Registro de versiones, aprobación por institución, inferencia con NumPy y explicación de factores.
+- ✅ Alertas de riesgo en la lista del docente con revisión humana (atendida / descartada con motivo).
+- ✅ Visualizador neuronal con estado, métricas y latencia reales.
+- ⏳ Recomendaciones de recursos e IA Tutor.
 
 ## Fase 7 · Endurecimiento (⏳)
 Seguridad (OWASP, rate limits), accesibilidad, carga, respaldo y restauración.

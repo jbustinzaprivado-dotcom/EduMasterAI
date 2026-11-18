@@ -24,6 +24,13 @@ Cuando una decisión completa algo que el documento deja abierto, se indica la s
 | D17 | Gráficos con **SVG propio** (tendencia y dona) en lugar de ECharts/Recharts: menos peso para la demo por túnel. Tienen leyenda, unidades, tooltip y estados vacío/carga/error. | §6.1 (RECOMENDADO), §5.2 |
 | D18 | Escala de notas **vigesimal (0-20)** por defecto, la usual en Perú; cuenta el mejor intento calificado y el promedio se pondera por peso. | §4.6 ("reglas configurables") |
 | D19 | **Rutas de aprendizaje (§4.2) pospuestas**: la Fase 2 entrega cursos, ofertas, matrículas, evaluaciones y eventos; las rutas se suman después porque no bloquean al modelo. | §14.1 (orden) |
+| D20 | Registro de modelos en archivos (`ml/registry`: pesos + model card) y en la base (`model_versions`). MLflow y DVC quedan pospuestos: el dataset se reconstruye exacto con la semilla y su huella SHA-256. | §6.1 (RECOMENDADO), §9.6 |
+| D21 | Los pesos del modelo (~90 KB) se versionan en Git para que la demo funcione sin PyTorch; los datasets no se suben, solo su ficha (datasheet). | §15.2 (prohíbe archivos grandes) |
+| D22 | El **estudiante no ve su puntaje de riesgo** (evita etiquetarlo). Lo ven el docente de la oferta, la administración y la auditoría; el analista solo agregados. | §3, §9.8 |
+| D23 | La publicación de un modelo se aprueba **por institución** (`model_deployments`) y la hace su administrador. El ML Engineer registra y ejecuta, pero no aprueba. | §3, §9.6 pasos 17-19 |
+| D24 | La API predice con **NumPy** usando los pesos exportados (sin PyTorch en el servidor). Una prueba verifica que da lo mismo que PyTorch. | §9.4 "inferencia en servicio separado" |
+| D25 | Probabilidades **calibradas** con Platt en validación. El umbral de alerta se elige en validación: mejor F1 con recall ≥ 0,6. | §9.4, §9.5 |
+| D26 | Regla de publicación: la red se publica solo si supera al baseline logístico en PR-AUC de validación (≥ 0,005) sin empeorar el Brier; si no, se publica el baseline. | §9.1 "Importante" |
 
 ## Decisiones aún abiertas (§17.1)
 
@@ -31,4 +38,4 @@ Cuando una decisión completa algo que el documento deja abierto, se indica la s
 |---|---|
 | Procesos oficiales vs. analíticos | Notas y certificados son oficiales; toda salida de IA es analítica. |
 | Tipos de evaluación y rúbricas | Los 5 tipos de §4.6; rúbrica de 4 niveles. |
-| Umbral de recomendación y revisión humana | Alertas de riesgo ≥ umbral calibrado, siempre revisadas por el docente. |
+| Umbral de recomendación y revisión humana | Resuelto en D25: alerta "alta" si la probabilidad calibrada supera el umbral; el docente la marca atendida o la descarta con motivo. |

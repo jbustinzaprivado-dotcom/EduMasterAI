@@ -45,51 +45,141 @@ function ActivityRow({ offering, activity, done }: { offering: Offering; activit
   );
 }
 
+interface Risk {
+  prediction_id: string;
+  enrollment_id: string;
+  score: number;
+  risk_level: "alto" | "medio" | "bajo";
+  factors: { feature: string; label: string; impact: number }[];
+  model_version: string;
+  created_at: string;
+  review_status: "pendiente" | "atendida" | "descartada";
+  review_note: string | null;
+}
+
+const RISK_TONE = { alto: "danger", medio: "warning", bajo: "teal" } as const;
+
+function RiskCell({ risk, canReview, offeringId }: { risk: Risk | undefined; canReview: boolean; offeringId: string }) {
+  const qc = useQueryClient();
+  const [open, setOpen] = useState(false);
+  const review = useMutation({
+    mutationFn: ({ status, note }: { status: string; note?: string }) =>
+      api<Risk>(`/ml/predictions/${risk!.prediction_id}/review`, { method: "PATCH", body: JSON.stringify({ status, note }) }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["risk", offeringId] });
+      qc.invalidateQueries({ queryKey: ["dashboard"] });
+      setOpen(false);
+    },
+  });
+  if (!risk) return <span className="text-xs text-muted">—</span>;
+  return (
+    <div className="relative">
+      <button onClick={() => setOpen((v) => !v)} className="flex items-center gap-1.5" aria-expanded={open}
+        aria-label={`Riesgo ${risk.risk_level}, ${Math.round(risk.score * 100)} %. Ver detalle`}>
+        <Badge tone={RISK_TONE[risk.risk_level]}>{risk.risk_level} · {Math.round(risk.score * 100)} %</Badge>
+        {risk.review_status !== "pendiente" && <Badge tone="muted">{risk.review_status}</Badge>}
+      </button>
+      {open && (
+        <div className="panel panel-solid absolute left-0 z-20 mt-2 w-72 p-3 text-xs">
+          <p className="font-semibold">Estimación del modelo v{risk.model_version}</p>
+          <p className="mt-0.5 text-muted">Probabilidad de 14 días sin actividad. Es un apoyo, no un diagnóstico (§9.8).</p>
+          {risk.factors.length > 0 ? (
+            <ul className="mt-2 list-inside list-disc space-y-0.5">
+              {risk.factors.map((f) => <li key={f.feature}>{f.label} <span className="text-muted">(+{Math.round(f.impact * 100)} pts)</span></li>)}
+            </ul>
+          ) : <p className="mt-2 text-muted">Sin factores destacados.</p>}
+          {risk.review_note && <p className="mt-2 text-muted">Nota: {risk.review_note}</p>}
+          {canReview && risk.review_status === "pendiente" && risk.risk_level !== "bajo" && (
+            <div className="mt-3 flex gap-2">
+              <Button className="px-2 py-1 text-xs" loading={review.isPending}
+                onClick={() => review.mutate({ status: "atendida", note: "Contactado por el docente" })}>Marcar atendida</Button>
+              <Button variant="ghost" className="px-2 py-1 text-xs" onClick={() => {
+                const note = window.prompt("¿Por qué descartas la alerta? (sirve para evaluar el modelo)");
+                if (note?.trim()) review.mutate({ status: "descartada", note });
+              }}>Descartar</Button>
+            </div>
+          )}
+          {review.isError && <p role="alert" className="mt-2 text-danger">{review.error instanceof ApiError ? review.error.message : "Error"}</p>}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function Roster({ offering }: { offering: Offering }) {
+  const qc = useQueryClient();
   const roster = useQuery({
     queryKey: ["roster", offering.id],
     queryFn: () => api<RosterRow[]>(`/offerings/${offering.id}/enrollments`),
   });
+  const risk = useQuery({ queryKey: ["risk", offering.id], queryFn: () => api<Risk[]>(`/ml/offerings/${offering.id}/risk`) });
+  const run = useMutation({
+    mutationFn: () => api("/ml/predictions/run", { method: "POST", body: JSON.stringify({ offering_id: offering.id }) }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["risk", offering.id] });
+      qc.invalidateQueries({ queryKey: ["dashboard"] });
+      qc.invalidateQueries({ queryKey: ["ml"] });
+    },
+  });
   if (roster.isPending) return <Skeleton className="h-48" />;
   if (roster.isError) return <ErrorState error={roster.error} onRetry={() => roster.refetch()} />;
+  const byEnrollment = new Map((risk.data ?? []).map((r) => [r.enrollment_id, r]));
+  const order = { alto: 0, medio: 1, bajo: 2 };
+  const rank = (id: string) => order[byEnrollment.get(id)?.risk_level ?? "bajo"];
+  const rows = [...roster.data].sort((a, b) => rank(a.enrollment_id) - rank(b.enrollment_id) || a.student_name.localeCompare(b.student_name));
+  const lastRun = risk.data?.[0]?.created_at;
+
   return (
-    <div className="overflow-x-auto">
-      <table className="w-full min-w-[620px] text-left text-sm">
-        <thead className="text-xs text-muted">
-          <tr className="border-b border-line">
-            <th className="py-2 pr-3 font-medium">Estudiante</th><th className="py-2 pr-3 font-medium">Progreso</th>
-            <th className="py-2 pr-3 font-medium">Última actividad</th><th className="py-2 pr-3 font-medium">Nota oficial (0-20)</th>
-            <th className="py-2 font-medium">Estado</th>
-          </tr>
-        </thead>
-        <tbody className="divide-y divide-line">
-          {roster.data.map((r) => {
-            const inactiveDays = r.last_activity_at ? (Date.now() - new Date(r.last_activity_at).getTime()) / 86_400_000 : 99;
-            return (
-              <tr key={r.enrollment_id}>
-                <td className="py-2.5 pr-3"><p className="font-medium">{r.student_name}</p><p className="text-xs text-muted">{r.student_email}</p></td>
-                <td className="py-2.5 pr-3">
-                  <div className="flex items-center gap-2"><ProgressBar value={r.progress} className="w-24" />
-                    <span className="text-xs text-muted">{Math.round(r.progress * 100)} %</span></div>
-                </td>
-                <td className={cx("py-2.5 pr-3 text-xs", inactiveDays > 10 ? "text-warning" : "text-muted")}
-                  title={formatDateTime(r.last_activity_at)}>
-                  {r.last_activity_at ? relativeTime(r.last_activity_at) : "Sin actividad"}
-                </td>
-                <td className="py-2.5 pr-3">
-                  {r.grade !== null ? (
-                    <span className={cx("font-semibold", r.grade < 11 ? "text-danger" : "text-text")}>{r.grade.toFixed(1)}</span>
-                  ) : <span className="text-muted">—</span>}
-                  {r.graded_weight > 0 && <span className="ml-1 text-[11px] text-muted">({Math.round(r.graded_weight * 100)} % evaluado)</span>}
-                </td>
-                <td className="py-2.5"><Badge tone={r.status === "completed" ? "teal" : r.status === "dropped" ? "danger" : "cyan"}>{STATUS_LABEL[r.status]}</Badge></td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
-      <p className="mt-3 text-[11px] text-muted">
-        En ámbar: más de 10 días sin actividad. Es un dato observado, no una predicción; la alerta de riesgo con IA llega en la Fase 5.
+    <div>
+      <div className="mb-3 flex flex-wrap items-center gap-2 text-xs text-muted">
+        <span>{lastRun ? `Riesgo calculado ${relativeTime(lastRun)}` : "Aún no hay predicciones de riesgo para esta oferta."}</span>
+        {offering.can_manage && (
+          <Button variant="ghost" className="ml-auto px-2.5 py-1 text-xs" loading={run.isPending} onClick={() => run.mutate()}>
+            Actualizar riesgo con IA
+          </Button>
+        )}
+      </div>
+      {run.isError && <p role="alert" className="mb-2 text-sm text-danger">{run.error instanceof ApiError ? run.error.message : "Error"}</p>}
+      <div className="overflow-x-auto pb-40">
+        <table className="w-full min-w-[760px] text-left text-sm">
+          <thead className="text-xs text-muted">
+            <tr className="border-b border-line">
+              <th className="py-2 pr-3 font-medium">Estudiante</th><th className="py-2 pr-3 font-medium">Riesgo (IA)</th>
+              <th className="py-2 pr-3 font-medium">Progreso</th><th className="py-2 pr-3 font-medium">Última actividad</th>
+              <th className="py-2 pr-3 font-medium">Nota oficial (0-20)</th><th className="py-2 font-medium">Estado</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-line">
+            {rows.map((r) => {
+              const inactiveDays = r.last_activity_at ? (Date.now() - new Date(r.last_activity_at).getTime()) / 86_400_000 : 99;
+              return (
+                <tr key={r.enrollment_id}>
+                  <td className="py-2.5 pr-3"><p className="font-medium">{r.student_name}</p><p className="text-xs text-muted">{r.student_email}</p></td>
+                  <td className="py-2.5 pr-3"><RiskCell risk={byEnrollment.get(r.enrollment_id)} canReview={offering.can_manage} offeringId={offering.id} /></td>
+                  <td className="py-2.5 pr-3">
+                    <div className="flex items-center gap-2"><ProgressBar value={r.progress} className="w-24" />
+                      <span className="text-xs text-muted">{Math.round(r.progress * 100)} %</span></div>
+                  </td>
+                  <td className={cx("py-2.5 pr-3 text-xs", inactiveDays > 10 ? "text-warning" : "text-muted")}
+                    title={formatDateTime(r.last_activity_at)}>
+                    {r.last_activity_at ? relativeTime(r.last_activity_at) : "Sin actividad"}
+                  </td>
+                  <td className="py-2.5 pr-3">
+                    {r.grade !== null ? (
+                      <span className={cx("font-semibold", r.grade < 11 ? "text-danger" : "text-text")}>{r.grade.toFixed(1)}</span>
+                    ) : <span className="text-muted">—</span>}
+                    {r.graded_weight > 0 && <span className="ml-1 text-[11px] text-muted">({Math.round(r.graded_weight * 100)} % evaluado)</span>}
+                  </td>
+                  <td className="py-2.5"><Badge tone={r.status === "completed" ? "teal" : r.status === "dropped" ? "danger" : "cyan"}>{STATUS_LABEL[r.status]}</Badge></td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+      <p className="text-[11px] text-muted">
+        Riesgo (IA): probabilidad estimada de pasar 14 días sin actividad, con un modelo entrenado solo con datos DEMO
+        sintéticos. Es una alerta de apoyo para el docente: no califica ni sanciona (§9.8). El estudiante no ve este puntaje.
       </p>
     </div>
   );

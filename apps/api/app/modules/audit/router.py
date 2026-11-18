@@ -33,6 +33,9 @@ ACTION_LABELS = {
     "assessment.created": "Creó una evaluación",
     "assessment.submitted": "Entregó una evaluación",
     "grade.recorded": "Registró una nota oficial",
+    "model.published": "Aprobó y publicó un modelo de IA",
+    "predictions.generated": "Generó predicciones de riesgo",
+    "prediction.reviewed": "Revisó una alerta de riesgo",
 }
 
 

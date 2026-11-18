@@ -18,6 +18,10 @@ PERMISSIONS: dict[str, str] = {
     "course.manage": "Crear cursos y ofertas, publicar y matricular",
     "assessment.manage": "Crear evaluaciones y registrar notas oficiales (docente: solo sus ofertas)",
     "learning": "Participar en los cursos donde está matriculado",
+    # Fases 5-6 · IA
+    "ml.read": "Consultar modelos, métricas y model cards",
+    "ml.manage": "Registrar modelos y ejecutar predicciones",
+    "ml.approve": "Aprobar la publicación de un modelo en la institución",
 }
 
 # (nombre visible, descripción, permisos)
@@ -26,19 +30,20 @@ ROLES: dict[str, tuple[str, str, list[str]]] = {
         "Superadministrador",
         "Gobierno global de la plataforma.",
         ["platform.global", "org.read", "org.manage", "user.read", "user.manage", "role.read",
-         "audit.read", "dashboard.read", "course.read.all", "course.manage", "assessment.manage"],
+         "audit.read", "dashboard.read", "course.read.all", "course.manage", "assessment.manage",
+         "ml.read", "ml.manage", "ml.approve"],
     ),
     "admin": (
         "Administrador institucional",
         "Operación de una institución.",
         ["org.read", "user.read", "user.manage", "role.read", "audit.read", "dashboard.read",
-         "course.read.all", "course.manage", "assessment.manage"],
+         "course.read.all", "course.manage", "assessment.manage", "ml.read", "ml.approve"],
     ),
     "coordinador": (
         "Director / coordinador",
         "Seguimiento académico.",
         ["org.read", "user.read", "role.read", "audit.read.own", "dashboard.read",
-         "course.read.all", "course.manage", "assessment.manage"],
+         "course.read.all", "course.manage", "assessment.manage", "ml.read"],
     ),
     "docente": (
         "Docente / instructor",
@@ -53,17 +58,17 @@ ROLES: dict[str, tuple[str, str, list[str]]] = {
     "analista": (
         "Analista de datos",
         "Analítica y dataset.",
-        ["org.read", "audit.read.own", "dashboard.read", "course.read.all"],
+        ["org.read", "audit.read.own", "dashboard.read", "course.read.all", "ml.read"],
     ),
     "ml_engineer": (
         "Científico de datos / ML Engineer",
         "Ciclo de vida del modelo.",
-        ["org.read", "audit.read.own", "dashboard.read"],
+        ["org.read", "audit.read.own", "dashboard.read", "ml.read", "ml.manage"],
     ),
     "auditor": (
         "Auditor",
         "Control y cumplimiento, solo lectura.",
-        ["org.read", "user.read", "role.read", "audit.read", "dashboard.read", "course.read.all"],
+        ["org.read", "user.read", "role.read", "audit.read", "dashboard.read", "course.read.all", "ml.read"],
     ),
 }
 

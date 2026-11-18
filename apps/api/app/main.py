@@ -21,6 +21,7 @@ from app.modules.identity.router_admin import router as admin_router
 from app.modules.identity.router_auth import router as auth_router
 from app.modules.identity.service import sync_catalog
 from app.modules.ml.router import router as ml_router
+from app.modules.ml.service import sync_registry
 from app.modules.system.router import router as system_router
 
 log = logging.getLogger("edumaster.http")
@@ -32,6 +33,7 @@ async def lifespan(_app: FastAPI):
     settings.validate_for_environment()
     with SessionLocal() as db:
         sync_catalog(db)  # roles y permisos siempre iguales a catalog.py
+        sync_registry(db)  # versiones de modelo presentes en ml/registry
     yield
 
 

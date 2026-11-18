@@ -121,7 +121,7 @@ function ModuleSearch() {
         }}
       />
       {results.length > 0 && (
-        <ul className="panel absolute top-11 right-0 left-0 z-30 p-1">
+        <ul className="panel panel-solid absolute top-11 right-0 left-0 z-30 p-1">
           {results.map((m) => (
             <li key={m.path}>
               <button
@@ -158,7 +158,7 @@ function Popover({ button, children }: { button: (toggle: () => void, open: bool
   return (
     <div className="relative" ref={ref}>
       {button(() => setOpen((v) => !v), open)}
-      {open && <div className="panel absolute top-12 right-0 z-30 w-72 p-4">{children}</div>}
+      {open && <div className="panel panel-solid absolute top-12 right-0 z-30 w-72 p-4">{children}</div>}
     </div>
   );
 }

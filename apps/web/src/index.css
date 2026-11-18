@@ -45,6 +45,10 @@
     border-radius: var(--radius-panel);
     box-shadow: 0 0 0 1px rgb(8 127 229 / 0.04), 0 8px 30px -12px rgb(8 127 229 / 0.35);
   }
+  /* Superficies flotantes (popovers): fondo opaco para que el texto de atrás no se mezcle. */
+  .panel-solid {
+    background: var(--color-surface);
+  }
   .panel-glow {
     box-shadow: 0 0 0 1px rgb(32 200 245 / 0.12), 0 0 32px -6px rgb(32 200 245 / 0.28);
   }
