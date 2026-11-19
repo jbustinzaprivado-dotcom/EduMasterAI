@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Bell, ChevronsLeft, LogOut, Menu, Search, X } from "lucide-react";
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
-import { NavLink, Outlet, useLocation, useNavigate } from "react-router";
+import { Link, NavLink, Outlet, useLocation, useNavigate } from "react-router";
 import { MODULES, type ModuleDef } from "../../app/modules";
 import { ROLE_LABELS, useAuth } from "../../lib/auth";
 import { api } from "../../lib/api";
@@ -300,6 +300,7 @@ function Topbar({ onMenu }: { onMenu: () => void }) {
           ))}
         </div>
         <p className="mt-2 text-xs text-muted">Institución: {user.organization.code}</p>
+        <Link to="/perfil" className="mt-3 block rounded-lg border border-line py-2 text-center text-sm text-muted hover:text-cyan">Mi perfil y contraseña</Link>
         <button onClick={signOut}
           className="mt-3 flex w-full items-center justify-center gap-2 rounded-lg border border-line py-2 text-sm text-muted hover:text-danger">
           <LogOut className="size-4" /> Cerrar sesión

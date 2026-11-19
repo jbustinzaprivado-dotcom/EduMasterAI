@@ -57,6 +57,7 @@ class MeOut(BaseModel):
     roles: list[str]
     permissions: list[str]
     organization: OrganizationOut
+    must_change_password: bool = False
 
 
 class TokenOut(BaseModel):

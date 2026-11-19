@@ -1,5 +1,5 @@
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Pencil, Plus, UserCheck, Users, UserX, X } from "lucide-react";
+import { KeyRound, Pencil, Plus, UserCheck, Users, UserX, X } from "lucide-react";
 import { useState, type FormEvent } from "react";
 import { ApiError, api, type Organization } from "../../lib/api";
 import { ROLE_LABELS, useAuth } from "../../lib/auth";
@@ -163,6 +163,14 @@ export function UsersPage() {
   const roles = useQuery({ queryKey: ["roles"], queryFn: () => api<Role[]>("/roles") });
   const orgs = useQuery({ queryKey: ["organizations"], queryFn: () => api<Organization[]>("/organizations") });
 
+  const [temporary, setTemporary] = useState<{ name: string; password: string } | null>(null);
+  const reset = useMutation({
+    mutationFn: (u: UserRow) => api<{ temporary_password: string }>(`/users/${u.id}/reset-password`, { method: "POST" }),
+    onSuccess: (r, u) => {
+      setTemporary({ name: u.full_name, password: r.temporary_password });
+      qc.invalidateQueries({ queryKey: ["audit"] });
+    },
+  });
   const toggleStatus = useMutation({
     mutationFn: (u: UserRow) =>
       api<UserRow>(`/users/${u.id}`, { method: "PATCH", body: JSON.stringify({ status: u.status === "active" ? "disabled" : "active" }) }),
@@ -229,6 +237,11 @@ export function UsersPage() {
                       <td className="py-2.5 text-right whitespace-nowrap">
                         <Button variant="ghost" icon={Pencil} className="mr-1 px-2 py-1 text-xs" onClick={() => setEditing(u)} aria-label={`Editar ${u.full_name}`} />
                         {u.id !== me?.id && (
+                          <Button variant="ghost" icon={KeyRound} className="mr-1 px-2 py-1 text-xs" title="Restablecer contraseña"
+                            aria-label={`Restablecer contraseña de ${u.full_name}`} loading={reset.isPending && reset.variables?.id === u.id}
+                            onClick={() => window.confirm(`¿Generar una contraseña temporal para ${u.full_name}? Se cerrarán sus sesiones.`) && reset.mutate(u)} />
+                        )}
+                        {u.id !== me?.id && (
                           <Button variant={u.status === "active" ? "danger" : "ghost"} className="px-2 py-1 text-xs"
                             icon={u.status === "active" ? UserX : UserCheck}
                             loading={toggleStatus.isPending && toggleStatus.variables?.id === u.id}
@@ -254,6 +267,17 @@ export function UsersPage() {
         )}
       </Panel>
 
+      {temporary && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" role="dialog" aria-modal="true" aria-label="Contraseña temporal">
+          <div className="panel panel-solid w-full max-w-md p-5">
+            <h2 className="font-semibold">Contraseña temporal de {temporary.name}</h2>
+            <p className="mt-2 rounded-lg bg-surface-2 px-3 py-2 text-center font-mono text-lg tracking-wider text-cyan">{temporary.password}</p>
+            <p className="mt-2 text-xs text-muted">Se muestra una sola vez. Entrégala por un canal seguro: al entrar, el sistema le pedirá elegir una nueva.</p>
+            <div className="mt-4 flex justify-end"><Button onClick={() => setTemporary(null)}>Entendido</Button></div>
+          </div>
+        </div>
+      )}
+      {reset.isError && <p role="alert" className="mt-2 text-sm text-danger">{errorText(reset.error)}</p>}
       {editing && roles.data && (
         <UserDialog user={editing === "new" ? null : editing} roles={roles.data} orgs={orgs.data ?? []} onClose={() => setEditing(null)} />
       )}

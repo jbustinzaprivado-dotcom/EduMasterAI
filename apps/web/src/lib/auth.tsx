@@ -7,6 +7,7 @@ interface AuthState {
   loading: boolean;
   signIn: (org: string, email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
+  changePassword: (current: string, next: string) => Promise<void>;
   can: (permission: string) => boolean;
 }
 
@@ -36,15 +37,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(null);
   }, [queryClient]);
 
+  const changePassword = useCallback(async (current: string, next: string) => {
+    setUser(await client.changePassword(current, next));
+  }, []);
+
   const value = useMemo<AuthState>(
     () => ({
       user,
       loading,
       signIn,
       signOut,
+      changePassword,
       can: (permission) => user?.permissions.includes(permission) ?? false,
     }),
-    [user, loading, signIn, signOut],
+    [user, loading, signIn, signOut, changePassword],
   );
 
   return <AuthContext value={value}>{children}</AuthContext>;

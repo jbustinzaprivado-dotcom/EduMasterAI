@@ -37,6 +37,7 @@ export interface Me {
   roles: string[];
   permissions: string[];
   organization: Organization;
+  must_change_password: boolean;
 }
 
 interface TokenResponse {
@@ -105,6 +106,12 @@ export async function login(organization_code: string, email: string, password: 
   const data = (await r.json()) as TokenResponse;
   accessToken = data.access_token;
   return data.user;
+}
+
+export async function changePassword(current_password: string, new_password: string): Promise<Me> {
+  const user = await api<TokenResponse>("/auth/password", { method: "POST", body: JSON.stringify({ current_password, new_password }) });
+  accessToken = user.access_token;
+  return user.user;
 }
 
 export async function logout(): Promise<void> {

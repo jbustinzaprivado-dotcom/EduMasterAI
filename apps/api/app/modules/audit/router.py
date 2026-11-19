@@ -53,6 +53,9 @@ ACTION_LABELS = {
     "skill.created": "Creó una competencia",
     "skill.course_linked": "Vinculó competencias a un curso",
     "skill.validated": "Validó el nivel de una competencia",
+    "activity.updated": "Editó el contenido de una lección",
+    "auth.password_changed": "Cambió su contraseña",
+    "auth.password_reset": "Restableció la contraseña de un usuario",
 }
 
 

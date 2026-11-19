@@ -67,6 +67,11 @@ Priorizado por valor y riesgo, en el orden obligatorio del manual (§14.1). Cada
 navegadores, comunidad, aprobación del modelo y alerta, certificado público, analítica con exportación y validación
 de habilidades (D35).
 
+## Contenido y cuentas ✅ (18-11-2026)
+- ✅ Lecciones con texto, recursos y video, versión y edición por el docente (D36).
+- ✅ Cambio de contraseña, restablecimiento con cambio obligatorio y política mínima (D37).
+- ✅ Migraciones seguras sobre datos existentes (D38).
+
 ## Fase 7 · Endurecimiento (⏳)
 Seguridad (OWASP, rate limits), accesibilidad, carga, respaldo y restauración.
 

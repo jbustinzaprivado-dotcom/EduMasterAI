@@ -135,6 +135,7 @@ def me_out(user: User) -> MeOut:
         roles=user.role_codes,
         permissions=sorted(user.permission_codes),
         organization=OrganizationOut.model_validate(user.organization),
+        must_change_password=user.must_change_password,
     )
 
 

@@ -77,6 +77,9 @@ class User(UUIDPk, Timestamps, Base):
     last_login_at: Mapped[datetime | None] = mapped_column(UTCDateTime)
     # Región declarada (opcional). Solo se muestra agregada en el mapa (§4.1, decisión D30).
     region: Mapped[str | None] = mapped_column(String(32))
+    # Tras un restablecimiento por la administración, la persona debe elegir su propia contraseña.
+    must_change_password: Mapped[bool] = mapped_column(Boolean, default=False)
+    password_changed_at: Mapped[datetime | None] = mapped_column(UTCDateTime)
 
     organization: Mapped[Organization] = relationship(lazy="joined")
     roles: Mapped[list[Role]] = relationship(secondary=user_roles, lazy="selectin")

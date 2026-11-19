@@ -62,7 +62,15 @@ para encontrar rápido qué pasó.
 - Si se cambia una ruta ya publicada, sube su versión y el cambio queda en el historial (sale de la bitácora).
 - El estudiante ve su línea de tiempo: qué etapa terminó, cuál cursa, cuáles siguen bloqueadas y si va a tiempo.
 
-## 7. Cursos, progreso y notas: el cuaderno de control
+## 7. Lecciones y contraseñas
+
+- Cada lección tiene su texto (con títulos, listas y código), enlaces a recursos y un video opcional. El docente la
+  edita y cada cambio crea una versión nueva con su nombre y fecha. El texto se muestra siempre como texto: aunque
+  alguien escriba código malicioso, no se ejecuta.
+- Cualquiera cambia su contraseña desde «Mi perfil». Si alguien la olvida, la administración genera una temporal que
+  se ve una sola vez; al entrar con ella, el sistema no deja hacer nada más hasta elegir una nueva.
+
+## 8. Cursos, progreso y notas: el cuaderno de control
 
 - **Curso** = el libro (unidades y actividades). **Oferta** = el salón que lo dicta este periodo, con su
   docente y su grupo (cohorte). **Matrícula** = el estudiante sentado en ese salón.
@@ -73,7 +81,7 @@ para encontrar rápido qué pasó.
 - Cada rol ve lo que le corresponde: el docente solo sus salones, el estudiante solo los suyos y el analista
   solo totales, sin notas con nombre (§3).
 
-## 8. La IA de riesgo de abandono: un termómetro, no un juez
+## 9. La IA de riesgo de abandono: un termómetro, no un juez
 
 1. **Datos de práctica:** un simulador crea ~13 400 matrículas ficticias con comportamientos realistas
    (quien estudia constante, quien se va desconectando, quien hace una pausa y vuelve). Todo es DEMO.
@@ -91,7 +99,7 @@ para encontrar rápido qué pasó.
 7. **Ligero en el servidor:** la API no carga PyTorch; usa los pesos exportados con NumPy y una prueba
    confirma que da el mismo resultado.
 
-## 9. Recomendaciones e IA Tutor: un GPS de estudio
+## 10. Recomendaciones e IA Tutor: un GPS de estudio
 
 - El estudiante pregunta «¿qué hago ahora?» y el tutor revisa su situación real en el curso:
   - **Siguiente actividad** obligatoria, indicando si va atrasado frente al calendario.
@@ -104,7 +112,7 @@ para encontrar rápido qué pasó.
 - El modelo de riesgo solo decide qué tan arriba va «retomar»; el estudiante nunca ve su puntaje.
 - El docente ve las sugerencias de su grupo, y la coordinación mide aceptación y utilidad (no solo clics).
 
-## 10. Notificaciones en vivo: el timbre
+## 11. Notificaciones en vivo: el timbre
 
 - Cuando pasa algo que te importa (te ponen nota, hay una evaluación nueva, se emite tu certificado, aparecen
   alertas en tu curso), la campana suma un número y sale un aviso al instante, sin recargar la página.
@@ -113,7 +121,7 @@ para encontrar rápido qué pasó.
 - Si se corta internet, al volver el navegador pide "lo que me perdí desde el último aviso".
 - Cada persona recibe solo lo suyo: no hay un canal general con datos de todos (§10.4).
 
-## 11. Certificados: el diploma con código
+## 12. Certificados: el diploma con código
 
 - Se emite solo al completar todas las actividades obligatorias, con nota final de 11 o más y al menos la mitad
   del peso ya calificado. La IA no interviene.
@@ -122,7 +130,7 @@ para encontrar rápido qué pasó.
 - Si hay un error, la administración lo **anula** con motivo; la verificación pasa a decir "ANULADO" y se puede
   emitir uno nuevo. Emisión, descarga y anulación quedan en la bitácora.
 
-## 12. Mapa y comunidad
+## 13. Mapa y comunidad
 
 - **Mapa:** cada departamento es un cuadrado (cartograma) pintado según el progreso promedio de sus estudiantes.
   Si una región tiene menos de 3 personas, no se muestra ni se nombra: con tan pocos sería fácil adivinar quién es.
@@ -131,7 +139,7 @@ para encontrar rápido qué pasó.
 - **Moderación:** cualquiera reporta un mensaje que incumple las reglas; el docente lo oculta con un motivo (queda en
   la bitácora) o desestima el reporte. Nada se borra. Cada persona puede silenciar los avisos de un curso.
 
-## 13. Analítica: el tablero con letra chica a la vista
+## 14. Analítica: el tablero con letra chica a la vista
 
 - Nueve indicadores (participación, tiempo activo, entregas a tiempo, progreso, finalización, nota…) y cada uno
   muestra su **definición exacta** al pasar el cursor: así nadie interpreta el mismo número de dos formas.
@@ -139,7 +147,7 @@ para encontrar rápido qué pasó.
 - La exportación (CSV, Excel o PDF) lleva en el encabezado la fecha y los filtros, y queda en la bitácora.
 - El analista ve solo totales; los nombres de estudiantes los ven la gestión, el docente (sus cursos) y la auditoría.
 
-## 14. Dominio de habilidades: el estimado y el oficial
+## 15. Dominio de habilidades: el estimado y el oficial
 
 - Las competencias se organizan en áreas (Programación → Sintaxis de Python, Control de flujo…). Cada curso dice qué
   competencias trabaja y cada evaluación cuáles evidencia.
@@ -149,21 +157,21 @@ para encontrar rápido qué pasó.
   orienta, la validación decide (§4.9).
 - El heatmap muestra cuántos estudiantes hay en cada nivel por competencia, estimado o validado.
 
-## 15. Honestidad de los datos
+## 16. Honestidad de los datos
 
 - Las instituciones y personas son **DEMO** (ficticias) y así se rotulan.
 - Un panel sin datos reales muestra **en qué fase se construye**, nunca números inventados.
 - La red neuronal se ve como **diseño**. Su animación solo aparece al pulsar "Simular", con la etiqueta
   "SIMULACIÓN DEMO" mientras la institución no aprueba un modelo (§1, §5.4).
 
-## 16. Cómo se comprueba que funciona
+## 17. Cómo se comprueba que funciona
 
-- **75 pruebas automáticas de la API**: login, robo de sesión, permisos, aislamiento entre instituciones,
+- **80 pruebas automáticas de la API**: login, robo de sesión, permisos, aislamiento entre instituciones,
   bitácora, cursos, eventos idempotentes, entregas, notas, panel, aprobación del modelo, predicción, revisión,
-  recomendaciones, notificaciones en vivo, certificados, mapa, comunidad, rutas, analítica y habilidades.
+  recomendaciones, notificaciones en vivo, certificados, mapa, comunidad, rutas, analítica, habilidades, lecciones y contraseñas.
 - **5 pruebas de ML**: sin fuga de información, definición de la etiqueta, simulación reproducible y
   NumPy = PyTorch.
-- **15 pruebas E2E (Playwright)**: un navegador real recorre la web como lo haría una persona: inicia sesión, marca
+- **18 pruebas E2E (Playwright)**: un navegador real recorre la web como lo haría una persona: inicia sesión, marca
   actividades, pide ayuda al IA Tutor, recibe una nota en vivo mientras otro navegador califica, aprueba el modelo,
   verifica un certificado sin sesión, exporta analítica y valida una competencia. También revisa accesibilidad
   y que en celular no haya desplazamiento horizontal.

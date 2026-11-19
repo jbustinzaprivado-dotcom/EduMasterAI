@@ -13,7 +13,7 @@ from sqlalchemy.orm import Session
 from app.core.config import get_settings
 from app.core.database import SessionLocal
 from app.core.security import hash_password
-from app.demo import academic, community, paths, skills
+from app.demo import academic, community, lessons, paths, skills
 from app.modules.identity.models import Organization, User
 from app.modules.identity.service import roles_by_code, sync_catalog
 
@@ -74,6 +74,7 @@ def run(db: Session, password: str) -> tuple[int, int, int]:
     community.seed_posts(db)
     paths.run(db)
     skills.run(db)
+    lessons.run(db)
     return len(orgs), created, events
 
 

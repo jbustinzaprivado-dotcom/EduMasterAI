@@ -28,6 +28,11 @@ def run_migrations_offline() -> None:
 
 def run_migrations_online() -> None:
     with engine.connect() as connection:  # mismo motor que la API (crea la carpeta de SQLite si falta)
+        if connection.dialect.name == "sqlite":
+            # SQLite modifica tablas copiándolas ("batch"): con las FK activas, borrar la tabla vieja falla si hay
+            # datos que la referencian. Se desactivan solo durante la migración (PostgreSQL no lo necesita).
+            connection.exec_driver_sql("PRAGMA foreign_keys=OFF")
+            connection.commit()
         context.configure(connection=connection, target_metadata=target_metadata,
                           render_as_batch=connection.dialect.name == "sqlite", render_item=render_item)
         with context.begin_transaction():

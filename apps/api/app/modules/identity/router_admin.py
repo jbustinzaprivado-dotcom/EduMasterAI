@@ -7,12 +7,13 @@ Un registro de otra institución responde 404, igual que uno inexistente.
 import uuid
 
 from fastapi import APIRouter, Query
+from pydantic import BaseModel
 from sqlalchemy import func, or_, select
 from sqlalchemy.exc import IntegrityError
 
 from app.api.deps import DB, Principal, require
 from app.core.errors import AppError, forbidden, not_found
-from app.core.security import hash_password
+from app.core.security import hash_password, password_problems, temporary_password
 from app.modules.audit.service import record
 from app.modules.identity import service
 from app.modules.identity.catalog import GLOBAL_ROLES, ROLES
@@ -119,6 +120,9 @@ def create_user(body: UserCreate, db: DB, principal: Principal = require("user.m
     if db.get(Organization, org_id) is None:
         raise not_found("Institución")
     _check_assignable(principal, body.roles)
+    problems = password_problems(body.password, body.email)
+    if problems:
+        raise AppError(422, "weak_password", " ".join(problems), problems)
 
     user = User(
         organization_id=org_id,
@@ -139,6 +143,31 @@ def create_user(body: UserCreate, db: DB, principal: Principal = require("user.m
     db.commit()
     db.refresh(user)
     return service.user_out(user)
+
+
+class ResetOut(BaseModel):
+    temporary_password: str
+    message: str
+
+
+@router.post("/users/{user_id}/reset-password", response_model=ResetOut)
+def reset_password(user_id: uuid.UUID, db: DB, principal: Principal = require("user.manage")) -> ResetOut:
+    """Genera una contraseña temporal que se muestra UNA vez al administrador. La persona debe cambiarla al entrar."""
+    user = _get_visible_user(db, principal, user_id)
+    if user.id == principal.user.id:
+        raise AppError(422, "validation_error", "Para tu propia cuenta usa «Cambiar contraseña».")
+    if not principal.is_global and set(user.role_codes) & GLOBAL_ROLES:
+        raise forbidden()
+    temporary = temporary_password()
+    user.password_hash = hash_password(temporary)
+    user.must_change_password = True
+    for family in set(db.scalars(select(RefreshToken.family_id).where(RefreshToken.user_id == user.id))):
+        service.revoke_family(db, family)
+    record(db, action="auth.password_reset", resource="user", resource_id=user.id, actor_id=principal.user.id,
+           organization_id=user.organization_id, details={"email": user.email})
+    db.commit()
+    return ResetOut(temporary_password=temporary,
+                    message="Entrégala por un canal seguro. Se pedirá cambiarla en el primer inicio de sesión.")
 
 
 @router.patch("/users/{user_id}", response_model=UserOut)

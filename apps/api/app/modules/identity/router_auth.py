@@ -3,15 +3,18 @@
 from datetime import UTC, datetime
 
 from fastapi import APIRouter, Cookie, Response
+from pydantic import BaseModel, Field
+from sqlalchemy import select
 
 from app.api.deps import DB, CurrentPrincipal
 from app.core.config import get_settings
 from app.core.context import client_ip
 from app.core.errors import AppError
 from app.core.rate_limit import login_limiter
+from app.core.security import hash_password, password_problems, verify_password
 from app.modules.audit.service import record
 from app.modules.identity import service
-from app.modules.identity.models import User
+from app.modules.identity.models import RefreshToken, User
 from app.modules.identity.schemas import LoginIn, MeOut, TokenOut
 
 router = APIRouter(prefix="/auth", tags=["auth"])
@@ -76,6 +79,35 @@ def logout(response: Response, db: DB, edumaster_refresh: str | None = Cookie(de
     response.status_code = 204
     response.delete_cookie(REFRESH_COOKIE, path=_COOKIE_PATH)
     return response
+
+
+class PasswordChangeIn(BaseModel):
+    current_password: str = Field(min_length=1, max_length=200)
+    new_password: str = Field(min_length=1, max_length=200)
+
+
+@router.post("/password", response_model=TokenOut)
+def change_password(body: PasswordChangeIn, response: Response, principal: CurrentPrincipal, db: DB) -> TokenOut:
+    """Cambiar la propia contraseña (§11.1: cambios de credenciales auditados). Cierra las demás sesiones."""
+    user = principal.user
+    if not verify_password(body.current_password, user.password_hash):
+        raise AppError(422, "validation_error", "La contraseña actual no es correcta.")
+    if body.new_password == body.current_password:
+        raise AppError(422, "validation_error", "La nueva contraseña debe ser distinta de la actual.")
+    problems = password_problems(body.new_password, user.email)
+    if problems:
+        raise AppError(422, "weak_password", " ".join(problems), problems)
+    user.password_hash = hash_password(body.new_password)
+    user.must_change_password = False
+    user.password_changed_at = datetime.now(UTC)
+    for family in set(db.scalars(select(RefreshToken.family_id).where(RefreshToken.user_id == user.id))):
+        service.revoke_family(db, family)  # otros dispositivos deben volver a iniciar sesión
+    access, expires_in, raw = service.issue_session(db, user)
+    record(db, action="auth.password_changed", resource="user", resource_id=user.id, actor_id=user.id,
+           organization_id=user.organization_id)
+    db.commit()
+    _set_refresh_cookie(response, raw)
+    return TokenOut(access_token=access, expires_in=expires_in, user=service.me_out(user))
 
 
 @router.get("/me", response_model=MeOut)

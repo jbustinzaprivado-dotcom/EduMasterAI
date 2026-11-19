@@ -16,6 +16,8 @@ import { AssessmentsPage } from "../modules/courses/AssessmentsPage";
 import { CoursesPage } from "../modules/courses/CoursesPage";
 import { OfferingPage } from "../modules/courses/OfferingPage";
 import { LoginPage } from "../modules/auth/LoginPage";
+import { ForcedPasswordPage, ProfilePage } from "../modules/auth/ProfilePage";
+import { LessonPage } from "../modules/courses/LessonPage";
 import { DashboardPage } from "../modules/dashboard/DashboardPage";
 import { ModelsPage } from "../modules/ml/ModelsPage";
 import { RecommendationsPage, TutorPage } from "../modules/recommendations/RecommendationsPage";
@@ -31,7 +33,10 @@ function RequireAuth({ children }: { children: ReactNode }) {
         <Loader2 className="size-6 animate-spin" aria-label="Cargando sesión" />
       </div>
     );
-  return user ? children : <Navigate to="/login" replace />;
+  if (!user) return <Navigate to="/login" replace />;
+  // Contraseña temporal: solo se puede cambiarla (el servidor también bloquea el resto de la API).
+  if (user.must_change_password) return <ForcedPasswordPage />;
+  return children;
 }
 
 /** Oculta la ruta si falta el permiso. Es comodidad visual: la seguridad real está en la API (§3). */
@@ -75,6 +80,8 @@ export function App() {
             element={<PermissionGate permission={m.permission}>{READY[m.path] ?? <PendingModulePage module={m} />}</PermissionGate>} />
         ))}
         <Route path="/cursos/:offeringId" element={<OfferingPage />} />
+        <Route path="/cursos/:offeringId/actividad/:activityId" element={<LessonPage />} />
+        <Route path="/perfil" element={<ProfilePage />} />
         <Route path="*" element={
           <div className="pt-10 text-center text-sm text-muted">
             Página no encontrada. <Link to="/" className="text-cyan hover:underline">Volver al resumen</Link>

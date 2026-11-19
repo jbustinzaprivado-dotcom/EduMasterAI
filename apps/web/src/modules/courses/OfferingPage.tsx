@@ -33,7 +33,7 @@ function ActivityRow({ offering, activity, done }: { offering: Offering; activit
       {student ? (done ? <CheckCircle2 className="size-5 text-teal" aria-label="Completada" /> : <Circle className="size-5 text-muted/60" aria-label="Pendiente" />)
         : <Icon className="size-5 text-cyan" aria-hidden />}
       <div className="min-w-0 flex-1">
-        <p className={cx("text-sm", done && "text-muted line-through decoration-teal/50")}>{activity.title}</p>
+        <Link to={`/cursos/${offering.id}/actividad/${activity.id}`} className={cx("text-sm hover:text-cyan hover:underline", done && "text-muted line-through decoration-teal/50")}>{activity.title}</Link>
         <p className="text-xs text-muted">{KIND_LABEL[activity.kind]} · {activity.estimated_minutes} min{activity.required ? "" : " · opcional"}</p>
       </div>
       {student && !done && offering.my_enrollment?.status !== "dropped" && (

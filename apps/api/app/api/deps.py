@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from typing import Annotated
 
 import jwt
-from fastapi import Depends
+from fastapi import Depends, Request
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy.orm import Session
 
@@ -44,8 +44,12 @@ def _unauthorized(message: str = "Sesión no válida o expirada.") -> AppError:
     return AppError(401, "unauthorized", message)
 
 
+# Con contraseña temporal solo se permite cambiarla, ver el perfil o salir (el bloqueo es del servidor, no de la web).
+_ALLOWED_WITH_TEMPORARY = {"/api/v1/auth/password", "/api/v1/auth/me", "/api/v1/auth/logout"}
+
+
 def get_principal(
-    db: DB, creds: Annotated[HTTPAuthorizationCredentials | None, Depends(_bearer)]
+    request: Request, db: DB, creds: Annotated[HTTPAuthorizationCredentials | None, Depends(_bearer)]
 ) -> Principal:
     if creds is None:
         raise _unauthorized("Falta el token de acceso.")
@@ -59,6 +63,8 @@ def get_principal(
     user = db.get(User, user_id)
     if user is None or user.status != "active" or user.organization.status != "active":
         raise _unauthorized()
+    if user.must_change_password and request.url.path not in _ALLOWED_WITH_TEMPORARY:
+        raise AppError(403, "password_change_required", "Debes cambiar tu contraseña temporal antes de continuar.")
     return Principal(user=user, permissions=user.permission_codes)
 
 

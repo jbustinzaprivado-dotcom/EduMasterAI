@@ -25,6 +25,32 @@ def hash_password(password: str, iterations: int | None = None) -> str:
     return f"pbkdf2_sha256${iterations}${salt.hex()}${digest.hex()}"
 
 
+# Contraseñas demasiado comunes (lista corta; en producción se usaría una lista de filtraciones conocidas).
+_COMMON = {"1234567890", "contraseña123", "password123", "qwerty12345", "edumaster123", "administrador",
+           "contrasena123", "1234567890a", "abc1234567", "peru123456"}
+
+
+def password_problems(password: str, email: str = "") -> list[str]:
+    """Reglas mínimas (§11): largo, letras y números, no común y sin el usuario del correo."""
+    problems = []
+    if len(password) < 10:
+        problems.append("Debe tener al menos 10 caracteres.")
+    if not any(c.isalpha() for c in password) or not any(c.isdigit() for c in password):
+        problems.append("Debe combinar letras y números.")
+    if password.lower() in _COMMON:
+        problems.append("Es una contraseña demasiado común.")
+    local = email.split("@")[0].lower()
+    if len(local) >= 4 and local in password.lower():
+        problems.append("No debe contener tu usuario de correo.")
+    return problems
+
+
+def temporary_password() -> str:
+    """Contraseña temporal legible para dictarla: 3 bloques de 4 caracteres sin ambigüedades."""
+    alphabet = "abcdefghjkmnpqrstuvwxyz23456789"
+    return "-".join("".join(secrets.choice(alphabet) for _ in range(4)) for _ in range(3)) + "-" + str(secrets.randbelow(10))
+
+
 def verify_password(password: str, stored: str) -> bool:
     try:
         algo, iterations, salt_hex, digest_hex = stored.split("$")

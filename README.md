@@ -4,7 +4,8 @@ Plataforma empresarial de aprendizaje inteligente: gestión académica, analíti
 supervisión humana. Proyecto académico grupal construido según la *Especificación funcional y técnica v1.0*
 (12-11-2026), citada como **§N**.
 
-> **Estado:** Fases 0 a 6 ✅ y pruebas E2E ✅ · pendientes: ranking aprendido y Fases 7-8.
+> **Estado:** Fases 0 a 6 ✅, pruebas E2E ✅, lecciones con contenido y gestión de contraseñas ✅ ·
+> pendientes: ranking aprendido y Fases 7-8.
 > La hoja de ruta completa está en [docs/fase-0/backlog.md](docs/fase-0/backlog.md).
 
 ## Qué funciona hoy
@@ -16,6 +17,8 @@ supervisión humana. Proyecto académico grupal construido según la *Especifica
 | Multi-institución | Cada institución ve solo sus datos. Probado con pruebas automáticas de aislamiento. |
 | Bitácora | Toda acción crítica queda registrada. En PostgreSQL no se puede editar ni borrar. |
 | Cursos | Catálogo con unidades y actividades, publicación, ofertas por periodo y cohorte, matrículas. |
+| Lecciones | Contenido con formato, recursos y video; el docente lo edita y cada cambio sube la versión. |
+| Cuentas | Cambio de contraseña, restablecimiento por la administración con cambio obligatorio. |
 | Rutas de aprendizaje | Secuencias de cursos con prerrequisitos, versiones, asignación por cohorte y excepciones. |
 | Aprendizaje | El estudiante marca actividades; cada evento es idempotente y recalcula su progreso. |
 | Evaluaciones | Pesos que suman hasta 100 %, entregas con control de intentos y plazo, nota oficial del docente (0-20). |
@@ -57,6 +60,22 @@ La contraseña común está en `.env` (`EDUMASTER_DEMO_PASSWORD`). La pantalla d
 
 Datos académicos DEMO: PY-101 (casi termina), DS-201 y ML-301 (a mitad de ciclo) y un borrador WEB-110.
 La estudiante DEMO `estudiante@andino.demo` tiene un perfil "en riesgo" para mostrar alertas en vivo.
+
+## Actualizar una instalación existente (sin perder datos)
+
+Con la API detenida (cierra `iniciar.bat` o `demo.bat`):
+
+```bash
+git pull
+cd apps/api && .venv/Scripts/python -m pip install -r requirements.txt
+cd apps/api && .venv/Scripts/alembic upgrade head
+cd apps/api && .venv/Scripts/python -m app.seed
+cd apps/web && npm ci && npm run build
+```
+
+Las migraciones están preparadas para bases con datos (D38) y `app.seed` solo completa lo que falte (no duplica ni
+borra). Luego vuelve a abrir `iniciar.bat` o `demo.bat`. Subir cambios a GitHub **no afecta** a una demo que está
+corriendo: la demo sirve los archivos de tu PC, y solo cambia cuando haces los pasos anteriores y la reinicias.
 
 ## Demostración pública
 

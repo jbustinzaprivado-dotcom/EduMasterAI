@@ -72,6 +72,13 @@ class CourseActivity(UUIDPk, Base):
     kind: Mapped[str] = mapped_column(String(16), default="lectura")
     estimated_minutes: Mapped[int] = mapped_column(Integer, default=15)
     required: Mapped[bool] = mapped_column(Boolean, default=True)
+    # Contenido de la lección (§4.3): texto con formato ligero, recursos enlazados y video opcional.
+    content: Mapped[str] = mapped_column(Text, default="")
+    resources: Mapped[list] = mapped_column(JsonType, default=list)  # [{title, url}]
+    video_url: Mapped[str | None] = mapped_column(String(500))
+    content_version: Mapped[int] = mapped_column(Integer, default=1)
+    content_updated_at: Mapped[datetime | None] = mapped_column(UTCDateTime)
+    content_updated_by: Mapped[uuid.UUID | None] = mapped_column(Uuid)
 
     unit: Mapped[CourseUnit] = relationship(back_populates="activities")
 

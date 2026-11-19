@@ -14,6 +14,7 @@ from app.core.config import get_settings
 from app.core.context import client_ip, correlation_id
 from app.core.database import SessionLocal
 from app.core.logging import configure_logging
+from app.modules.academic.lessons import router as lessons_router
 from app.modules.academic.router import router as academic_router
 from app.modules.analytics.router import router as analytics_router
 from app.modules.audit.router import router as audit_router
@@ -84,7 +85,8 @@ def create_app() -> FastAPI:
     for router in (system_router, auth_router, admin_router, audit_router, dashboard_router, ml_router,
                    academic_router, recommendations_router,
                    certificates_router, notifications_router, community_router,
-                   paths_router, analytics_router, skills_router):
+                   paths_router, analytics_router, skills_router,
+                   lessons_router):
         api.include_router(router)
     app.include_router(api)
 
