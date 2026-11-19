@@ -39,6 +39,9 @@ const INVALIDATE: Record<string, string[][]> = {
   "certificate.revoked": [["certificates"]],
   "risk.alerts": [["risk"], ["dashboard"]],
   "model.published": [["ml"]],
+  "community.announcement": [["community"]],
+  "community.reply": [["community"]],
+  "community.report": [["community"]],
 };
 
 export function parseSSE(buffer: string): { events: { id?: string; event: string; data: string }[]; rest: string } {

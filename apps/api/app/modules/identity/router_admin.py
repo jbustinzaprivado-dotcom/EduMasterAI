@@ -126,6 +126,7 @@ def create_user(body: UserCreate, db: DB, principal: Principal = require("user.m
         full_name=body.full_name.strip(),
         password_hash=hash_password(body.password),
         roles=service.roles_by_code(db, body.roles),
+        region=body.region,
     )
     db.add(user)
     try:
@@ -148,6 +149,10 @@ def update_user(user_id: uuid.UUID, body: UserUpdate, db: DB, principal: Princip
     if body.full_name is not None and body.full_name.strip() != user.full_name:
         changes["full_name"] = [user.full_name, body.full_name.strip()]
         user.full_name = body.full_name.strip()
+
+    if "region" in body.model_fields_set and body.region != user.region:
+        changes["region"] = [user.region, body.region]
+        user.region = body.region
 
     if body.status is not None and body.status != user.status:
         if user.id == principal.user.id:

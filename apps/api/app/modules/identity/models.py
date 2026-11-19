@@ -75,6 +75,8 @@ class User(UUIDPk, Timestamps, Base):
     password_hash: Mapped[str] = mapped_column(String(200))
     status: Mapped[str] = mapped_column(String(16), default="active")
     last_login_at: Mapped[datetime | None] = mapped_column(UTCDateTime)
+    # Región declarada (opcional). Solo se muestra agregada en el mapa (§4.1, decisión D30).
+    region: Mapped[str | None] = mapped_column(String(32))
 
     organization: Mapped[Organization] = relationship(lazy="joined")
     roles: Mapped[list[Role]] = relationship(secondary=user_roles, lazy="selectin")

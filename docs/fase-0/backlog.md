@@ -30,13 +30,14 @@ Priorizado por valor y riesgo, en el orden obligatorio del manual (§14.1). Cada
 | F2-06 | Como docente, veo a mis estudiantes con progreso, última actividad y nota ponderada. | ✅ |
 | F2-07 | Como coordinador, creo rutas de aprendizaje. | ⏳ pospuesta (D19) |
 
-## Fase 3 · Dashboard y tiempo real (🔄)
+## Fase 3 · Dashboard y tiempo real ✅ (18-11-2026)
 - ✅ KPIs académicos con variación (activos 7 días, horas 30 días, finalización, matrículas).
 - ✅ Tendencia semanal y finalización de cursos.
 - ✅ Notificaciones en vivo por SSE con reconexión y recuperación (nota publicada, evaluación nueva, matrícula,
   curso completado, certificado, alertas de riesgo, modelo publicado).
 - ✅ Certificados: emisión automática, folio único, PDF con QR, anulación con motivo, reemisión y verificación pública.
-- ⏳ Mapa agregado por región y comunidad (§4.8).
+- ✅ Mapa de progreso por región (cartograma) con k-anonimato.
+- ✅ Comunidad por curso: anuncios, debates, respuestas, reportes, moderación auditada y silenciar.
 
 ## Fase 4 · Dataset y analítica ✅ (17-11-2026, salvo reportes exportables)
 - ✅ Generador DEMO de ~13 400 matrículas con comportamiento latente (desconexión progresiva y pausas).

@@ -13,7 +13,7 @@ from sqlalchemy.orm import Session
 from app.core.config import get_settings
 from app.core.database import SessionLocal
 from app.core.security import hash_password
-from app.demo import academic
+from app.demo import academic, community
 from app.modules.identity.models import Organization, User
 from app.modules.identity.service import roles_by_code, sync_catalog
 
@@ -69,7 +69,9 @@ def run(db: Session, password: str) -> tuple[int, int, int]:
                     password_hash=password_hash, roles=roles_by_code(db, roles)))
         created += 1
     db.commit()
+    community.seed_regions(db)  # antes de la historia: el mapa usa la región de cada estudiante
     events = academic.run(db)  # cursos, ofertas, matrículas, evaluaciones e historia DEMO
+    community.seed_posts(db)
     return len(orgs), created, events
 
 

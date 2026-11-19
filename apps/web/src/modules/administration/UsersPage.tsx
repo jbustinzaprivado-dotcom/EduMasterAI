@@ -15,8 +15,13 @@ interface UserRow {
   status: "active" | "disabled";
   roles: string[];
   last_login_at: string | null;
+  region: string | null;
   created_at: string;
 }
+
+const REGIONS = ["Amazonas", "Áncash", "Apurímac", "Arequipa", "Ayacucho", "Cajamarca", "Callao", "Cusco",
+  "Huancavelica", "Huánuco", "Ica", "Junín", "La Libertad", "Lambayeque", "Lima", "Loreto", "Madre de Dios",
+  "Moquegua", "Pasco", "Piura", "Puno", "San Martín", "Tacna", "Tumbes", "Ucayali"];
 
 interface Page<T> {
   items: T[];
@@ -50,14 +55,15 @@ function UserDialog({ user, roles, orgs, onClose }: { user: UserRow | null; role
   const [password, setPassword] = useState("");
   const [selected, setSelected] = useState<string[]>(user?.roles ?? []);
   const [orgId, setOrgId] = useState("");
+  const [region, setRegion] = useState(user?.region ?? "");
 
   const save = useMutation({
     mutationFn: () =>
       user
-        ? api<UserRow>(`/users/${user.id}`, { method: "PATCH", body: JSON.stringify({ full_name: fullName, roles: selected }) })
+        ? api<UserRow>(`/users/${user.id}`, { method: "PATCH", body: JSON.stringify({ full_name: fullName, roles: selected, region: region || null }) })
         : api<UserRow>("/users", {
             method: "POST",
-            body: JSON.stringify({ email, full_name: fullName, password, roles: selected, organization_id: orgId || undefined }),
+            body: JSON.stringify({ email, full_name: fullName, password, roles: selected, organization_id: orgId || undefined, region: region || null }),
           }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["users"] });
@@ -105,6 +111,13 @@ function UserDialog({ user, roles, orgs, onClose }: { user: UserRow | null; role
             </div>
           </>
         )}
+        <div>
+          <label className="label" htmlFor="u-region">Región (opcional · solo se usa agregada en el mapa)</label>
+          <select id="u-region" className="field" value={region} onChange={(e) => setRegion(e.target.value)}>
+            <option value="">Sin región</option>
+            {REGIONS.map((r) => <option key={r} value={r}>{r}</option>)}
+          </select>
+        </div>
         <fieldset>
           <legend className="label">Roles</legend>
           <div className="grid gap-1.5 sm:grid-cols-2">

@@ -148,5 +148,6 @@ def user_out(user: User) -> UserOut:
         status=user.status,
         roles=user.role_codes,
         last_login_at=user.last_login_at,
+        region=user.region,
         created_at=user.created_at,
     )

@@ -21,13 +21,14 @@ interface KindMetrics {
 
 const pct = (x: number | null) => (x === null ? "—" : `${Math.round(x * 100)} %`);
 
-export function useMyRecommendations(offeringId?: string, history = false) {
+export function useMyRecommendations(offeringId?: string, history = false, enabled = true) {
   const params = new URLSearchParams();
   if (offeringId) params.set("offering_id", offeringId);
   if (history) params.set("history", "true");
   return useQuery({
     queryKey: ["recommendations", offeringId ?? "all", history],
     queryFn: () => api<Recommendation[]>(`/recommendations?${params}`),
+    enabled,
   });
 }
 
@@ -66,7 +67,7 @@ export function RecommendationsPage() {
   const { can } = useAuth();
   const student = can("learning") && !can("course.read.all");
   const [history, setHistory] = useState(false);
-  const recs = useMyRecommendations(undefined, history);
+  const recs = useMyRecommendations(undefined, history, can("learning") && !can("course.read.all"));
 
   if (!student) {
     return (
@@ -100,7 +101,7 @@ export function TutorPage() {
   const offerings = useQuery({ queryKey: ["offerings"], queryFn: () => api<Offering[]>("/offerings"), enabled: student });
   const [offeringId, setOfferingId] = useState<string>("");
   const [asked, setAsked] = useState(false);
-  const recs = useMyRecommendations(offeringId || undefined);
+  const recs = useMyRecommendations(offeringId || undefined, false, student);
 
   if (!student) {
     return (

@@ -7,6 +7,16 @@ from typing import Literal
 from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator
 
 
+def _check_region(v: str | None) -> str | None:
+    from app.modules.identity.regions import REGIONS
+
+    if v in (None, ""):
+        return None
+    if v not in REGIONS:
+        raise ValueError("Región no válida.")
+    return v
+
+
 class LoginIn(BaseModel):
     organization_code: str = Field(min_length=2, max_length=32)
     email: EmailStr
@@ -65,6 +75,7 @@ class UserOut(BaseModel):
     status: str
     roles: list[str]
     last_login_at: datetime | None
+    region: str | None = None
     created_at: datetime
 
 
@@ -75,12 +86,24 @@ class UserCreate(BaseModel):
     roles: list[str] = Field(min_length=1)
     # Solo el superadministrador puede crear usuarios en otra institución.
     organization_id: uuid.UUID | None = None
+    region: str | None = None
+
+    @field_validator("region")
+    @classmethod
+    def _region(cls, v: str | None) -> str | None:
+        return _check_region(v)
 
 
 class UserUpdate(BaseModel):
     full_name: str | None = Field(default=None, min_length=3, max_length=160)
     status: Literal["active", "disabled"] | None = None
     roles: list[str] | None = Field(default=None, min_length=1)
+    region: str | None = None
+
+    @field_validator("region")
+    @classmethod
+    def _region(cls, v: str | None) -> str | None:
+        return _check_region(v)
 
 
 class RoleOut(BaseModel):

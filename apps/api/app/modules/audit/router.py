@@ -39,6 +39,9 @@ ACTION_LABELS = {
     "certificate.issued": "Emitió un certificado",
     "certificate.revoked": "Anuló un certificado",
     "certificate.downloaded": "Descargó un certificado",
+    "community.ocultado": "Ocultó contenido de la comunidad",
+    "community.restaurado": "Restauró contenido de la comunidad",
+    "community.desestimado": "Desestimó un reporte de la comunidad",
 }
 
 

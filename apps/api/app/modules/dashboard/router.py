@@ -194,3 +194,47 @@ def completion(db: DB, principal: Principal = require("dashboard.read")) -> Comp
                func.count())
     ).one()
     return Completion(completed=done, in_progress=progress, not_started=zero, total=total)
+
+
+K_ANONYMITY = 3  # regiones con menos estudiantes se ocultan (§4.1: nunca exposición individual, D30)
+
+
+class RegionPoint(BaseModel):
+    region: str
+    students: int
+    avg_progress: float
+    completion_rate: float
+
+
+class GeoOut(BaseModel):
+    k: int
+    regions: list[RegionPoint]
+    suppressed_students: int
+    without_region: int
+
+
+@router.get("/geo", response_model=GeoOut)
+def geo(db: DB, principal: Principal = require("dashboard.read")) -> GeoOut:
+    """Progreso agregado por región. Solo personal docente y de gestión; grupos < k se suprimen."""
+    if not (principal.can("course.read.all") or principal.can("assessment.manage")):
+        from app.core.errors import forbidden
+
+        raise forbidden()
+    e = _enrollments(principal).subquery()
+    rows = db.execute(
+        select(User.region, func.count(func.distinct(e.c.student_id)), func.avg(e.c.progress),
+               func.count().filter(e.c.status == "completed"), func.count())
+        .select_from(e).join(User, User.id == e.c.student_id).group_by(User.region)
+    ).all()
+    regions, suppressed, without = [], 0, 0
+    for region, students, avg, done, total in rows:
+        if region is None:
+            without += students
+            continue
+        if students < K_ANONYMITY:
+            suppressed += students  # ni siquiera se nombra la región: con 1-2 personas sería identificable
+        else:
+            regions.append(RegionPoint(region=region, students=students, avg_progress=round(avg or 0, 4),
+                                       completion_rate=round(done / total, 4) if total else 0))
+    regions.sort(key=lambda r: (-r.students, r.region))
+    return GeoOut(k=K_ANONYMITY, regions=regions, suppressed_students=suppressed, without_region=without)

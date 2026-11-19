@@ -4,7 +4,7 @@ Plataforma empresarial de aprendizaje inteligente: gestión académica, analíti
 supervisión humana. Proyecto académico grupal construido según la *Especificación funcional y técnica v1.0*
 (12-11-2026), citada como **§N**.
 
-> **Estado:** Fases 0, 1, 2, 4, 5 y 6 ✅ · Fase 3 casi completa (faltan mapa y comunidad) · pendientes: rutas,
+> **Estado:** Fases 0 a 6 ✅ · pendientes: rutas de aprendizaje, analítica exportable, dominio de habilidades,
 > ranking aprendido y Fases 7-8.
 > La hoja de ruta completa está en [docs/fase-0/backlog.md](docs/fase-0/backlog.md).
 
@@ -23,6 +23,7 @@ supervisión humana. Proyecto académico grupal construido según la *Especifica
 | Modelo de IA | Riesgo de abandono: baselines vs. red con GRU, model card, calibración y aprobación por institución. |
 | Alertas | El docente ve el riesgo de sus estudiantes con los factores que lo explican y lo marca atendido o descartado. |
 | Notificaciones en vivo | Campana con contador y avisos al instante (SSE): notas, evaluaciones, certificados, alertas. |
+| Mapa y comunidad | Progreso por región sin exponer grupos pequeños; foros por curso con anuncios, debates y moderación. |
 | Certificados | Emisión automática por criterio oficial, PDF con QR, anulación y verificación pública en `/verificar`. |
 | Recomendaciones e IA Tutor | Sugerencias explicadas (siguiente actividad, entrega próxima, reforzar, retomar) con feedback y métricas de utilidad. |
 | Administración | Usuarios, roles e instituciones. |
@@ -92,6 +93,8 @@ cd ml && .venv/Scripts/python -m pytest
    le aparece el aviso al instante.
 8. **Certificados:** como admin, **Certificados** lista los emitidos (los datos DEMO varían según la fecha de carga);
    descarga un PDF y abre su enlace de verificación: `/verificar/<código>` funciona sin sesión.
+9. **Comunidad:** el docente publica un anuncio en PY-101 y a los estudiantes les llega el aviso; un estudiante
+   reporta un mensaje y el docente lo oculta con motivo. **Resumen** muestra el mapa (Junín no aparece: tiene 2 personas).
 
 Documentación: [cómo funciona (explicación sencilla)](docs/como-funciona.md) ·
 [decisiones](docs/fase-0/decisiones.md) · [bitácora de desarrollo](docs/bitacora.md) ·

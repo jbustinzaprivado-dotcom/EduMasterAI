@@ -14,6 +14,7 @@ import {
 import { Link } from "react-router";
 import { PHASES } from "../../app/modules";
 import { Donut, TrendChart } from "../../components/charts";
+import { PeruTileMap, type RegionValue } from "../../components/charts/PeruTileMap";
 import { api } from "../../lib/api";
 import { useAuth } from "../../lib/auth";
 import { formatNumber, formatTime, relativeTime, variation } from "../../lib/format";
@@ -129,10 +130,34 @@ function CompletionPanel() {
   );
 }
 
+interface Geo { k: number; regions: RegionValue[]; suppressed_students: number; without_region: number }
+
+function MapPanel() {
+  const { can } = useAuth();
+  const staff = can("course.read.all") || can("assessment.manage");
+  const geo = useQuery({ queryKey: ["dashboard", "geo"], queryFn: () => api<Geo>("/dashboard/geo"), enabled: staff });
+  return (
+    <Panel title="Mapa de progreso" subtitle="Progreso promedio por región · solo agregados">
+      {!staff && <EmptyState icon={Map} title="Vista institucional" description="El mapa agregado está disponible para docentes y coordinación." />}
+      {staff && geo.isPending && <Skeleton className="h-52" />}
+      {staff && geo.isError && <ErrorState error={geo.error} onRetry={() => geo.refetch()} />}
+      {geo.data && (
+        <>
+          <PeruTileMap data={geo.data.regions} />
+          <p className="mt-3 text-[11px] text-muted">
+            Regiones con menos de {geo.data.k} estudiantes no se muestran ni se nombran
+            ({geo.data.suppressed_students} ocultos){geo.data.without_region ? ` · ${geo.data.without_region} sin región` : ""}.
+          </p>
+        </>
+      )}
+    </Panel>
+  );
+}
+
 function RecommendationsPanel() {
   const { can } = useAuth();
   const student = can("learning") && !can("course.read.all");
-  const recs = useMyRecommendations(undefined, false);
+  const recs = useMyRecommendations(undefined, false, student);
   return (
     <Panel title="Recomendaciones de IA" subtitle={student ? "Tus próximos pasos, con su motivo" : "Aceptación y utilidad (§4.11)"}
       actions={<Link to="/recomendaciones" className="text-xs text-cyan hover:underline">Ver todo</Link>}>
@@ -242,10 +267,7 @@ export function DashboardPage() {
       {/* Fila 2: tendencias y mapa */}
       <div className="grid gap-4 lg:grid-cols-3">
         <ProgressPanel />
-        <Panel title="Mapa de progreso" subtitle="Distribución geográfica agregada">
-          <EmptyState icon={Map} phase={3} title="Agregado por región"
-            description="Solo datos geográficos permitidos y agregados; nunca ubicaciones individuales." />
-        </Panel>
+        <MapPanel />
       </div>
 
       {/* Fila 3: finalización, habilidades, recomendaciones */}

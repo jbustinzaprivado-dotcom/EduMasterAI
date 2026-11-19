@@ -68,7 +68,7 @@ export const MODULES: ModuleDef[] = [
       "Portal público de verificación con datos mínimos", "Auditoría de emisión y anulación"],
   },
   {
-    path: "/comunidad", label: "Comunidad", icon: MessagesSquare, section: "Aprendizaje", phase: 3, ready: false,
+    path: "/comunidad", label: "Comunidad", icon: MessagesSquare, section: "Aprendizaje", phase: 3, ready: true,
     permission: "dashboard.read", docRef: "§4.8",
     summary: "Anuncios, debates y comentarios por curso con moderación.",
     features: ["Espacios por curso", "Moderación y reportes", "Preferencias de notificación"],
@@ -140,7 +140,7 @@ export const PHASES: { n: number; name: string; status: PhaseStatus; note?: stri
   { n: 0, name: "Descubrimiento", status: "done" },
   { n: 1, name: "Fundaciones", status: "done" },
   { n: 2, name: "Core académico", status: "done", note: "rutas pospuestas" },
-  { n: 3, name: "Dashboard y tiempo real", status: "partial", note: "notificaciones en vivo y certificados sí; falta mapa y comunidad" },
+  { n: 3, name: "Dashboard y tiempo real", status: "done", note: "mapa, notificaciones en vivo, certificados y comunidad" },
   { n: 4, name: "Dataset y analítica", status: "done", note: "dataset DEMO versionado" },
   { n: 5, name: "Modelo neuronal", status: "done", note: "riesgo de abandono" },
   { n: 6, name: "IA en producto", status: "done", note: "alertas, recomendaciones e IA Tutor (reglas-v1)" },

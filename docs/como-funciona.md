@@ -112,18 +112,27 @@ para encontrar rápido qué pasó.
 - Si hay un error, la administración lo **anula** con motivo; la verificación pasa a decir "ANULADO" y se puede
   emitir uno nuevo. Emisión, descarga y anulación quedan en la bitácora.
 
-## 11. Honestidad de los datos
+## 11. Mapa y comunidad
+
+- **Mapa:** cada departamento es un cuadrado (cartograma) pintado según el progreso promedio de sus estudiantes.
+  Si una región tiene menos de 3 personas, no se muestra ni se nombra: con tan pocos sería fácil adivinar quién es.
+- **Comunidad:** cada curso tiene su espacio. El docente publica anuncios (llegan como notificación), cualquiera del
+  curso abre debates y responde, y quien escribió recibe aviso de las respuestas.
+- **Moderación:** cualquiera reporta un mensaje que incumple las reglas; el docente lo oculta con un motivo (queda en
+  la bitácora) o desestima el reporte. Nada se borra. Cada persona puede silenciar los avisos de un curso.
+
+## 12. Honestidad de los datos
 
 - Las instituciones y personas son **DEMO** (ficticias) y así se rotulan.
 - Un panel sin datos reales muestra **en qué fase se construye**, nunca números inventados.
 - La red neuronal se ve como **diseño**. Su animación solo aparece al pulsar "Simular", con la etiqueta
   "SIMULACIÓN DEMO" mientras la institución no aprueba un modelo (§1, §5.4).
 
-## 12. Cómo se comprueba que funciona
+## 13. Cómo se comprueba que funciona
 
-- **53 pruebas automáticas de la API**: login, robo de sesión, permisos, aislamiento entre instituciones,
+- **60 pruebas automáticas de la API**: login, robo de sesión, permisos, aislamiento entre instituciones,
   bitácora, cursos, eventos idempotentes, entregas, notas, panel, aprobación del modelo, predicción, revisión,
-  recomendaciones, notificaciones en vivo y certificados.
+  recomendaciones, notificaciones en vivo, certificados, mapa y comunidad.
 - **5 pruebas de ML**: sin fuga de información, definición de la etiqueta, simulación reproducible y
   NumPy = PyTorch.
 - **GitHub Actions (CI)** repite las pruebas contra PostgreSQL real, verifica las migraciones y que la
