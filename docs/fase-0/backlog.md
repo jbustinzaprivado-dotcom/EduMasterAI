@@ -62,6 +62,11 @@ Priorizado por valor y riesgo, en el orden obligatorio del manual (§14.1). Cada
 - ✅ Métricas de aceptación y utilidad por tipo (no solo clics).
 - ⏳ Ranking aprendido (cabeza D de §9.1) cuando haya feedback suficiente.
 
+## Pruebas E2E (§13) ✅ (18-11-2026)
+15 recorridos: login y permisos, accesibilidad y móvil, avance del estudiante, IA Tutor, ruta, nota en vivo entre dos
+navegadores, comunidad, aprobación del modelo y alerta, certificado público, analítica con exportación y validación
+de habilidades (D35).
+
 ## Fase 7 · Endurecimiento (⏳)
 Seguridad (OWASP, rate limits), accesibilidad, carga, respaldo y restauración.
 

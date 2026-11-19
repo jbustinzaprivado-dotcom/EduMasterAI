@@ -23,6 +23,8 @@ class Settings(BaseSettings):
 
     # Firma de los tokens JWT. En desarrollo hay un valor por defecto; en demo es obligatorio cambiarlo.
     jwt_secret: str = "solo-desarrollo-cambiar-en-env-0123456789"
+    # Inicios de sesión por minuto y por IP (§11: rate limiting). Las pruebas E2E lo amplían: entran desde la misma IP.
+    login_rate_limit: int = 10
     # PBKDF2-SHA256: 600 000 iteraciones (OWASP). Las pruebas lo bajan para correr rápido.
     password_iterations: int = 600_000
     access_token_minutes: int = 15

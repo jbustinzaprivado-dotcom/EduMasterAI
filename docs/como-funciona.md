@@ -163,5 +163,9 @@ para encontrar rápido qué pasó.
   recomendaciones, notificaciones en vivo, certificados, mapa, comunidad, rutas, analítica y habilidades.
 - **5 pruebas de ML**: sin fuga de información, definición de la etiqueta, simulación reproducible y
   NumPy = PyTorch.
+- **15 pruebas E2E (Playwright)**: un navegador real recorre la web como lo haría una persona: inicia sesión, marca
+  actividades, pide ayuda al IA Tutor, recibe una nota en vivo mientras otro navegador califica, aprueba el modelo,
+  verifica un certificado sin sesión, exporta analítica y valida una competencia. También revisa accesibilidad
+  y que en celular no haya desplazamiento horizontal.
 - **GitHub Actions (CI)** repite las pruebas contra PostgreSQL real, verifica las migraciones y que la
   bitácora rechace borrados, y compila la web.

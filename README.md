@@ -4,7 +4,7 @@ Plataforma empresarial de aprendizaje inteligente: gestión académica, analíti
 supervisión humana. Proyecto académico grupal construido según la *Especificación funcional y técnica v1.0*
 (12-11-2026), citada como **§N**.
 
-> **Estado:** Fases 0 a 6 ✅ · pendientes: ranking aprendido, pruebas E2E y Fases 7-8.
+> **Estado:** Fases 0 a 6 ✅ y pruebas E2E ✅ · pendientes: ranking aprendido y Fases 7-8.
 > La hoja de ruta completa está en [docs/fase-0/backlog.md](docs/fase-0/backlog.md).
 
 ## Qué funciona hoy
@@ -80,6 +80,7 @@ cd apps/api && .venv/Scripts/python -m pytest          # pruebas de la API
 cd apps/api && .venv/Scripts/python -m uvicorn app.main:app --reload
 cd apps/web && npm run dev                              # web en http://localhost:5173 (reenvía /api)
 cd apps/web && npm run typecheck && npm test
+cd apps/web && npm run build && npm run e2e              # 15 pruebas E2E (Edge en Windows, base aislada)
 cd ml && .venv/Scripts/python -m edumaster_ml.train      # reentrena (requiere ml/requirements.txt + torch)
 cd ml && .venv/Scripts/python -m pytest
 ```

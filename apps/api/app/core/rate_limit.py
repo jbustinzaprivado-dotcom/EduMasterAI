@@ -27,5 +27,11 @@ class SlidingWindowLimiter:
             self._hits.clear()
 
 
-# 10 intentos de inicio de sesión por minuto y por dirección IP.
-login_limiter = SlidingWindowLimiter(max_hits=10, window_seconds=60)
+# Intentos de inicio de sesión por minuto y por dirección IP (10 por defecto; configurable).
+def _login_limit() -> int:
+    from app.core.config import get_settings
+
+    return get_settings().login_rate_limit
+
+
+login_limiter = SlidingWindowLimiter(max_hits=_login_limit(), window_seconds=60)
