@@ -129,6 +129,8 @@ def summary(db: DB, principal: Principal = require("dashboard.read")) -> Summary
         kpi("learning_hours_30d", "Horas de aprendizaje (30 días)", hours(d30, now), hours(d60, d30), "horas",
             "learning_events"),
         kpi("completion_rate", "Tasa de finalización", completion_rate, None, "%", "enrollments"),
+        kpi("avg_progress", "Progreso promedio", round(100 * (avg_progress or 0), 1), None, "%", "enrollments.progress"),
+        kpi("certificates", "Certificaciones emitidas", _certificates(db, principal), None, "certificados", "certificates"),
         kpi("logins_24h", "Accesos (24 h)", logins(d1, now, own=False), logins(d2, d1, own=False), "accesos",
             "audit_logs"),
     ]
@@ -159,6 +161,32 @@ def _open_alerts(db, principal: Principal) -> int | None:
     for p in rows:
         latest[p.enrollment_id] = p
     return sum(1 for p in latest.values() if p.risk_level == "alto" and p.review_status == "pendiente")
+
+
+def _certificates(db, principal: Principal) -> int:
+    from app.modules.certificates.models import Certificate
+
+    q = select(func.count()).select_from(Certificate).where(Certificate.status == "emitido",
+                                                           Certificate.offering_id.in_(_visible_offerings(principal)))
+    return db.scalar(q) or 0
+
+
+class Presence(BaseModel):
+    online: int  # personas de tu institución con el canal en vivo abierto ahora
+
+
+@router.get("/presence", response_model=Presence)
+def presence(db: DB, principal: Principal = require("dashboard.read")) -> Presence:
+    """Personas conectadas en este momento (canal SSE abierto). Solo un número: no dice quiénes (§11)."""
+    from app.modules.notifications.service import broker
+
+    ids = broker.online_user_ids()
+    if not ids:
+        return Presence(online=0)
+    q = select(func.count()).select_from(User).where(User.id.in_(ids))
+    if not principal.is_global:
+        q = q.where(User.organization_id == principal.organization_id)
+    return Presence(online=db.scalar(q) or 0)
 
 
 @router.get("/progress-series", response_model=list[WeekPoint])

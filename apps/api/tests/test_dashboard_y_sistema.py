@@ -16,6 +16,8 @@ def test_resumen_institucional_con_fuente_y_fecha(client):
     assert kpis["students"]["value"] == 13 and kpis["courses"]["value"] == 3
     assert kpis["enrollments"]["value"] == 27 and kpis["learning_hours_30d"]["value"] > 0
     assert 0 <= kpis["completion_rate"]["value"] <= 100
+    assert kpis["certificates"]["value"] >= 1 and 0 < kpis["avg_progress"]["value"] <= 100
+    assert client.get("/api/v1/dashboard/presence", headers=admin).json() == {"online": 0}
     assert kpis["logins_24h"]["value"] == 1 and kpis["logins_24h"]["previous"] == 0
     assert all(k["source"] and k["updated_at"] for k in data["kpis"])
     assert "organizations" not in kpis

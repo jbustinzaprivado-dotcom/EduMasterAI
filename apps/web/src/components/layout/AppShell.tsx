@@ -77,6 +77,39 @@ function Sidebar({ collapsed, onNavigate }: { collapsed: boolean; onNavigate?: (
   );
 }
 
+/** Widgets de la referencia con datos reales: ROC-AUC del modelo publicado y personas conectadas ahora. */
+function SideWidgets() {
+  const arch = useQuery({ queryKey: ["ml", "architecture"], queryFn: () => api<{ status: string; metrics?: { roc_auc: number } | null }>("/ml/architecture") });
+  const online = useQuery({ queryKey: ["presence"], queryFn: () => api<{ online: number }>("/dashboard/presence"), refetchInterval: 30_000 });
+  const auc = arch.data?.metrics?.roc_auc;
+  return (
+    <div className="mx-3 mt-2 flex flex-col gap-2">
+      <div className="panel p-3" title="ROC-AUC en el conjunto de prueba del modelo publicado en tu institución">
+        <p className="text-[11px] text-muted">Precisión del modelo (ROC-AUC)</p>
+        <p className="text-xl font-semibold text-cyan">{auc ? `${(auc * 100).toFixed(1)} %` : "—"}</p>
+        <p className="text-[10px] text-muted">{auc ? "riesgo de abandono · datos DEMO" : "sin modelo publicado"}</p>
+      </div>
+      <div className="panel flex items-center gap-2 p-3 text-xs">
+        <span className="size-2 rounded-full bg-teal shadow-[0_0_8px_var(--color-teal)]" />
+        <span><b>{online.data?.online ?? "—"}</b> en línea ahora</span>
+      </div>
+    </div>
+  );
+}
+
+function GlobalScore() {
+  const summary = useQuery({ queryKey: ["dashboard", "summary"],
+    queryFn: () => api<{ kpis: { key: string; value: number }[] }>("/dashboard/summary"), refetchInterval: 60_000 });
+  const k = summary.data?.kpis.find((x) => x.key === "avg_progress" || x.key === "my_progress");
+  if (!k) return null;
+  return (
+    <div className="panel hidden items-center gap-2 px-3 py-1.5 xl:flex" title="Progreso promedio de las matrículas vigentes">
+      <span className="text-[11px] leading-tight text-muted">Progreso<br />global</span>
+      <span className="text-lg font-semibold text-cyan">{k.value.toFixed(1)} %</span>
+    </div>
+  );
+}
+
 /** Estado de conexión real: consulta /health/ready cada 30 s (§5.4: no simular "en vivo"). */
 function ConnectionStatus() {
   const health = useQuery({
@@ -281,6 +314,7 @@ function Topbar({ onMenu }: { onMenu: () => void }) {
         <p className="truncate text-sm font-semibold">{current?.label ?? "EduMaster.ai"}</p>
         <p className="truncate text-[11px] text-muted">{user.organization.name}</p>
       </div>
+      <GlobalScore />
       <ConnectionStatus />
       <ModuleSearch />
       <NotificationCenter />
@@ -321,6 +355,7 @@ export function AppShell() {
         collapsed ? "w-[72px]" : "w-64")}>
         <div className="mb-3 px-3"><Logo compact={collapsed} /></div>
         <Sidebar collapsed={collapsed} />
+        {!collapsed && <SideWidgets />}
         <button onClick={() => setCollapsed((v) => !v)}
           className="mx-3 mt-2 flex items-center justify-center gap-2 rounded-lg py-2 text-xs text-muted hover:text-text"
           aria-label={collapsed ? "Expandir menú" : "Contraer menú"}>

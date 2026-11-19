@@ -21,7 +21,7 @@ import { useAuth } from "../../lib/auth";
 import { formatNumber, formatTime, relativeTime, variation } from "../../lib/format";
 import { Badge, EmptyState, ErrorState, Panel, Skeleton, cx } from "../../components/ui";
 import { ACTION_TONE, useActivity } from "../audit/activity";
-import { ModelStatus, NeuralNetwork, useArchitecture } from "../neural-visualizer/NeuralNetwork";
+import { NeuralNetwork, useArchitecture } from "../neural-visualizer/NeuralNetwork";
 import { RecommendationCard } from "../recommendations/RecommendationCard";
 import { MetricsTable, useMyRecommendations } from "../recommendations/RecommendationsPage";
 
@@ -73,13 +73,13 @@ function KpiGrid() {
   });
   if (summary.isPending)
     return (
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 xl:grid-cols-2">
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         {[0, 1, 2, 3].map((i) => <Skeleton key={i} className="h-24" />)}
       </div>
     );
   if (summary.isError) return <ErrorState error={summary.error} onRetry={() => summary.refetch()} />;
   return (
-    <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 xl:grid-cols-2">
+    <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
       {summary.data.kpis.map((k) => <KpiCard key={k.key} kpi={k} />)}
       <div className="col-span-full rounded-xl border border-dashed border-line p-3 text-[11px] text-muted">
         Calculado desde eventos y matrículas reales de la base (datos de instituciones DEMO).
@@ -96,7 +96,7 @@ function ProgressPanel() {
   const series = useQuery({ queryKey: ["dashboard", "series"], queryFn: () => api<WeekPoint[]>("/dashboard/progress-series?weeks=8") });
   const fmt = new Intl.DateTimeFormat("es-PE", { day: "2-digit", month: "short" });
   return (
-    <Panel className="lg:col-span-2" title="Progreso de aprendizaje" subtitle="Últimas 8 semanas · desde learning_events">
+    <Panel title="Progreso de aprendizaje" subtitle="Últimas 8 semanas · desde learning_events">
       {series.isPending && <Skeleton className="h-52" />}
       {series.isError && <ErrorState error={series.error} onRetry={() => series.refetch()} />}
       {series.data && (series.data.every((p) => p.active_students === 0) ? (
@@ -200,21 +200,31 @@ function RecommendationsPanel() {
   );
 }
 
+const HEADLINE = {
+  staff: ["students", "courses", "learning_hours_30d", "certificates"],
+  student: ["my_courses", "my_progress", "my_hours_7d", "my_logins_24h"],
+};
+
+function HeadlineKpis() {
+  const summary = useQuery({ queryKey: ["dashboard", "summary"], queryFn: () => api<Summary>("/dashboard/summary"), refetchInterval: 60_000 });
+  if (!summary.data) return <Skeleton className="h-20" />;
+  const keys = summary.data.scope === "personal" ? HEADLINE.student : HEADLINE.staff;
+  const kpis = keys.map((k) => summary.data.kpis.find((x) => x.key === k)).filter((k): k is Kpi => !!k);
+  return <div className="grid grid-cols-2 gap-3 md:grid-cols-4">{kpis.map((k) => <KpiCard key={k.key} kpi={k} />)}</div>;
+}
+
 function NeuralPanel() {
   const arch = useArchitecture();
   return (
-    <Panel glow className="xl:col-span-2" title="Arquitectura de aprendizaje inteligente"
+    <Panel glow title="Arquitectura de aprendizaje inteligente"
       subtitle="Red multitarea de §9.1: entrada → embeddings → GRU → fusión → 4 salidas"
       actions={<Link to="/red-neuronal" className="text-xs text-cyan hover:underline">Ver detalle</Link>}>
       {arch.isPending && <Skeleton className="h-64" />}
       {arch.isError && <ErrorState error={arch.error} onRetry={() => arch.refetch()} />}
       {arch.data && (
-        <div className="grid gap-4 2xl:grid-cols-[1fr_220px]">
-          <NeuralNetwork arch={arch.data} compact />
-          <div className="rounded-xl border border-line bg-bg/40 p-3">
-            <p className="mb-2 text-xs font-semibold">Estado del modelo</p>
-            <ModelStatus arch={arch.data} />
-          </div>
+        <div className="flex flex-col gap-4">
+          <NeuralNetwork arch={arch.data} compact labeled />
+          <HeadlineKpis />
         </div>
       )}
     </Panel>
@@ -225,7 +235,7 @@ function ActivityPanel() {
   const activity = useActivity("", 8);
   const items = activity.data?.pages.flatMap((p) => p.items) ?? [];
   return (
-    <Panel className="lg:col-span-2" title="Actividad reciente" subtitle="Bitácora de auditoría filtrada por tus permisos"
+    <Panel title="Actividad reciente" subtitle="Bitácora de auditoría filtrada por tus permisos"
       actions={<Link to="/actividad" className="text-xs text-cyan hover:underline">Ver todo</Link>}>
       {activity.isPending && <Skeleton className="h-40" />}
       {activity.isError && <ErrorState error={activity.error} onRetry={() => activity.refetch()} />}
@@ -281,32 +291,25 @@ export function DashboardPage() {
         <Badge tone="warning">Datos de instituciones DEMO</Badge>
       </div>
 
-      {/* Fila 1: arquitectura neuronal + KPIs (§5.2) */}
-      <div className="grid gap-4 xl:grid-cols-3">
+      {/* Composición de la referencia: red + indicadores | progreso; mapa · finalización · habilidades;
+          recomendaciones · actividad · hoja de ruta; indicadores detallados al final. */}
+      <div className="grid gap-4 xl:grid-cols-2">
         <NeuralPanel />
-        <Panel title="Indicadores" subtitle="Valor, variación, fuente y hora de cálculo">
-          <KpiGrid />
-        </Panel>
-      </div>
-
-      {/* Fila 2: tendencias y mapa */}
-      <div className="grid gap-4 lg:grid-cols-3">
         <ProgressPanel />
-        <MapPanel />
       </div>
-
-      {/* Fila 3: finalización, habilidades, recomendaciones */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <MapPanel />
         <CompletionPanel />
         <SkillsPanel />
-        <RecommendationsPanel />
       </div>
-
-      {/* Fila 4: actividad + hoja de ruta */}
-      <div className="grid gap-4 lg:grid-cols-3">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <RecommendationsPanel />
         <ActivityPanel />
         <RoadmapPanel />
       </div>
+      <Panel title="Indicadores detallados" subtitle="Valor, variación, fuente y hora de cálculo de cada KPI">
+        <KpiGrid />
+      </Panel>
     </div>
   );
 }

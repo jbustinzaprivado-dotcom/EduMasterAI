@@ -45,7 +45,7 @@ export function HeatmapTable({ data, mode }: { data: Heatmap; mode: "estimated" 
               <td className="pr-2 text-xs"><span className="font-medium">{r.name}</span> <span className="text-muted">{r.code}</span></td>
               {r[mode].map((n, i) => (
                 <td key={i} className="h-9 rounded-md text-center text-xs font-semibold"
-                  style={{ background: n ? `rgb(${mode === "validated" ? "0 191 166" : "32 200 245"} / ${0.15 + 0.75 * (n / max)})` : "rgb(13 43 82 / 0.5)",
+                  style={{ background: n ? `rgb(${mode === "validated" ? "0 191 166" : "139 77 255"} / ${0.15 + 0.75 * (n / max)})` : "rgb(13 43 82 / 0.5)",
                     color: n / max > 0.5 ? "#06152b" : "#eaf2ff" }}
                   title={`${r.name} · ${data.levels[i]}: ${n} estudiante(s)`}>{n || ""}</td>
               ))}

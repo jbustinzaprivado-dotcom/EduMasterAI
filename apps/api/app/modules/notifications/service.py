@@ -42,6 +42,10 @@ class Broker:
             if not self._subs[user_id]:
                 del self._subs[user_id]
 
+    def online_user_ids(self) -> set[uuid.UUID]:
+        with self._lock:
+            return set(self._subs)
+
     def connections(self, user_id: uuid.UUID | None = None) -> int:
         with self._lock:
             return len(self._subs.get(user_id, ())) if user_id else sum(len(s) for s in self._subs.values())

@@ -43,6 +43,7 @@ Cuando una decisión completa algo que el documento deja abierto, se indica la s
 | D36 | Contenido de lecciones como **texto con formato ligero** (títulos, listas, negrita, código), recursos y video por **enlace http(s)**. Nunca se interpreta HTML (prueba anti-XSS). Cada edición sube la versión y queda auditada. La subida de archivos se pospone hasta tener almacenamiento y antivirus (§11). | §4.3, §11 |
 | D37 | Contraseñas: política mínima (10+ caracteres, letras y números, no común, sin el usuario del correo); cambio propio que cierra las demás sesiones; restablecimiento por la administración con contraseña temporal que se muestra una vez y **obliga a cambiarla** (bloqueo en el servidor). Sin correo saliente, no hay «olvidé mi contraseña» por email. | §11, §11.1 |
 | D38 | Migraciones seguras para actualizar un despliegue con datos: columnas nuevas obligatorias llevan valor por defecto en el servidor y, en SQLite, las FK se desactivan solo durante la migración. Probado sobre una copia de la base real. | §16.3 |
+| D39 | Se recibió la imagen de referencia (está en el manual, pág. 3; antes solo se había leído el texto). El dashboard se acercó a ella: red con etiquetas de entrada y salida, 4 indicadores bajo la red, progreso a su lado, widgets de precisión del modelo y personas en línea, progreso global arriba y mapa de calor violeta. Se mantienen datos reales: sin ingresos (no hay facturación, §4.1), mapa del Perú y cifras calculadas, no las de la imagen. Actualiza D10. | §5, manual §1.1 |
 
 ## Decisiones aún abiertas (§17.1)
 

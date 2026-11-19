@@ -65,7 +65,12 @@ function prefersReducedMotion() {
  *   rotulada como tal, con pausa, reinicio, velocidad y respeto a prefers-reduced-motion.
  * - Los pulsos recorren conexiones reales del grafo, de izquierda a derecha (propagación hacia delante).
  */
-export function NeuralNetwork({ arch, compact = false }: { arch: Architecture; compact?: boolean }) {
+export const INPUT_LABELS = ["Días activos", "Sesiones", "Avance", "Ritmo", "Notas", "Tendencia", "Entregas tardías", "Inactividad"];
+export const OUTPUT_LABELS = ["Finalización", "Dominio", "Riesgo de abandono", "Recomendaciones"];
+
+export function NeuralNetwork({ arch, compact = false, labeled = false }: { arch: Architecture; compact?: boolean; labeled?: boolean }) {
+  const padL = labeled ? 112 : PAD_X;
+  const padR = labeled ? 120 : PAD_X;
   const [selected, setSelected] = useState<string | null>(null);
   const [running, setRunning] = useState(false);
   const [speed, setSpeed] = useState(1);
@@ -76,7 +81,7 @@ export function NeuralNetwork({ arch, compact = false }: { arch: Architecture; c
   const nodes = useMemo(() => {
     const cols = arch.layers.length;
     return arch.layers.map((layer, i) => {
-      const x = PAD_X + (i * (W - 2 * PAD_X)) / Math.max(cols - 1, 1);
+      const x = padL + (i * (W - padL - padR)) / Math.max(cols - 1, 1);
       const n = layer.display_nodes;
       const span = Math.min(H - 2 * PAD_Y, n * 34);
       return Array.from({ length: n }, (_, j) => {
@@ -84,7 +89,7 @@ export function NeuralNetwork({ arch, compact = false }: { arch: Architecture; c
         return [x, y] as [number, number];
       });
     });
-  }, [arch]);
+  }, [arch, padL, padR]);
 
   useEffect(() => {
     if (!running) return;
@@ -170,6 +175,14 @@ export function NeuralNetwork({ arch, compact = false }: { arch: Architecture; c
             )),
           ),
         )}
+        {/* Etiquetas: variables de entrada (izquierda) y salidas del modelo (derecha) */}
+        {labeled && nodes[0]!.map(([x, y], j) => (
+          <text key={`in-${j}`} x={x - 12} y={y + 3.5} textAnchor="end" fontSize={10.5} fill="#9fb4d4">{INPUT_LABELS[j]}</text>
+        ))}
+        {labeled && nodes[nodes.length - 1]!.map(([x, y], j) => (
+          <text key={`out-${j}`} x={x + 12} y={y + 3.5} fontSize={10.5}
+            fill={j === 2 && arch.status !== "design" ? "#00bfa6" : "#9fb4d4"}>{OUTPUT_LABELS[j]}</text>
+        ))}
         {/* Pulsos de la simulación */}
         {pulses.current.map((p, k) => (
           <circle key={k} cx={p.from[0] + (p.to[0] - p.from[0]) * p.t} cy={p.from[1] + (p.to[1] - p.from[1]) * p.t}
