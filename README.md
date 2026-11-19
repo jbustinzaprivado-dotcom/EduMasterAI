@@ -4,8 +4,7 @@ Plataforma empresarial de aprendizaje inteligente: gestión académica, analíti
 supervisión humana. Proyecto académico grupal construido según la *Especificación funcional y técnica v1.0*
 (12-11-2026), citada como **§N**.
 
-> **Estado:** Fases 0 a 6 ✅ · pendientes: analítica exportable, dominio de habilidades, ranking aprendido y
-> Fases 7-8.
+> **Estado:** Fases 0 a 6 ✅ · pendientes: dominio de habilidades, ranking aprendido, pruebas E2E y Fases 7-8.
 > La hoja de ruta completa está en [docs/fase-0/backlog.md](docs/fase-0/backlog.md).
 
 ## Qué funciona hoy
@@ -24,6 +23,7 @@ supervisión humana. Proyecto académico grupal construido según la *Especifica
 | Modelo de IA | Riesgo de abandono: baselines vs. red con GRU, model card, calibración y aprobación por institución. |
 | Alertas | El docente ve el riesgo de sus estudiantes con los factores que lo explican y lo marca atendido o descartado. |
 | Notificaciones en vivo | Campana con contador y avisos al instante (SSE): notas, evaluaciones, certificados, alertas. |
+| Analítica | 9 indicadores definidos, filtros, desglose por oferta/estudiante y exportación CSV/XLSX/PDF auditada. |
 | Mapa y comunidad | Progreso por región sin exponer grupos pequeños; foros por curso con anuncios, debates y moderación. |
 | Certificados | Emisión automática por criterio oficial, PDF con QR, anulación y verificación pública en `/verificar`. |
 | Recomendaciones e IA Tutor | Sugerencias explicadas (siguiente actividad, entrega próxima, reforzar, retomar) con feedback y métricas de utilidad. |
@@ -98,6 +98,8 @@ cd ml && .venv/Scripts/python -m pytest
    reporta un mensaje y el docente lo oculta con motivo. **Resumen** muestra el mapa (Junín no aparece: tiene 2 personas).
 10. **Rutas:** `coordinacion@andino.demo` abre «Analista de datos junior» (PY-101 → DS-201 → ML-301) y ve el avance de
     la cohorte; Valeria ve su línea de tiempo con las etapas bloqueadas hasta completar PY-101.
+11. **Analítica:** el admin filtra por oferta o docente, pasa el cursor sobre un indicador para leer su definición y
+    exporta a Excel; la exportación aparece en **Actividad y auditoría**. El analista solo ve agregados.
 
 Documentación: [cómo funciona (explicación sencilla)](docs/como-funciona.md) ·
 [decisiones](docs/fase-0/decisiones.md) · [bitácora de desarrollo](docs/bitacora.md) ·

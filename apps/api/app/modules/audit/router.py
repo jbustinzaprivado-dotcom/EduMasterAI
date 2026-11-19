@@ -49,6 +49,7 @@ ACTION_LABELS = {
     "path.assigned": "Asignó una ruta de aprendizaje",
     "path.exception": "Autorizó una excepción en una ruta",
     "path.completed": "Completó una ruta de aprendizaje",
+    "analytics.exported": "Exportó un reporte de analítica",
 }
 
 

@@ -6,6 +6,7 @@ import { EmptyState } from "../components/ui";
 import { useAuth } from "../lib/auth";
 import { OrganizationsPage } from "../modules/administration/OrganizationsPage";
 import { UsersPage } from "../modules/administration/UsersPage";
+import { AnalyticsPage } from "../modules/analytics/AnalyticsPage";
 import { ActivityPage } from "../modules/audit/ActivityPage";
 import { CertificatesPage, VerifyPage } from "../modules/certificates/CertificatesPage";
 import { CommunityPage } from "../modules/community/CommunityPage";
@@ -54,6 +55,7 @@ const READY: Record<string, ReactNode> = {
   "/certificados": <CertificatesPage />,
   "/comunidad": <CommunityPage />,
   "/rutas": <PathsPage />,
+  "/analitica": <AnalyticsPage />,
   "/actividad": <ActivityPage />,
   "/administracion/usuarios": <UsersPage />,
   "/administracion/instituciones": <OrganizationsPage />,

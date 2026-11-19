@@ -19,6 +19,7 @@ PERMISSIONS: dict[str, str] = {
     "assessment.manage": "Crear evaluaciones y registrar notas oficiales (docente: solo sus ofertas)",
     "learning": "Participar en los cursos donde está matriculado",
     "path.manage": "Crear, publicar y asignar rutas de aprendizaje; autorizar excepciones",
+    "analytics.read": "Consultar y exportar la analítica educativa (§4.4)",
     # Fases 5-6 · IA
     "ml.read": "Consultar modelos, métricas y model cards",
     "ml.manage": "Registrar modelos y ejecutar predicciones",
@@ -32,24 +33,24 @@ ROLES: dict[str, tuple[str, str, list[str]]] = {
         "Gobierno global de la plataforma.",
         ["platform.global", "org.read", "org.manage", "user.read", "user.manage", "role.read",
          "audit.read", "dashboard.read", "course.read.all", "course.manage", "assessment.manage",
-         "ml.read", "ml.manage", "ml.approve", "path.manage"],
+         "ml.read", "ml.manage", "ml.approve", "path.manage", "analytics.read"],
     ),
     "admin": (
         "Administrador institucional",
         "Operación de una institución.",
         ["org.read", "user.read", "user.manage", "role.read", "audit.read", "dashboard.read",
-         "course.read.all", "course.manage", "assessment.manage", "ml.read", "ml.approve", "path.manage"],
+         "course.read.all", "course.manage", "assessment.manage", "ml.read", "ml.approve", "path.manage", "analytics.read"],
     ),
     "coordinador": (
         "Director / coordinador",
         "Seguimiento académico.",
         ["org.read", "user.read", "role.read", "audit.read.own", "dashboard.read",
-         "course.read.all", "course.manage", "assessment.manage", "ml.read", "path.manage"],
+         "course.read.all", "course.manage", "assessment.manage", "ml.read", "path.manage", "analytics.read"],
     ),
     "docente": (
         "Docente / instructor",
         "Gestión de enseñanza.",
-        ["org.read", "audit.read.own", "dashboard.read", "assessment.manage"],
+        ["org.read", "audit.read.own", "dashboard.read", "assessment.manage", "analytics.read"],
     ),
     "estudiante": (
         "Estudiante",
@@ -59,7 +60,7 @@ ROLES: dict[str, tuple[str, str, list[str]]] = {
     "analista": (
         "Analista de datos",
         "Analítica y dataset.",
-        ["org.read", "audit.read.own", "dashboard.read", "course.read.all", "ml.read"],
+        ["org.read", "audit.read.own", "dashboard.read", "course.read.all", "ml.read", "analytics.read"],
     ),
     "ml_engineer": (
         "Científico de datos / ML Engineer",
@@ -69,7 +70,7 @@ ROLES: dict[str, tuple[str, str, list[str]]] = {
     "auditor": (
         "Auditor",
         "Control y cumplimiento, solo lectura.",
-        ["org.read", "user.read", "role.read", "audit.read", "dashboard.read", "course.read.all", "ml.read"],
+        ["org.read", "user.read", "role.read", "audit.read", "dashboard.read", "course.read.all", "ml.read", "analytics.read"],
     ),
 }
 

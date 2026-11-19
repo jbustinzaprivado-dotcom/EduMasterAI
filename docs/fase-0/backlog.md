@@ -39,11 +39,12 @@ Priorizado por valor y riesgo, en el orden obligatorio del manual (§14.1). Cada
 - ✅ Mapa de progreso por región (cartograma) con k-anonimato.
 - ✅ Comunidad por curso: anuncios, debates, respuestas, reportes, moderación auditada y silenciar.
 
-## Fase 4 · Dataset y analítica ✅ (17-11-2026, salvo reportes exportables)
+## Fase 4 · Dataset y analítica ✅ (17-11-2026; analítica el 18-11)
 - ✅ Generador DEMO de ~13 400 matrículas con comportamiento latente (desconexión progresiva y pausas).
 - ✅ Variables de §8.3 calculadas sin fuga (solo hechos anteriores al corte), con el mismo código en entrenamiento e inferencia.
 - ✅ Separación temporal por cohorte (train < 2025-07 ≤ val < 2026-01 ≤ test) y datasheet con huella SHA-256.
-- ⏳ Módulo de analítica con exportación CSV/XLSX/PDF.
+- ✅ Módulo de analítica: 9 indicadores definidos, filtros, desglose por oferta y estudiante, tendencia semanal y
+  exportación CSV/XLSX/PDF auditada (D33).
 
 ## Fase 5 · Modelo neuronal ✅ (17-11-2026)
 - ✅ Baselines: regresión logística y Gradient Boosting.

@@ -13,8 +13,11 @@ psycopg[binary]==3.3.9
 # Inferencia del modelo con los pesos exportados (§9.7). PyTorch solo se usa al entrenar (ml/).
 numpy==2.5.5
 
-# Certificados en PDF con código QR (§4.7)
+# Certificados en PDF con código QR (§4.7) y reportes PDF (§4.4)
 reportlab==5.1.0
+
+# Exportación de analítica a Excel (§4.4)
+openpyxl==3.1.5
 
 # Autenticación OAuth2 con tokens JWT (§10.1, decisión D08)
 PyJWT==2.15.1

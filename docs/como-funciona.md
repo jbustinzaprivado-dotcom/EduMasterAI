@@ -131,18 +131,26 @@ para encontrar rápido qué pasó.
 - **Moderación:** cualquiera reporta un mensaje que incumple las reglas; el docente lo oculta con un motivo (queda en
   la bitácora) o desestima el reporte. Nada se borra. Cada persona puede silenciar los avisos de un curso.
 
-## 13. Honestidad de los datos
+## 13. Analítica: el tablero con letra chica a la vista
+
+- Nueve indicadores (participación, tiempo activo, entregas a tiempo, progreso, finalización, nota…) y cada uno
+  muestra su **definición exacta** al pasar el cursor: así nadie interpreta el mismo número de dos formas.
+- Se filtra por fechas, oferta, cohorte, docente y periodo; los mismos filtros se aplican a lo que se exporta.
+- La exportación (CSV, Excel o PDF) lleva en el encabezado la fecha y los filtros, y queda en la bitácora.
+- El analista ve solo totales; los nombres de estudiantes los ven la gestión, el docente (sus cursos) y la auditoría.
+
+## 14. Honestidad de los datos
 
 - Las instituciones y personas son **DEMO** (ficticias) y así se rotulan.
 - Un panel sin datos reales muestra **en qué fase se construye**, nunca números inventados.
 - La red neuronal se ve como **diseño**. Su animación solo aparece al pulsar "Simular", con la etiqueta
   "SIMULACIÓN DEMO" mientras la institución no aprueba un modelo (§1, §5.4).
 
-## 14. Cómo se comprueba que funciona
+## 15. Cómo se comprueba que funciona
 
-- **66 pruebas automáticas de la API**: login, robo de sesión, permisos, aislamiento entre instituciones,
+- **70 pruebas automáticas de la API**: login, robo de sesión, permisos, aislamiento entre instituciones,
   bitácora, cursos, eventos idempotentes, entregas, notas, panel, aprobación del modelo, predicción, revisión,
-  recomendaciones, notificaciones en vivo, certificados, mapa, comunidad y rutas.
+  recomendaciones, notificaciones en vivo, certificados, mapa, comunidad, rutas y analítica.
 - **5 pruebas de ML**: sin fuga de información, definición de la etiqueta, simulación reproducible y
   NumPy = PyTorch.
 - **GitHub Actions (CI)** repite las pruebas contra PostgreSQL real, verifica las migraciones y que la
