@@ -19,7 +19,7 @@ Priorizado por valor y riesgo, en el orden obligatorio del manual (§14.1). Cada
 | F1-07 | Como equipo, cada cambio pasa pruebas y migraciones en la CI. | GitHub Actions en verde. |
 | F1-08 | Como operador, cada error y log lleva un `correlation_id`. | Errores con `code`, `message`, `details`, `correlation_id`. |
 
-## Fase 2 · Core académico ✅ (17-11-2026, salvo rutas)
+## Fase 2 · Core académico ✅ (17-11-2026; rutas el 18-11)
 | ID | Historia de usuario | Estado |
 |---|---|---|
 | F2-01 | Como administrador, creo cursos con unidades y actividades y los publico. | ✅ |
@@ -28,7 +28,7 @@ Priorizado por valor y riesgo, en el orden obligatorio del manual (§14.1). Cada
 | F2-04 | Como sistema, recibo eventos idempotentes (`event_id`) y rechazo los inválidos. | ✅ |
 | F2-05 | Como docente, creo evaluaciones (pesos ≤ 100 %), recibo entregas y registro la nota oficial. | ✅ |
 | F2-06 | Como docente, veo a mis estudiantes con progreso, última actividad y nota ponderada. | ✅ |
-| F2-07 | Como coordinador, creo rutas de aprendizaje. | ⏳ pospuesta (D19) |
+| F2-07 | Como coordinador, creo, publico y asigno rutas de aprendizaje con historial y excepciones. | ✅ (D32) |
 
 ## Fase 3 · Dashboard y tiempo real ✅ (18-11-2026)
 - ✅ KPIs académicos con variación (activos 7 días, horas 30 días, finalización, matrículas).

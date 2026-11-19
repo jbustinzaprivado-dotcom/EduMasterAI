@@ -15,6 +15,7 @@ from app.modules.audit.models import AuditLog
 from app.modules.certificates.models import Certificate
 from app.modules.community.models import Comment, Mute, Post, Report
 from app.modules.notifications.models import Notification
+from app.modules.paths.models import LearningPath, PathAssignment, PathStep
 from app.modules.identity.models import Organization, Permission, RefreshToken, Role, User
 from app.modules.ml.models import ModelDeployment, ModelVersion, Prediction
 from app.modules.recommendations.models import Recommendation
@@ -22,5 +23,5 @@ from app.modules.recommendations.models import Recommendation
 __all__ = [
     "Assessment", "AssessmentAttempt", "Course", "CourseActivity", "CourseOffering", "CourseUnit", "Enrollment",
     "LearningEvent", "Base", "AuditLog", "Organization", "Permission", "RefreshToken", "Role", "User",
-    "ModelDeployment", "ModelVersion", "Prediction", "Recommendation", "Certificate", "Notification", "Comment", "Mute", "Post", "Report",
+    "ModelDeployment", "ModelVersion", "Prediction", "Recommendation", "Certificate", "Notification", "Comment", "Mute", "Post", "Report", "LearningPath", "PathAssignment", "PathStep",
 ]

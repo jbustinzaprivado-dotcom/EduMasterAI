@@ -23,7 +23,7 @@ Cuando una decisión completa algo que el documento deja abierto, se indica la s
 | D16 | La historia DEMO (6-9 semanas de eventos, entregas y notas) se genera con **perfiles sintéticos** (45 % constante, 35 % irregular, 20 % en riesgo), semilla fija y rótulo `demo`. | §8.1 |
 | D17 | Gráficos con **SVG propio** (tendencia y dona) en lugar de ECharts/Recharts: menos peso para la demo por túnel. Tienen leyenda, unidades, tooltip y estados vacío/carga/error. | §6.1 (RECOMENDADO), §5.2 |
 | D18 | Escala de notas **vigesimal (0-20)** por defecto, la usual en Perú; cuenta el mejor intento calificado y el promedio se pondera por peso. | §4.6 ("reglas configurables") |
-| D19 | **Rutas de aprendizaje (§4.2) pospuestas**: la Fase 2 entrega cursos, ofertas, matrículas, evaluaciones y eventos; las rutas se suman después porque no bloquean al modelo. | §14.1 (orden) |
+| D19 | ~~Rutas de aprendizaje (§4.2) pospuestas~~ → construidas el 18-11 (ver D32).: la Fase 2 entrega cursos, ofertas, matrículas, evaluaciones y eventos; las rutas se suman después porque no bloquean al modelo. | §14.1 (orden) |
 | D20 | Registro de modelos en archivos (`ml/registry`: pesos + model card) y en la base (`model_versions`). MLflow y DVC quedan pospuestos: el dataset se reconstruye exacto con la semilla y su huella SHA-256. | §6.1 (RECOMENDADO), §9.6 |
 | D21 | Los pesos del modelo (~90 KB) se versionan en Git para que la demo funcione sin PyTorch; los datasets no se suben, solo su ficha (datasheet). | §15.2 (prohíbe archivos grandes) |
 | D22 | El **estudiante no ve su puntaje de riesgo** (evita etiquetarlo). Lo ven el docente de la oferta, la administración y la auditoría; el analista solo agregados. | §3, §9.8 |
@@ -36,6 +36,7 @@ Cuando una decisión completa algo que el documento deja abierto, se indica la s
 | D29 | Certificado oficial: se emite **automáticamente** al completar el curso con nota final ≥ 11/20 y al menos 50 % del peso calificado; el docente o la administración pueden emitirlo después si los criterios se cumplen más tarde. Anular exige motivo; reemitir enlaza el certificado anterior. | §4.7 |
 | D30 | Mapa por región como **cartograma de mosaicos** (un cuadrado por departamento, sin archivos geográficos pesados). La región es un dato opcional del usuario y solo se muestra agregada: grupos de menos de 3 estudiantes no se muestran ni se nombran (k-anonimato). Solo lo ven docentes y gestión. | §4.1, §11 |
 | D31 | Comunidad por oferta: participan los matriculados, su docente y la coordinación/administración; la auditoría lee y el analista no (contenido nominal). Anuncios solo del docente o la gestión. Moderar = ocultar con motivo (auditado), nunca borrar. Cada persona puede silenciar un curso. | §3, §4.8 |
+| D32 | Rutas de aprendizaje: etapas en orden, cada una exige la anterior (prerrequisito secuencial) y su criterio de logro es completar el curso, con nota mínima opcional. Las competencias se guardan como etiquetas hasta que exista el catálogo jerárquico de §4.9. Editar una ruta publicada sube su versión; el historial sale de la bitácora. Asignación individual o por cohorte; excepciones autorizadas con motivo. | §4.2 |
 
 ## Decisiones aún abiertas (§17.1)
 

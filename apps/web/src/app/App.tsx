@@ -9,6 +9,7 @@ import { UsersPage } from "../modules/administration/UsersPage";
 import { ActivityPage } from "../modules/audit/ActivityPage";
 import { CertificatesPage, VerifyPage } from "../modules/certificates/CertificatesPage";
 import { CommunityPage } from "../modules/community/CommunityPage";
+import { PathsPage } from "../modules/paths/PathsPage";
 import { AssessmentsPage } from "../modules/courses/AssessmentsPage";
 import { CoursesPage } from "../modules/courses/CoursesPage";
 import { OfferingPage } from "../modules/courses/OfferingPage";
@@ -52,6 +53,7 @@ const READY: Record<string, ReactNode> = {
   "/evaluaciones": <AssessmentsPage />,
   "/certificados": <CertificatesPage />,
   "/comunidad": <CommunityPage />,
+  "/rutas": <PathsPage />,
   "/actividad": <ActivityPage />,
   "/administracion/usuarios": <UsersPage />,
   "/administracion/instituciones": <OrganizationsPage />,

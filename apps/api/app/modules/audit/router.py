@@ -42,6 +42,13 @@ ACTION_LABELS = {
     "community.ocultado": "Ocultó contenido de la comunidad",
     "community.restaurado": "Restauró contenido de la comunidad",
     "community.desestimado": "Desestimó un reporte de la comunidad",
+    "path.created": "Creó una ruta de aprendizaje",
+    "path.updated": "Modificó una ruta de aprendizaje",
+    "path.published": "Publicó una ruta de aprendizaje",
+    "path.archived": "Archivó una ruta de aprendizaje",
+    "path.assigned": "Asignó una ruta de aprendizaje",
+    "path.exception": "Autorizó una excepción en una ruta",
+    "path.completed": "Completó una ruta de aprendizaje",
 }
 
 

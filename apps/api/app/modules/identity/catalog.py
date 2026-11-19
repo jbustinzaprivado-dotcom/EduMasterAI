@@ -18,6 +18,7 @@ PERMISSIONS: dict[str, str] = {
     "course.manage": "Crear cursos y ofertas, publicar y matricular",
     "assessment.manage": "Crear evaluaciones y registrar notas oficiales (docente: solo sus ofertas)",
     "learning": "Participar en los cursos donde está matriculado",
+    "path.manage": "Crear, publicar y asignar rutas de aprendizaje; autorizar excepciones",
     # Fases 5-6 · IA
     "ml.read": "Consultar modelos, métricas y model cards",
     "ml.manage": "Registrar modelos y ejecutar predicciones",
@@ -31,19 +32,19 @@ ROLES: dict[str, tuple[str, str, list[str]]] = {
         "Gobierno global de la plataforma.",
         ["platform.global", "org.read", "org.manage", "user.read", "user.manage", "role.read",
          "audit.read", "dashboard.read", "course.read.all", "course.manage", "assessment.manage",
-         "ml.read", "ml.manage", "ml.approve"],
+         "ml.read", "ml.manage", "ml.approve", "path.manage"],
     ),
     "admin": (
         "Administrador institucional",
         "Operación de una institución.",
         ["org.read", "user.read", "user.manage", "role.read", "audit.read", "dashboard.read",
-         "course.read.all", "course.manage", "assessment.manage", "ml.read", "ml.approve"],
+         "course.read.all", "course.manage", "assessment.manage", "ml.read", "ml.approve", "path.manage"],
     ),
     "coordinador": (
         "Director / coordinador",
         "Seguimiento académico.",
         ["org.read", "user.read", "role.read", "audit.read.own", "dashboard.read",
-         "course.read.all", "course.manage", "assessment.manage", "ml.read"],
+         "course.read.all", "course.manage", "assessment.manage", "ml.read", "path.manage"],
     ),
     "docente": (
         "Docente / instructor",

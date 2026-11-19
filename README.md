@@ -4,8 +4,8 @@ Plataforma empresarial de aprendizaje inteligente: gestión académica, analíti
 supervisión humana. Proyecto académico grupal construido según la *Especificación funcional y técnica v1.0*
 (12-11-2026), citada como **§N**.
 
-> **Estado:** Fases 0 a 6 ✅ · pendientes: rutas de aprendizaje, analítica exportable, dominio de habilidades,
-> ranking aprendido y Fases 7-8.
+> **Estado:** Fases 0 a 6 ✅ · pendientes: analítica exportable, dominio de habilidades, ranking aprendido y
+> Fases 7-8.
 > La hoja de ruta completa está en [docs/fase-0/backlog.md](docs/fase-0/backlog.md).
 
 ## Qué funciona hoy
@@ -17,6 +17,7 @@ supervisión humana. Proyecto académico grupal construido según la *Especifica
 | Multi-institución | Cada institución ve solo sus datos. Probado con pruebas automáticas de aislamiento. |
 | Bitácora | Toda acción crítica queda registrada. En PostgreSQL no se puede editar ni borrar. |
 | Cursos | Catálogo con unidades y actividades, publicación, ofertas por periodo y cohorte, matrículas. |
+| Rutas de aprendizaje | Secuencias de cursos con prerrequisitos, versiones, asignación por cohorte y excepciones. |
 | Aprendizaje | El estudiante marca actividades; cada evento es idempotente y recalcula su progreso. |
 | Evaluaciones | Pesos que suman hasta 100 %, entregas con control de intentos y plazo, nota oficial del docente (0-20). |
 | Panel | KPIs académicos reales con variación, tendencia semanal, finalización, alertas abiertas y actividad. |
@@ -95,6 +96,8 @@ cd ml && .venv/Scripts/python -m pytest
    descarga un PDF y abre su enlace de verificación: `/verificar/<código>` funciona sin sesión.
 9. **Comunidad:** el docente publica un anuncio en PY-101 y a los estudiantes les llega el aviso; un estudiante
    reporta un mensaje y el docente lo oculta con motivo. **Resumen** muestra el mapa (Junín no aparece: tiene 2 personas).
+10. **Rutas:** `coordinacion@andino.demo` abre «Analista de datos junior» (PY-101 → DS-201 → ML-301) y ve el avance de
+    la cohorte; Valeria ve su línea de tiempo con las etapas bloqueadas hasta completar PY-101.
 
 Documentación: [cómo funciona (explicación sencilla)](docs/como-funciona.md) ·
 [decisiones](docs/fase-0/decisiones.md) · [bitácora de desarrollo](docs/bitacora.md) ·

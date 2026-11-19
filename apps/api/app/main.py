@@ -25,6 +25,7 @@ from app.modules.identity.service import sync_catalog
 from app.modules.ml.router import router as ml_router
 from app.modules.ml.service import sync_registry
 from app.modules.notifications.router import router as notifications_router
+from app.modules.paths.router import router as paths_router
 from app.modules.recommendations.router import router as recommendations_router
 from app.modules.system.router import router as system_router
 
@@ -80,7 +81,8 @@ def create_app() -> FastAPI:
     api = APIRouter(prefix="/api/v1")
     for router in (system_router, auth_router, admin_router, audit_router, dashboard_router, ml_router,
                    academic_router, recommendations_router,
-                   certificates_router, notifications_router, community_router):
+                   certificates_router, notifications_router, community_router,
+                   paths_router):
         api.include_router(router)
     app.include_router(api)
 

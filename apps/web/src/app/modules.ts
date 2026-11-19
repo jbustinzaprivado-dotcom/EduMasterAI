@@ -40,7 +40,7 @@ export const MODULES: ModuleDef[] = [
     features: [],
   },
   {
-    path: "/rutas", label: "Rutas de aprendizaje", icon: Route, section: "Aprendizaje", phase: 2, ready: false,
+    path: "/rutas", label: "Rutas de aprendizaje", icon: Route, section: "Aprendizaje", phase: 2, ready: true,
     permission: "dashboard.read", docRef: "§4.2",
     summary: "Secuencias de cursos con objetivos, competencias y prerrequisitos.",
     features: ["Crear rutas con duración y criterios de logro", "Asignar por estudiante, grupo o cohorte",
@@ -139,7 +139,7 @@ export type PhaseStatus = "done" | "partial" | "pending";
 export const PHASES: { n: number; name: string; status: PhaseStatus; note?: string }[] = [
   { n: 0, name: "Descubrimiento", status: "done" },
   { n: 1, name: "Fundaciones", status: "done" },
-  { n: 2, name: "Core académico", status: "done", note: "rutas pospuestas" },
+  { n: 2, name: "Core académico", status: "done", note: "cursos, evaluaciones y rutas" },
   { n: 3, name: "Dashboard y tiempo real", status: "done", note: "mapa, notificaciones en vivo, certificados y comunidad" },
   { n: 4, name: "Dataset y analítica", status: "done", note: "dataset DEMO versionado" },
   { n: 5, name: "Modelo neuronal", status: "done", note: "riesgo de abandono" },
