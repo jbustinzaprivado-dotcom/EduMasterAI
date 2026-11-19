@@ -1,5 +1,6 @@
 """Genera los PDF de la documentación con capturas del sistema (docs/pdf).
 
+  0. EduMaster_AI_Como_Funciona.pdf: la explicación sencilla (docs/como-funciona.md) con capturas.
   1. EduMaster_AI_Documentacion_Sistema.pdf: presentación, despliegue y operación, módulos (con capturas),
      seguridad, pruebas de carga y acta de aceptación.
   2. EduMaster_AI_Informe_Desarrollo.pdf: resumen ejecutivo, capturas principales, bitácora, backlog,
@@ -148,14 +149,30 @@ def read(rel: str) -> str:
     return clean((DOCS / rel).read_text(encoding="utf-8"))
 
 
-def modules_with_figures() -> str:
-    text = read("modulos.md")
+# Capturas para la explicación sencilla (docs/como-funciona.md), por número de sección.
+FIGURES_SIMPLE: dict[int, list[tuple[str, str]]] = {
+    1: [("02-dashboard-admin", "Así se ve la plataforma: el panel de la administración.")],
+    2: [("01-login", "La puerta de entrada: institución, correo y contraseña.")],
+    5: [("22-auditoria", "La «caja negra»: cada acción importante queda registrada.")],
+    6: [("18-ruta-estudiante", "La malla curricular de la estudiante: etapas que se desbloquean en orden.")],
+    8: [("10-leccion", "Una lección: el estudiante la marca y su progreso avanza.")],
+    9: [("09-alerta-factores", "El termómetro: riesgo con sus motivos; el docente decide qué hacer.")],
+    10: [("17-ia-tutor", "El GPS de estudio: «¿Qué hago ahora?» con su porqué.")],
+    11: [("19-notificaciones", "El timbre: el aviso llega al instante, sin recargar.")],
+    12: [("21-verificacion-publica", "El diploma con código: cualquiera lo verifica sin cuenta.")],
+    15: [("12-habilidades-heatmap", "El estimado y el oficial: mapa de calor de competencias.")],
+}
+
+
+def with_figures(rel: str, figmap: dict[int, list[tuple[str, str]]]) -> str:
+    """El documento con las capturas al final de cada sección numerada («## N. …»)."""
+    text = read(rel)
     parts = re.split(r"(?m)^(?=## \d+\. )", text)
     out = [parts[0].split("\n", 1)[1]]  # sin el título del archivo
     for part in parts[1:]:
         n = int(re.match(r"## (\d+)\.", part).group(1))
         body = part.rstrip().removesuffix("---").rstrip()
-        figs = "".join(figure(f, c) for f, c in FIGURES.get(n, []))
+        figs = "".join(figure(f, c) for f, c in figmap.get(n, []))
         out.append(body + figs + "\n\n---\n\n")
     return "".join(out)
 
@@ -225,14 +242,15 @@ def body_of(title_anchor_md: list[tuple[str, str, str]]) -> list[tuple[str, str,
 
 
 def main() -> None:
-    missing = [f for figs in FIGURES.values() for f, _ in figs if not (SHOTS / f"{f}.jpg").exists()]
+    missing = [f for m in (FIGURES, FIGURES_SIMPLE) for figs in m.values() for f, _ in figs
+               if not (SHOTS / f"{f}.jpg").exists()]
     if missing:
         sys.exit(f"Faltan capturas en docs/capturas: {missing}. Ejecuta apps/web/scripts/capturas.mjs.")
 
     sistema = body_of([
         ("Presentación del sistema", "presentacion", readme_body()),
         ("Despliegue y operación", "despliegue", read("runbooks.md")),
-        ("Módulos: funcionamiento y decisiones", "modulos", modules_with_figures()),
+        ("Módulos: funcionamiento y decisiones", "modulos", with_figures("modulos.md", FIGURES)),
         ("Seguridad", "seguridad", read("fase-7/seguridad.md")),
         ("Pruebas de carga · escenario aula", "carga-aula", read("fase-7/carga-aula.md")),
         ("Pruebas de carga · escenario estrés", "carga-estres", read("fase-7/carga-estres.md")),
@@ -283,7 +301,12 @@ def main() -> None:
     ])
     b = build("EduMaster_AI_Informe_Desarrollo", "Informe de desarrollo", "Informe de desarrollo",
               "Fases 0 a 8 · bitácora, decisiones y resultados", "05-modelo-publicado", informe)
-    for p in (a, b):
+    sencillo = body_of([
+        ("Cómo funciona EduMaster.ai", "como-funciona", with_figures("como-funciona.md", FIGURES_SIMPLE)),
+    ])
+    c = build("EduMaster_AI_Como_Funciona", "Cómo funciona (explicación sencilla)", "Cómo funciona",
+              "Guía para exponer: cada idea con una comparación de la vida real", "17-ia-tutor", sencillo)
+    for p in (a, b, c):
         print(f"{p}  ({p.stat().st_size / 1_000_000:.1f} MB)")
 
 
