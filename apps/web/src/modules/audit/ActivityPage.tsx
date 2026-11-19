@@ -1,7 +1,7 @@
 import { CircleDot } from "lucide-react";
 import { useState } from "react";
 import { useAuth } from "../../lib/auth";
-import { formatDateTime } from "../../lib/format";
+import { actorLabel, formatDateTime } from "../../lib/format";
 import { Badge, Button, EmptyState, ErrorState, PageHeader, Panel, Skeleton } from "../../components/ui";
 import { ACTION_TONE, useActivity } from "./activity";
 
@@ -55,7 +55,7 @@ export function ActivityPage() {
                 {items.map((a) => (
                   <tr key={a.id} className="align-top">
                     <td className="py-2.5 pr-3 whitespace-nowrap text-muted">{formatDateTime(a.occurred_at)}</td>
-                    <td className="py-2.5 pr-3">{a.actor_name ?? <span className="text-muted">No identificado</span>}</td>
+                    <td className="py-2.5 pr-3">{a.actor_name ?? <span className="text-muted">{actorLabel(null, a.action)}</span>}</td>
                     <td className="py-2.5 pr-3"><Badge tone={ACTION_TONE[a.action] ?? "muted"}>{a.label}</Badge></td>
                     <td className="max-w-xs py-2.5 pr-3 font-mono text-[11px] break-words text-muted">
                       {a.details ? JSON.stringify(a.details) : "—"}

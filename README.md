@@ -132,6 +132,7 @@ cd ml && .venv/Scripts/python -m pytest
 
 Documentación: [cómo funciona (explicación sencilla)](docs/como-funciona.md) ·
 [módulos y por qué se construyeron así](docs/modulos.md) ·
+PDF: [documentación del sistema](docs/pdf/EduMaster_AI_Documentacion_Sistema.pdf) y [informe de desarrollo](docs/pdf/EduMaster_AI_Informe_Desarrollo.pdf) ·
 [decisiones](docs/fase-0/decisiones.md) · [bitácora de desarrollo](docs/bitacora.md) ·
 [runbooks](docs/runbooks.md) · [seguridad](docs/fase-7/seguridad.md) · [acta UAT](docs/fase-7/aceptacion-uat.md) ·
 API interactiva en http://localhost:8000/api/docs.

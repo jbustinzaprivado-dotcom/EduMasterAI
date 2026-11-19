@@ -2,6 +2,11 @@ const dateTime = new Intl.DateTimeFormat("es-PE", { dateStyle: "short", timeStyl
 const time = new Intl.DateTimeFormat("es-PE", { timeStyle: "short" });
 const number = new Intl.NumberFormat("es-PE");
 
+/** Quién hizo una acción de la bitácora. Sin actor: un intento de acceso fallido (persona desconocida) o una
+ *  acción automática del sistema (p. ej. certificado emitido al completar el curso). */
+export const actorLabel = (name: string | null | undefined, action: string) =>
+  name ?? (action.startsWith("auth.") ? "Persona no identificada" : "Sistema (automático)");
+
 export const formatDateTime = (iso: string | null | undefined) => (iso ? dateTime.format(new Date(iso)) : "—");
 export const formatTime = (iso: string) => time.format(new Date(iso));
 export const formatNumber = (n: number) => number.format(n);

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { relativeTime, variation } from "./format";
+import { actorLabel, relativeTime, variation } from "./format";
 
 describe("variation", () => {
   it("calcula el porcentaje frente al periodo anterior", () => {
@@ -18,5 +18,13 @@ describe("relativeTime", () => {
     expect(relativeTime("2026-11-17T11:59:30Z", now)).toBe("hace un momento");
     expect(relativeTime("2026-11-17T11:45:00Z", now)).toBe("hace 15 min");
     expect(relativeTime("2026-11-17T09:00:00Z", now)).toBe("hace 3 h");
+  });
+});
+
+describe("actorLabel", () => {
+  it("distingue acciones automáticas de intentos de acceso sin persona", () => {
+    expect(actorLabel("Martín Quispe", "auth.login")).toBe("Martín Quispe");
+    expect(actorLabel(null, "certificate.issued")).toBe("Sistema (automático)");
+    expect(actorLabel(null, "auth.login_failed")).toBe("Persona no identificada");
   });
 });

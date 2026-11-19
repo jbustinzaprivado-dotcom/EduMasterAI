@@ -18,7 +18,7 @@ import { PeruTileMap, type RegionValue } from "../../components/charts/PeruTileM
 import { HeatmapTable, LevelDots } from "../skills/SkillsPage";
 import { api } from "../../lib/api";
 import { useAuth } from "../../lib/auth";
-import { formatNumber, formatTime, relativeTime, variation } from "../../lib/format";
+import { actorLabel, formatNumber, formatTime, relativeTime, variation } from "../../lib/format";
 import { Badge, EmptyState, ErrorState, Panel, Skeleton, cx } from "../../components/ui";
 import { ACTION_TONE, useActivity } from "../audit/activity";
 import { NeuralNetwork, useArchitecture } from "../neural-visualizer/NeuralNetwork";
@@ -248,7 +248,7 @@ function ActivityPanel() {
             <span className={cx("size-2 shrink-0 rounded-full",
               ACTION_TONE[a.action] === "danger" ? "bg-danger" : ACTION_TONE[a.action] === "teal" ? "bg-teal" : "bg-cyan")} />
             <p className="min-w-0 flex-1 truncate">
-              <span className="font-medium">{a.actor_name ?? "Usuario no identificado"}</span>{" "}
+              <span className="font-medium">{actorLabel(a.actor_name, a.action)}</span>{" "}
               <span className="text-muted">· {a.label}</span>
             </p>
             <time className="shrink-0 text-xs text-muted" dateTime={a.occurred_at}>{relativeTime(a.occurred_at)}</time>
