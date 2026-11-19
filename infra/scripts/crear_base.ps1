@@ -1,4 +1,4 @@
-# Crea la base PostgreSQL local de EduMaster.ai y la conecta en el .env.
+﻿# Crea la base PostgreSQL local de EduMaster.ai y la conecta en el .env.
 # Uso: powershell -ExecutionPolicy Bypass -File infra\scripts\crear_base.ps1
 # Pide la contraseña del usuario "postgres" (administrador de PostgreSQL); no la guarda.
 # Crea el usuario "edumaster" con una contraseña aleatoria y la base "edumaster".

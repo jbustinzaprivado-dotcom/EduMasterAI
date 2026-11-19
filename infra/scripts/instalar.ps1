@@ -1,4 +1,4 @@
-# Primera instalación en un equipo del grupo (Windows). Uso: doble clic en instalar.bat
+﻿# Primera instalación en un equipo del grupo (Windows). Uso: doble clic en instalar.bat
 #   1. Entorno de Python e dependencias de la API.
 #   2. Dependencias de la web y compilación.
 #   3. Archivo .env con secretos aleatorios (si no existe).

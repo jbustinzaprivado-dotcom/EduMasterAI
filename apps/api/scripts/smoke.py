@@ -13,6 +13,7 @@ Sale con código 0 si todo está bien y 1 si algo falló (sirve para scripts y l
 from __future__ import annotations
 
 import argparse
+import ssl
 import sys
 import time
 from pathlib import Path
@@ -46,7 +47,10 @@ def main() -> int:
         results.append((name, ok, f"{detail} ({(time.perf_counter() - t) * 1000:.0f} ms)"))
         return value
 
-    with httpx.Client(base_url=args.url.rstrip("/"), timeout=15, follow_redirects=True) as c:
+    # Certificados del sistema operativo (no los de certifi): en Windows, certifi puede no validar el certificado
+    # del túnel de Cloudflare aunque el navegador sí lo haga.
+    with httpx.Client(base_url=args.url.rstrip("/"), timeout=15, follow_redirects=True,
+                      verify=ssl.create_default_context()) as c:
         def health():
             r = c.get("/api/v1/health")
             r.raise_for_status()

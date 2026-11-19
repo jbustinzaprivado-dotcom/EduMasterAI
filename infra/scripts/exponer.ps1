@@ -1,4 +1,4 @@
-# Demostración pública con Cloudflare Tunnel (decisión D03). No es producción.
+﻿# Demostración pública con Cloudflare Tunnel (decisión D03). No es producción.
 #   powershell -ExecutionPolicy Bypass -File infra\scripts\exponer.ps1
 #
 # Qué hace:
