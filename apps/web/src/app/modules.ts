@@ -82,7 +82,7 @@ export const MODULES: ModuleDef[] = [
   },
   {
     path: "/habilidades", label: "Dominio de habilidades", icon: Grid3x3, section: "Inteligencia", phase: 4,
-    ready: false, permission: "dashboard.read", docRef: "§4.9",
+    ready: true, permission: "dashboard.read", docRef: "§4.9",
     summary: "Heatmap de competencias en 5 niveles de dominio.",
     features: ["Catálogo jerárquico de competencias", "Evidencia por actividad",
       "Nivel estimado por IA separado del validado por el docente"],
@@ -141,7 +141,7 @@ export const PHASES: { n: number; name: string; status: PhaseStatus; note?: stri
   { n: 1, name: "Fundaciones", status: "done" },
   { n: 2, name: "Core académico", status: "done", note: "cursos, evaluaciones y rutas" },
   { n: 3, name: "Dashboard y tiempo real", status: "done", note: "mapa, notificaciones en vivo, certificados y comunidad" },
-  { n: 4, name: "Dataset y analítica", status: "done", note: "dataset DEMO y analítica exportable" },
+  { n: 4, name: "Dataset y analítica", status: "done", note: "dataset DEMO, analítica y dominio de habilidades" },
   { n: 5, name: "Modelo neuronal", status: "done", note: "riesgo de abandono" },
   { n: 6, name: "IA en producto", status: "done", note: "alertas, recomendaciones e IA Tutor (reglas-v1)" },
   { n: 7, name: "Endurecimiento", status: "pending" },

@@ -11,6 +11,7 @@ import { ActivityPage } from "../modules/audit/ActivityPage";
 import { CertificatesPage, VerifyPage } from "../modules/certificates/CertificatesPage";
 import { CommunityPage } from "../modules/community/CommunityPage";
 import { PathsPage } from "../modules/paths/PathsPage";
+import { SkillsPage } from "../modules/skills/SkillsPage";
 import { AssessmentsPage } from "../modules/courses/AssessmentsPage";
 import { CoursesPage } from "../modules/courses/CoursesPage";
 import { OfferingPage } from "../modules/courses/OfferingPage";
@@ -56,6 +57,7 @@ const READY: Record<string, ReactNode> = {
   "/comunidad": <CommunityPage />,
   "/rutas": <PathsPage />,
   "/analitica": <AnalyticsPage />,
+  "/habilidades": <SkillsPage />,
   "/actividad": <ActivityPage />,
   "/administracion/usuarios": <UsersPage />,
   "/administracion/instituciones": <OrganizationsPage />,

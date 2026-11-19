@@ -139,18 +139,28 @@ para encontrar rápido qué pasó.
 - La exportación (CSV, Excel o PDF) lleva en el encabezado la fecha y los filtros, y queda en la bitácora.
 - El analista ve solo totales; los nombres de estudiantes los ven la gestión, el docente (sus cursos) y la auditoría.
 
-## 14. Honestidad de los datos
+## 14. Dominio de habilidades: el estimado y el oficial
+
+- Las competencias se organizan en áreas (Programación → Sintaxis de Python, Control de flujo…). Cada curso dice qué
+  competencias trabaja y cada evaluación cuáles evidencia.
+- El sistema **estima** un nivel (principiante → experto) con las notas oficiales y el avance de cada unidad. Con poca
+  evidencia es prudente: no sube el nivel por un solo dato.
+- El **docente valida** el nivel oficial con una nota de lo que observó. Ambos se muestran por separado: la estimación
+  orienta, la validación decide (§4.9).
+- El heatmap muestra cuántos estudiantes hay en cada nivel por competencia, estimado o validado.
+
+## 15. Honestidad de los datos
 
 - Las instituciones y personas son **DEMO** (ficticias) y así se rotulan.
 - Un panel sin datos reales muestra **en qué fase se construye**, nunca números inventados.
 - La red neuronal se ve como **diseño**. Su animación solo aparece al pulsar "Simular", con la etiqueta
   "SIMULACIÓN DEMO" mientras la institución no aprueba un modelo (§1, §5.4).
 
-## 15. Cómo se comprueba que funciona
+## 16. Cómo se comprueba que funciona
 
-- **70 pruebas automáticas de la API**: login, robo de sesión, permisos, aislamiento entre instituciones,
+- **75 pruebas automáticas de la API**: login, robo de sesión, permisos, aislamiento entre instituciones,
   bitácora, cursos, eventos idempotentes, entregas, notas, panel, aprobación del modelo, predicción, revisión,
-  recomendaciones, notificaciones en vivo, certificados, mapa, comunidad, rutas y analítica.
+  recomendaciones, notificaciones en vivo, certificados, mapa, comunidad, rutas, analítica y habilidades.
 - **5 pruebas de ML**: sin fuga de información, definición de la etiqueta, simulación reproducible y
   NumPy = PyTorch.
 - **GitHub Actions (CI)** repite las pruebas contra PostgreSQL real, verifica las migraciones y que la

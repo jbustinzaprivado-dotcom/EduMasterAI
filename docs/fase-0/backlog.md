@@ -45,6 +45,7 @@ Priorizado por valor y riesgo, en el orden obligatorio del manual (§14.1). Cada
 - ✅ Separación temporal por cohorte (train < 2025-07 ≤ val < 2026-01 ≤ test) y datasheet con huella SHA-256.
 - ✅ Módulo de analítica: 9 indicadores definidos, filtros, desglose por oferta y estudiante, tendencia semanal y
   exportación CSV/XLSX/PDF auditada (D33).
+- ✅ Dominio de habilidades: catálogo jerárquico, vínculos curso/evaluación, evidencias, heatmap y validación docente (D34).
 
 ## Fase 5 · Modelo neuronal ✅ (17-11-2026)
 - ✅ Baselines: regresión logística y Gradient Boosting.

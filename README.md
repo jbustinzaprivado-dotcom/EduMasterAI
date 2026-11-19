@@ -4,7 +4,7 @@ Plataforma empresarial de aprendizaje inteligente: gestión académica, analíti
 supervisión humana. Proyecto académico grupal construido según la *Especificación funcional y técnica v1.0*
 (12-11-2026), citada como **§N**.
 
-> **Estado:** Fases 0 a 6 ✅ · pendientes: dominio de habilidades, ranking aprendido, pruebas E2E y Fases 7-8.
+> **Estado:** Fases 0 a 6 ✅ · pendientes: ranking aprendido, pruebas E2E y Fases 7-8.
 > La hoja de ruta completa está en [docs/fase-0/backlog.md](docs/fase-0/backlog.md).
 
 ## Qué funciona hoy
@@ -24,6 +24,7 @@ supervisión humana. Proyecto académico grupal construido según la *Especifica
 | Alertas | El docente ve el riesgo de sus estudiantes con los factores que lo explican y lo marca atendido o descartado. |
 | Notificaciones en vivo | Campana con contador y avisos al instante (SSE): notas, evaluaciones, certificados, alertas. |
 | Analítica | 9 indicadores definidos, filtros, desglose por oferta/estudiante y exportación CSV/XLSX/PDF auditada. |
+| Dominio de habilidades | Catálogo de competencias, heatmap por nivel y nivel estimado separado del validado por el docente. |
 | Mapa y comunidad | Progreso por región sin exponer grupos pequeños; foros por curso con anuncios, debates y moderación. |
 | Certificados | Emisión automática por criterio oficial, PDF con QR, anulación y verificación pública en `/verificar`. |
 | Recomendaciones e IA Tutor | Sugerencias explicadas (siguiente actividad, entrega próxima, reforzar, retomar) con feedback y métricas de utilidad. |
@@ -100,6 +101,8 @@ cd ml && .venv/Scripts/python -m pytest
     la cohorte; Valeria ve su línea de tiempo con las etapas bloqueadas hasta completar PY-101.
 11. **Analítica:** el admin filtra por oferta o docente, pasa el cursor sobre un indicador para leer su definición y
     exporta a Excel; la exportación aparece en **Actividad y auditoría**. El analista solo ve agregados.
+12. **Habilidades:** el docente abre el heatmap, elige PY-101 y a Valeria, revisa sus evidencias y valida «Sintaxis
+    de Python»; a ella le llega el aviso y ve el nivel oficial junto al estimado.
 
 Documentación: [cómo funciona (explicación sencilla)](docs/como-funciona.md) ·
 [decisiones](docs/fase-0/decisiones.md) · [bitácora de desarrollo](docs/bitacora.md) ·

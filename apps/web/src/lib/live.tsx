@@ -44,6 +44,7 @@ const INVALIDATE: Record<string, string[][]> = {
   "community.report": [["community"]],
   "path.assigned": [["paths"]],
   "path.completed": [["paths"]],
+  "skill.validated": [["skills"]],
 };
 
 export function parseSSE(buffer: string): { events: { id?: string; event: string; data: string }[]; rest: string } {

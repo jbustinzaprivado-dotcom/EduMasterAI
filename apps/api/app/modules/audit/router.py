@@ -50,6 +50,9 @@ ACTION_LABELS = {
     "path.exception": "Autorizó una excepción en una ruta",
     "path.completed": "Completó una ruta de aprendizaje",
     "analytics.exported": "Exportó un reporte de analítica",
+    "skill.created": "Creó una competencia",
+    "skill.course_linked": "Vinculó competencias a un curso",
+    "skill.validated": "Validó el nivel de una competencia",
 }
 
 

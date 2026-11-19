@@ -21,10 +21,22 @@ from app.seed import run as seed  # noqa: E402
 DEMO_PASSWORD = "ClaveDePrueba-2026"
 
 
+def _reset_schema():
+    """Borra y recrea el esquema. En SQLite se desactivan las FK al borrar: la tabla de competencias se referencia
+    a sí misma (área → competencia) y SQLite lo trata como un DELETE implícito."""
+    if engine.dialect.name == "sqlite":
+        with engine.begin() as conn:
+            conn.exec_driver_sql("PRAGMA foreign_keys=OFF")
+            Base.metadata.drop_all(conn)
+            conn.exec_driver_sql("PRAGMA foreign_keys=ON")
+    else:
+        Base.metadata.drop_all(engine)
+    Base.metadata.create_all(engine)
+
+
 @pytest.fixture()
 def client():
-    Base.metadata.drop_all(engine)
-    Base.metadata.create_all(engine)
+    _reset_schema()
     with SessionLocal() as db:
         seed(db, DEMO_PASSWORD)
     login_limiter.reset()

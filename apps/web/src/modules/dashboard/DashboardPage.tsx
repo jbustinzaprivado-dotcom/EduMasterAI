@@ -15,6 +15,7 @@ import { Link } from "react-router";
 import { PHASES } from "../../app/modules";
 import { Donut, TrendChart } from "../../components/charts";
 import { PeruTileMap, type RegionValue } from "../../components/charts/PeruTileMap";
+import { HeatmapTable, LevelDots } from "../skills/SkillsPage";
 import { api } from "../../lib/api";
 import { useAuth } from "../../lib/auth";
 import { formatNumber, formatTime, relativeTime, variation } from "../../lib/format";
@@ -131,6 +132,30 @@ function CompletionPanel() {
 }
 
 interface Geo { k: number; regions: RegionValue[]; suppressed_students: number; without_region: number }
+
+function SkillsPanel() {
+  const { can } = useAuth();
+  const staff = can("analytics.read");
+  const heat = useQuery({ queryKey: ["skills", "heatmap", ""], enabled: staff,
+    queryFn: () => api<{ levels: string[]; engine: string; students: number; rows: { skill_id: string; code: string; name: string; estimated: number[]; validated: number[] }[] }>("/analytics/skill-mastery") });
+  const mine = useQuery({ queryKey: ["skills", "mine"], enabled: !staff,
+    queryFn: () => api<{ skill_id: string; name: string; estimated_level: number | null; validated_level: number | null }[]>("/my/skills") });
+  return (
+    <Panel title="Dominio de habilidades" subtitle={staff ? "Estudiantes por competencia y nivel estimado" : "Tu nivel estimado y validado"}
+      actions={<Link to="/habilidades" className="text-xs text-cyan hover:underline">Ver detalle</Link>}>
+      {(heat.isPending && staff) || (mine.isPending && !staff) ? <Skeleton className="h-40" /> : null}
+      {staff && heat.data && (heat.data.rows.length ? <HeatmapTable data={heat.data} mode="estimated" /> :
+        <EmptyState icon={Grid3x3} title="Sin competencias vinculadas" description="Vincula competencias a los cursos." />)}
+      {!staff && mine.data && (mine.data.length === 0 ? <EmptyState icon={Grid3x3} title="Sin evidencias aún" description="Avanza en tus cursos." /> : (
+        <ul className="space-y-1.5 text-sm">
+          {mine.data.slice(0, 6).map((s) => (
+            <li key={s.skill_id} className="flex items-center justify-between gap-2"><span className="truncate">{s.name}</span><LevelDots level={s.validated_level ?? s.estimated_level} validated={!!s.validated_level} /></li>
+          ))}
+        </ul>
+      ))}
+    </Panel>
+  );
+}
 
 function MapPanel() {
   const { can } = useAuth();
@@ -273,10 +298,7 @@ export function DashboardPage() {
       {/* Fila 3: finalización, habilidades, recomendaciones */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         <CompletionPanel />
-        <Panel title="Dominio de habilidades" subtitle="Heatmap por competencia y nivel">
-          <EmptyState icon={Grid3x3} phase={4} title="Evidencias de evaluación"
-            description="El nivel estimado por IA se mostrará separado del validado por el docente." />
-        </Panel>
+        <SkillsPanel />
         <RecommendationsPanel />
       </div>
 
