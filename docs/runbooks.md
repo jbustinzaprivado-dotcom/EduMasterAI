@@ -123,7 +123,7 @@ Si el respaldo no se puede descifrar, revisa que `EDUMASTER_BACKUP_KEY` en `.env
 |---|---|---|
 | `demo.bat`: "El puerto 8000 está en uso" | `iniciar.bat` sigue abierto | Ciérralo y vuelve a abrir `demo.bat`. |
 | No se puede entrar: "Institución, correo o contraseña incorrectos" | La contraseña es de otra instalación | Usa la `EDUMASTER_DEMO_PASSWORD` del `.env` de **esa** carpeta. |
-| "Demasiados intentos" al iniciar sesión | Más de 10 intentos por minuto desde una IP | Espera 1 minuto. Para un aula entera detrás de una sola IP, sube `EDUMASTER_LOGIN_RATE_LIMIT` en `.env`. |
+| "Demasiados intentos" al iniciar sesión | Más de 10 intentos por minuto a la misma cuenta, o más de 60 desde una IP (D46) | Espera 1 minuto. Si más de 60 personas entran a la vez desde el mismo Wi-Fi, sube `EDUMASTER_LOGIN_RATE_LIMIT` en `.env` (el tope por IP es 6 veces ese valor). |
 | Respuesta 429 "Demasiadas peticiones" | Más de 600 peticiones por minuto desde una IP | Sube `EDUMASTER_API_RATE_LIMIT` en `.env` y reinicia. |
 | La dirección pública no carga | Se cerró el túnel o cambió la URL | Revisa la ventana de `demo.bat` y comparte la URL nueva. |
 | Las notificaciones no llegan en vivo | El navegador perdió la conexión | Se reconecta solo y recupera lo perdido. Si no, recarga la página (F5). |
@@ -149,7 +149,7 @@ Todos los errores incluyen un `correlation_id`. Búscalo en la ventana de la API
 | `EDUMASTER_JWT_SECRET` | Firma de los tokens; al menos 32 caracteres en demo | La genera `instalar` |
 | `EDUMASTER_DEMO_PASSWORD` | Contraseña de las cuentas DEMO | La genera `instalar` |
 | `EDUMASTER_BACKUP_KEY` | Clave AES-256 de los respaldos | La genera `instalar` |
-| `EDUMASTER_LOGIN_RATE_LIMIT` | Inicios de sesión por minuto y por IP | 10 |
+| `EDUMASTER_LOGIN_RATE_LIMIT` | Intentos de inicio de sesión por minuto por cuenta (por IP: ×6) | 10 |
 | `EDUMASTER_API_RATE_LIMIT` | Peticiones por minuto y por IP | 600 |
 | `EDUMASTER_MAX_BODY_BYTES` | Tamaño máximo de una petición | 2 000 000 |
 | `EDUMASTER_COOKIE_SECURE` | Cookie solo por HTTPS | `false` (`demo.bat` pone `true`) |

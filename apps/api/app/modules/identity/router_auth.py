@@ -38,7 +38,7 @@ def _set_refresh_cookie(response: Response, raw: str) -> None:
 
 @router.post("/login", response_model=TokenOut)
 def login(body: LoginIn, response: Response, db: DB) -> TokenOut:
-    if not login_limiter.allow(client_ip.get() or "desconocida"):
+    if not login_limiter.allow(client_ip.get() or "desconocida", body.email):
         raise AppError(429, "too_many_requests", "Demasiados intentos. Espera un minuto.")
 
     user = service.authenticate(db, body.organization_code, body.email, body.password)

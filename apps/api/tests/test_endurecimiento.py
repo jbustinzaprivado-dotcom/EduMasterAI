@@ -41,3 +41,16 @@ def test_metricas_operativas_con_permiso(client):
     assert data["targets"]["api_read_p95_ms"] == 500 and "sse_connections" in data["realtime"]
     est = auth(client, "ANDINO", "estudiante@andino.demo")
     assert client.get("/api/v1/system/metrics", headers=est).status_code == 403
+
+
+def test_limite_de_login_por_cuenta_no_bloquea_al_aula(client):
+    """D46: fuerza bruta contra una cuenta → 429; un aula entera detrás de la misma IP → todos entran."""
+    from tests.conftest import login
+
+    for _ in range(10):
+        assert login(client, "ANDINO", "admin@andino.demo", "mala-clave-123").status_code == 401
+    r = login(client, "ANDINO", "admin@andino.demo", "mala-clave-123")
+    assert r.status_code == 429 and r.json()["code"] == "too_many_requests"
+    students = ["estudiante@andino.demo"] + [f"estudiante{i}@andino.demo" for i in range(2, 14)]
+    for email in students + ["docente@andino.demo", "docente2@andino.demo", "coordinacion@andino.demo"]:
+        assert login(client, "ANDINO", email).status_code == 200, email

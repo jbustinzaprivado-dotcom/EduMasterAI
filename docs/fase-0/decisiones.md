@@ -50,6 +50,7 @@ Cuando una decisión completa algo que el documento deja abierto, se indica la s
 | D43 | Prueba de carga con usuarios virtuales por rol (`scripts/carga.py`). Aula de 40 personas: dashboard p95 0,9 s y inferencia 0,25 s cumplen; lectura común en el límite (0,51 s). Encontró un bloqueo real: el pool de conexiones (15) era menor que los hilos (40) y la API se colgaba con carga. Se alineó el pool a 40 y la espera a 10 s; con estrés (70 pet/s) ya no hay errores. Un solo proceso es el techo; ampliar exige PostgreSQL + Redis (D11). | §10.5, §13 |
 | D44 | Puesta en marcha: smoke test (`scripts/smoke.py`, `comprobar.bat`) que `demo.bat` ejecuta antes de abrir el túnel; **retiro del modelo** con motivo obligatorio y auditado como rollback (§16.3 paso 38); runbooks de instalación, demo, actualización con respaldo previo, restauración, incidentes y monitoreo. | §16.3, §16.4 |
 | D45 | Row Level Security de PostgreSQL no se activa en esta versión: el aislamiento se hace y se prueba en la aplicación (filtro por institución, 404). §11 la plantea como frontera adicional opcional; queda como siguiente paso con datos reales. | §11 |
+| D46 | Límite de inicio de sesión por **IP + correo** (10/min) y por IP sola (60/min). La simulación de un día de clases mostró que el límite solo por IP (10/min) bloqueaba a la 11.ª persona de un aula que comparte Wi-Fi (una sola IP pública). Así se sigue frenando la fuerza bruta contra una cuenta y el barrido de cuentas, sin bloquear al público. | §11 |
 
 ## Decisiones aún abiertas (§17.1)
 

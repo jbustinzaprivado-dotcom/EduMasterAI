@@ -65,3 +65,15 @@ def test_arquitectura_neuronal_en_estado_diseno(client):
     assert data["status"] == "design" and data["version"] is None  # no aparenta un modelo entrenado
     assert [layer["role"] for layer in data["layers"]][0] == "input"
     assert client.get("/api/v1/ml/architecture").status_code == 401
+
+
+def test_resumen_del_docente_cuenta_solo_sus_ofertas(client):
+    doc = auth(client, "ANDINO", "docente2@andino.demo")
+    data = client.get("/api/v1/dashboard/summary", headers=doc).json()
+    assert data["scope"] == "mis cursos"
+    kpis = {k["key"]: k["value"] for k in data["kpis"]}
+    offerings = client.get("/api/v1/offerings", headers=doc).json()
+    assert kpis["courses"] == len({o["course_code"] for o in offerings})
+    roster = {r["student_id"] for o in offerings
+              for r in client.get(f"/api/v1/offerings/{o['id']}/enrollments", headers=doc).json()}
+    assert kpis["students"] == len(roster) and kpis["courses"] < 3

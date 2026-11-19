@@ -131,6 +131,7 @@ cd ml && .venv/Scripts/python -m pytest
     nuevas y el retiro queda en la bitácora. Se vuelve a aprobar para seguir.
 
 Documentación: [cómo funciona (explicación sencilla)](docs/como-funciona.md) ·
+[módulos y por qué se construyeron así](docs/modulos.md) ·
 [decisiones](docs/fase-0/decisiones.md) · [bitácora de desarrollo](docs/bitacora.md) ·
 [runbooks](docs/runbooks.md) · [seguridad](docs/fase-7/seguridad.md) · [acta UAT](docs/fase-7/aceptacion-uat.md) ·
 API interactiva en http://localhost:8000/api/docs.

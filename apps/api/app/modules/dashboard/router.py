@@ -119,6 +119,12 @@ def summary(db: DB, principal: Principal = require("dashboard.read")) -> Summary
     if not principal.is_global:
         courses_q = courses_q.where(Course.organization_id == principal.organization_id)
         students_q = students_q.where(User.organization_id == principal.organization_id)
+    if not principal.can("course.read.all"):
+        # Docente: cuenta solo lo de sus ofertas, igual que el resto de su resumen ("mis cursos").
+        mine = _visible_offerings(principal)
+        courses_q = select(func.count(func.distinct(CourseOffering.course_id))).where(CourseOffering.id.in_(mine))
+        students_q = select(func.count(func.distinct(Enrollment.student_id))).where(
+            Enrollment.offering_id.in_(mine), Enrollment.status != "dropped")
 
     kpis = [
         kpi("active_students_7d", "Estudiantes activos (7 días)", active_students(d7, now), active_students(d14, d7),

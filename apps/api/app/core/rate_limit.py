@@ -27,11 +27,26 @@ class SlidingWindowLimiter:
             self._hits.clear()
 
 
-# Intentos de inicio de sesión por minuto y por dirección IP (10 por defecto; configurable).
+# Inicio de sesión (D46): 10 intentos por minuto por IP **y correo** (frena la fuerza bruta contra una cuenta) y
+# 6 veces eso por IP sola (frena el barrido de muchas cuentas). Así un aula entera detrás del mismo Wi-Fi, que sale
+# a Internet con una sola IP, puede entrar a la vez sin bloquearse.
 def _login_limit() -> int:
     from app.core.config import get_settings
 
     return get_settings().login_rate_limit
 
 
-login_limiter = SlidingWindowLimiter(max_hits=_login_limit(), window_seconds=60)
+class LoginLimiter:
+    def __init__(self, per_account: int):
+        self.account = SlidingWindowLimiter(max_hits=per_account, window_seconds=60)
+        self.ip = SlidingWindowLimiter(max_hits=per_account * 6, window_seconds=60)
+
+    def allow(self, ip: str, email: str = "") -> bool:
+        return self.account.allow(f"{ip}|{email.strip().lower()}") and self.ip.allow(ip)
+
+    def reset(self) -> None:
+        self.account.reset()
+        self.ip.reset()
+
+
+login_limiter = LoginLimiter(per_account=_login_limit())

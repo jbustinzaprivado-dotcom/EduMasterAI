@@ -6,7 +6,7 @@ el día de la prueba.
 
 - Versión: commit de `main` publicado el día de la prueba (ver `git log -1`).
 - Entorno: PC de la demo + Cloudflare Tunnel, datos DEMO.
-- Pruebas automáticas al cierre de la Fase 7: **87** de API, **7** de web y **20** E2E en Playwright. La CI tiene 4 trabajos en verde.
+- Pruebas automáticas al cierre de la Fase 7: **89** de API, **7** de web y **20** E2E en Playwright. La CI tiene 4 trabajos en verde.
 
 | # | Criterio (§13.1) | Evidencia automática | Paso manual en la demo | OK |
 |---|---|---|---|---|
