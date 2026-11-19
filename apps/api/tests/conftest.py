@@ -13,6 +13,8 @@ import pytest  # noqa: E402
 from fastapi.testclient import TestClient  # noqa: E402
 
 from app.core.database import SessionLocal, engine  # noqa: E402
+from app.core import hardening  # noqa: E402
+from app.core.metrics import metrics  # noqa: E402
 from app.core.rate_limit import login_limiter  # noqa: E402
 from app.db.models import Base  # noqa: E402
 from app.main import app  # noqa: E402
@@ -40,6 +42,8 @@ def client():
     with SessionLocal() as db:
         seed(db, DEMO_PASSWORD)
     login_limiter.reset()
+    hardening.api_limiter.reset()
+    metrics.reset()
     with TestClient(app) as c:
         yield c
 

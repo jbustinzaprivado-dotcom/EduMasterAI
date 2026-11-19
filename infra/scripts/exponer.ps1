@@ -37,6 +37,9 @@ try {
         try { Invoke-WebRequest "http://127.0.0.1:8000/api/v1/health/ready" -UseBasicParsing -TimeoutSec 3 | Out-Null; break }
         catch { Start-Sleep 1 }
     }
+    # Smoke test (D44): no se publica a ciegas. Si algo falla se avisa, pero la demo no se bloquea.
+    & (Join-Path $api ".venv\Scripts\python.exe") (Join-Path $api "scripts\smoke.py") --url http://127.0.0.1:8000
+    if ($LASTEXITCODE -ne 0) { Write-Host "AVISO: el smoke test encontró fallos (ver arriba). Revisa docs/runbooks.md." -ForegroundColor Yellow }
     Write-Host "`nAbriendo túnel... la dirección pública aparece abajo (https://...trycloudflare.com)." -ForegroundColor Cyan
     & $cloudflared tunnel --no-autoupdate --url http://127.0.0.1:8000
 } finally {

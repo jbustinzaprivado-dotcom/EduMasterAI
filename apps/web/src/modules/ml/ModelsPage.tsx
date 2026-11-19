@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { BrainCircuit, CheckCircle2, Play, ShieldCheck } from "lucide-react";
+import { BrainCircuit, CheckCircle2, Play, ShieldCheck, Undo2 } from "lucide-react";
 import { useState } from "react";
 import { Badge, Button, EmptyState, ErrorState, PageHeader, Panel, Skeleton, cx } from "../../components/ui";
 import { ApiError, api } from "../../lib/api";
@@ -35,6 +35,17 @@ function ModelCard({ m }: { m: ModelOut }) {
   const { can } = useAuth();
   const qc = useQueryClient();
   const [confirm, setConfirm] = useState(false);
+  const [retiring, setRetiring] = useState(false);
+  const [reason, setReason] = useState("");
+  const retire = useMutation({
+    mutationFn: () => api(`/ml/models/${m.id}/retire`, { method: "POST", body: JSON.stringify({ reason }) }),
+    onSuccess: () => {
+      setRetiring(false);
+      setReason("");
+      qc.invalidateQueries({ queryKey: ["ml"] });
+      qc.invalidateQueries({ queryKey: ["audit"] });
+    },
+  });
   const approve = useMutation({
     mutationFn: () => api(`/ml/models/${m.id}/approve`, { method: "POST", body: JSON.stringify({ note: "Model card revisada" }) }),
     onSuccess: () => {
@@ -64,6 +75,9 @@ function ModelCard({ m }: { m: ModelOut }) {
             {can("ml.approve") && !m.published_here && (
               <Button icon={ShieldCheck} onClick={() => setConfirm(true)}>Aprobar publicación</Button>
             )}
+            {can("ml.approve") && m.published_here && (
+              <Button variant="ghost" icon={Undo2} onClick={() => setRetiring(true)}>Retirar</Button>
+            )}
             {can("ml.manage") && m.published_here && (
               <Button variant="ghost" icon={Play} loading={run.isPending} onClick={() => run.mutate()}>Ejecutar predicciones</Button>
             )}
@@ -78,6 +92,21 @@ function ModelCard({ m }: { m: ModelOut }) {
               <Button loading={approve.isPending} onClick={() => approve.mutate()}>Sí, aprobar</Button>
               <Button variant="ghost" onClick={() => setConfirm(false)}>Cancelar</Button>
             </div>
+          </div>
+        )}
+        {retiring && (
+          <div className="mb-4 rounded-xl border border-danger/40 bg-danger/10 p-3 text-sm">
+            <p className="font-medium text-danger">¿Retirar este modelo de tu institución?</p>
+            <p className="mt-1 text-xs text-muted">Es la vuelta atrás (rollback): no se generarán alertas nuevas hasta aprobar
+              otra versión. Las predicciones ya hechas se conservan como historial. Queda en la bitácora.</p>
+            <label className="label mt-2" htmlFor={`retire-${m.id}`}>Motivo (obligatorio)</label>
+            <input id={`retire-${m.id}`} className="field" value={reason} onChange={(e) => setReason(e.target.value)}
+              placeholder="p. ej. métricas por debajo del umbral en la cohorte actual" />
+            <div className="mt-2 flex gap-2">
+              <Button variant="danger" disabled={reason.trim().length < 5} loading={retire.isPending} onClick={() => retire.mutate()}>Sí, retirar</Button>
+              <Button variant="ghost" onClick={() => setRetiring(false)}>Cancelar</Button>
+            </div>
+            {retire.isError && <p role="alert" className="mt-2 text-danger">{retire.error instanceof ApiError ? retire.error.message : "Error"}</p>}
           </div>
         )}
         {approve.isError && <p role="alert" className="mb-2 text-sm text-danger">{approve.error instanceof ApiError ? approve.error.message : "Error"}</p>}

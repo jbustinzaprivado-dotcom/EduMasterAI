@@ -32,7 +32,10 @@ supervisión humana. Proyecto académico grupal construido según la *Especifica
 | Certificados | Emisión automática por criterio oficial, PDF con QR, anulación y verificación pública en `/verificar`. |
 | Recomendaciones e IA Tutor | Sugerencias explicadas (siguiente actividad, entrega próxima, reforzar, retomar) con feedback y métricas de utilidad. |
 | Administración | Usuarios, roles e instituciones. |
-| Operación | Logs JSON con `correlation_id`, health checks, errores normalizados, CI en GitHub Actions. |
+| Seguridad | Cabeceras CSP/HSTS, límites de tamaño y de peticiones por IP, modelo de amenazas y revisión OWASP (`docs/fase-7/seguridad.md`). |
+| Operación | Pantalla con latencia p95, errores y conexiones en vivo frente a los objetivos; logs JSON con `correlation_id`; health checks; CI en GitHub Actions. |
+| Respaldo | Respaldo cifrado (AES-256) con prueba de restauración automática; restauración con vuelta atrás. |
+| Puesta en marcha | Smoke test antes de abrir el túnel, retiro del modelo (rollback), prueba de carga y runbooks (`docs/runbooks.md`). |
 
 Los módulos que aún no existen muestran **qué incluirán y en qué fase llegan**, nunca cifras inventadas (§1).
 
@@ -43,6 +46,9 @@ Requisitos: Python 3.13, Node 24 y Git. PostgreSQL es opcional en local (sin él
 1. `instalar.bat`: instala todo, crea el `.env` con secretos aleatorios y carga las cuentas DEMO.
 2. `iniciar.bat`: abre http://localhost:8000.
 3. Opcional: `infra\scripts\crear_base.ps1` pasa la base a PostgreSQL.
+
+Otros scripts: `demo.bat` (demo pública), `comprobar.bat` (smoke test) y `respaldo.bat` (respaldo cifrado y prueba de
+restauración). Todos los procedimientos de operación están en [`docs/runbooks.md`](docs/runbooks.md).
 
 ### Cuentas DEMO
 La contraseña común está en `.env` (`EDUMASTER_DEMO_PASSWORD`). La pantalla de login lista las cuentas.
@@ -65,13 +71,9 @@ La estudiante DEMO `estudiante@andino.demo` tiene un perfil "en riesgo" para mos
 
 Con la API detenida (cierra `iniciar.bat` o `demo.bat`):
 
-```bash
-git pull
-cd apps/api && .venv/Scripts/python -m pip install -r requirements.txt
-cd apps/api && .venv/Scripts/alembic upgrade head
-cd apps/api && .venv/Scripts/python -m app.seed
-cd apps/web && npm ci && npm run build
-```
+1. `respaldo.bat` (respaldo previo, §16.3).
+2. `git pull` (o descarga el ZIP nuevo y cópialo encima: `.env` y `data/` se conservan).
+3. `instalar.bat`: es idempotente; instala dependencias, compila la web, migra la base y completa los datos DEMO.
 
 Las migraciones están preparadas para bases con datos (D38) y `app.seed` solo completa lo que falte (no duplica ni
 borra). Luego vuelve a abrir `iniciar.bat` o `demo.bat`. Subir cambios a GitHub **no afecta** a una demo que está
@@ -123,7 +125,12 @@ cd ml && .venv/Scripts/python -m pytest
     exporta a Excel; la exportación aparece en **Actividad y auditoría**. El analista solo ve agregados.
 12. **Habilidades:** el docente abre el heatmap, elige PY-101 y a Valeria, revisa sus evidencias y valida «Sintaxis
     de Python»; a ella le llega el aviso y ve el nivel oficial junto al estimado.
+13. **Operación:** el admin abre **Operación** mientras el público navega: latencia p95 y errores frente a los
+    objetivos del documento, conexiones en vivo y frescura de los datos.
+14. **Vuelta atrás:** en **Modelos de IA**, **Retirar** con un motivo; la red vuelve a «Diseño», no salen alertas
+    nuevas y el retiro queda en la bitácora. Se vuelve a aprobar para seguir.
 
 Documentación: [cómo funciona (explicación sencilla)](docs/como-funciona.md) ·
 [decisiones](docs/fase-0/decisiones.md) · [bitácora de desarrollo](docs/bitacora.md) ·
+[runbooks](docs/runbooks.md) · [seguridad](docs/fase-7/seguridad.md) · [acta UAT](docs/fase-7/aceptacion-uat.md) ·
 API interactiva en http://localhost:8000/api/docs.

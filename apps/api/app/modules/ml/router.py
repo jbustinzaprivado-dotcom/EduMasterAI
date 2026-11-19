@@ -140,6 +140,23 @@ def approve(model_id: uuid.UUID, body: ApproveIn, db: DB, principal: Principal =
                     registered_at=version.registered_at, card=version.card, published_here=True)
 
 
+class RetireIn(BaseModel):
+    reason: str = Field(min_length=5, max_length=1000)
+
+
+@router.post("/models/{model_id}/retire", response_model=ModelOut)
+def retire(model_id: uuid.UUID, body: RetireIn, db: DB, principal: Principal = require("ml.approve")) -> ModelOut:
+    """Retira la versión publicada en la institución (rollback, §16.3). Motivo obligatorio y auditado."""
+    version = db.get(ModelVersion, model_id)
+    if version is None:
+        raise not_found("Modelo")
+    service.retire(db, version, principal.organization_id, principal.user.id, body.reason)
+    db.commit()
+    return ModelOut(id=version.id, name=version.name, version=version.version, kind=version.kind, task=version.task,
+                    dataset_version=version.dataset_version, threshold=version.threshold,
+                    registered_at=version.registered_at, card=version.card, published_here=False)
+
+
 # ---------- predicciones ----------
 
 class RunIn(BaseModel):

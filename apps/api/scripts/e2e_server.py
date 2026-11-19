@@ -21,6 +21,7 @@ os.environ.update({
     "EDUMASTER_JWT_SECRET": "e2e-solo-pruebas-0123456789abcdefghijklmnop",
     "EDUMASTER_LOG_FORMAT": "text",
     "EDUMASTER_LOGIN_RATE_LIMIT": "1000",  # todas las pruebas entran desde 127.0.0.1
+    "EDUMASTER_API_RATE_LIMIT": "100000",
 })
 sys.path.insert(0, str(API))
 

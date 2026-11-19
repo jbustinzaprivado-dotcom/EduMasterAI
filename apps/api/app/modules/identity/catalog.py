@@ -24,6 +24,8 @@ PERMISSIONS: dict[str, str] = {
     "ml.read": "Consultar modelos, métricas y model cards",
     "ml.manage": "Registrar modelos y ejecutar predicciones",
     "ml.approve": "Aprobar la publicación de un modelo en la institución",
+    # Fase 7 · operación
+    "ops.read": "Ver las métricas operativas de la plataforma (§12.1)",
 }
 
 # (nombre visible, descripción, permisos)
@@ -33,13 +35,14 @@ ROLES: dict[str, tuple[str, str, list[str]]] = {
         "Gobierno global de la plataforma.",
         ["platform.global", "org.read", "org.manage", "user.read", "user.manage", "role.read",
          "audit.read", "dashboard.read", "course.read.all", "course.manage", "assessment.manage",
-         "ml.read", "ml.manage", "ml.approve", "path.manage", "analytics.read"],
+         "ml.read", "ml.manage", "ml.approve", "path.manage", "analytics.read", "ops.read"],
     ),
     "admin": (
         "Administrador institucional",
         "Operación de una institución.",
         ["org.read", "user.read", "user.manage", "role.read", "audit.read", "dashboard.read",
-         "course.read.all", "course.manage", "assessment.manage", "ml.read", "ml.approve", "path.manage", "analytics.read"],
+         "course.read.all", "course.manage", "assessment.manage", "ml.read", "ml.approve", "path.manage", "analytics.read",
+         "ops.read"],
     ),
     "coordinador": (
         "Director / coordinador",
@@ -65,12 +68,12 @@ ROLES: dict[str, tuple[str, str, list[str]]] = {
     "ml_engineer": (
         "Científico de datos / ML Engineer",
         "Ciclo de vida del modelo.",
-        ["org.read", "audit.read.own", "dashboard.read", "ml.read", "ml.manage"],
+        ["org.read", "audit.read.own", "dashboard.read", "ml.read", "ml.manage", "ops.read"],
     ),
     "auditor": (
         "Auditor",
         "Control y cumplimiento, solo lectura.",
-        ["org.read", "user.read", "role.read", "audit.read", "dashboard.read", "course.read.all", "ml.read", "analytics.read"],
+        ["org.read", "user.read", "role.read", "audit.read", "dashboard.read", "course.read.all", "ml.read", "analytics.read", "ops.read"],
     ),
 }
 

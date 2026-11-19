@@ -7,6 +7,7 @@ import { useAuth } from "../lib/auth";
 import { OrganizationsPage } from "../modules/administration/OrganizationsPage";
 import { UsersPage } from "../modules/administration/UsersPage";
 import { AnalyticsPage } from "../modules/analytics/AnalyticsPage";
+import { OperationsPage } from "../modules/operations/OperationsPage";
 import { ActivityPage } from "../modules/audit/ActivityPage";
 import { CertificatesPage, VerifyPage } from "../modules/certificates/CertificatesPage";
 import { CommunityPage } from "../modules/community/CommunityPage";
@@ -66,6 +67,7 @@ const READY: Record<string, ReactNode> = {
   "/actividad": <ActivityPage />,
   "/administracion/usuarios": <UsersPage />,
   "/administracion/instituciones": <OrganizationsPage />,
+  "/operacion": <OperationsPage />,
 };
 
 export function App() {

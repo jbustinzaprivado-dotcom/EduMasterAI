@@ -10,6 +10,8 @@ from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
 from app.core import errors
+from app.core.hardening import apply_headers, precheck
+from app.core.metrics import metrics
 from app.core.config import get_settings
 from app.core.context import client_ip, correlation_id
 from app.core.database import SessionLocal
@@ -30,7 +32,7 @@ from app.modules.notifications.router import router as notifications_router
 from app.modules.paths.router import router as paths_router
 from app.modules.skills.router import router as skills_router
 from app.modules.recommendations.router import router as recommendations_router
-from app.modules.system.router import router as system_router
+from app.modules.system.router import ops_router, router as system_router
 
 log = logging.getLogger("edumaster.http")
 
@@ -69,9 +71,17 @@ def create_app() -> FastAPI:
         forwarded = request.headers.get("CF-Connecting-IP") if settings.trust_cloudflare_ip else None
         client_ip.set(forwarded or direct)
         start = time.perf_counter()
-        response = await call_next(request)
+        response = precheck(request, forwarded or direct, cid[:64]) or await call_next(request)
         response.headers["X-Correlation-ID"] = cid[:64]
+        apply_headers(request, response)
         if request.url.path.startswith("/api/"):
+            route = request.scope.get("route")
+            # Plantilla de la ruta, no la URL: así /courses/{id} es una sola serie y no hay identificadores.
+            template = getattr(route, "path", None)
+            if template and not template.startswith("/api/"):
+                template = "/api/v1" + template
+            metrics.observe(template or "sin-ruta", response.status_code,
+                            (time.perf_counter() - start) * 1000)
             log.info(
                 "petición",
                 extra={"extra_data": {
@@ -82,7 +92,7 @@ def create_app() -> FastAPI:
         return response
 
     api = APIRouter(prefix="/api/v1")
-    for router in (system_router, auth_router, admin_router, audit_router, dashboard_router, ml_router,
+    for router in (system_router, ops_router, auth_router, admin_router, audit_router, dashboard_router, ml_router,
                    academic_router, recommendations_router,
                    certificates_router, notifications_router, community_router,
                    paths_router, analytics_router, skills_router,

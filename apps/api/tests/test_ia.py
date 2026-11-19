@@ -87,3 +87,22 @@ def test_revision_humana_de_alertas(client):
     assert after["risk_alerts"] == before["risk_alerts"] - 1
     logs = client.get("/api/v1/audit-logs?action=prediction.reviewed", headers=admin).json()["items"]
     assert logs[0]["details"]["status"] == "atendida"
+
+
+def test_retirar_modelo_es_la_vuelta_atras(client):
+    admin, model = _approve(client)
+    ml = auth(client, "ANDINO", "ml@andino.demo")
+    assert client.post("/api/v1/ml/predictions/run", json={}, headers=ml).status_code == 200
+    url = f"/api/v1/ml/models/{model['id']}/retire"
+    assert client.post(url, json={"reason": "x"}, headers=admin).status_code == 422  # motivo obligatorio
+    assert client.post(url, json={"reason": "Prueba de rollback"}, headers=ml).status_code == 403  # solo quien aprueba
+    r = client.post(url, json={"reason": "Prueba de rollback"}, headers=admin)
+    assert r.status_code == 200 and r.json()["published_here"] is False
+    assert client.post(url, json={"reason": "Prueba de rollback"}, headers=admin).status_code == 409
+    # Sin modelo publicado no hay predicciones nuevas; el visualizador vuelve a "diseño".
+    assert client.post("/api/v1/ml/predictions/run", json={}, headers=ml).json()["code"] == "no_model"
+    assert client.get("/api/v1/ml/architecture", headers=ml).json()["status"] == "design"
+    logs = client.get("/api/v1/audit-logs?action=model.retired", headers=admin).json()["items"]
+    assert logs and logs[0]["details"]["reason"] == "Prueba de rollback"
+    # Se puede volver a publicar la misma versión.
+    assert client.post(f"/api/v1/ml/models/{model['id']}/approve", json={}, headers=admin).status_code == 200

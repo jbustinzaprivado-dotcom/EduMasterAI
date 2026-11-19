@@ -25,6 +25,12 @@ class Settings(BaseSettings):
     jwt_secret: str = "solo-desarrollo-cambiar-en-env-0123456789"
     # Inicios de sesión por minuto y por IP (§11: rate limiting). Las pruebas E2E lo amplían: entran desde la misma IP.
     login_rate_limit: int = 10
+    # Peticiones por minuto y por IP en toda la API (D40). Holgado para un aula entera detrás de una misma IP.
+    api_rate_limit: int = 600
+    # Tamaño máximo del cuerpo de una petición (D40): 2 MB bastan para JSON y textos de lecciones.
+    max_body_bytes: int = 2_000_000
+    # Clave AES-256 de los respaldos (D42), en base64. Se genera con: python -m app.backup clave
+    backup_key: str | None = None
     # PBKDF2-SHA256: 600 000 iteraciones (OWASP). Las pruebas lo bajan para correr rápido.
     password_iterations: int = 600_000
     access_token_minutes: int = 15

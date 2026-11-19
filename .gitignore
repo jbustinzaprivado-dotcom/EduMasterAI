@@ -7,6 +7,7 @@ __pycache__/
 
 # Datos locales (base SQLite de desarrollo, datasets, modelos: §15.2 prohíbe subirlos a Git)
 data/
+backups/
 ml/data/
 mlruns/
 

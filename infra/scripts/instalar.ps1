@@ -40,6 +40,13 @@ if (-not (Test-Path $envFile)) {
     Write-Host "Contraseña de las cuentas DEMO guardada en .env (EDUMASTER_DEMO_PASSWORD)."
 }
 
+# Clave de los respaldos cifrados (D42). Se agrega también a instalaciones anteriores que no la tenían.
+if (-not (Select-String -Path $envFile -Pattern "^EDUMASTER_BACKUP_KEY=" -Quiet)) {
+    $bk = & (Join-Path $api ".venv\Scripts\python.exe") -c "import base64,os;print(base64.urlsafe_b64encode(os.urandom(32)).decode().rstrip('='))"
+    Add-Content -Path $envFile -Value "EDUMASTER_BACKUP_KEY=$bk" -Encoding utf8
+    Write-Host "Clave de respaldos agregada a .env (EDUMASTER_BACKUP_KEY). Guárdala aparte: sin ella no se restaura."
+}
+
 Step "Base de datos: migraciones y cuentas DEMO"
 Push-Location $api
 & .\.venv\Scripts\python.exe -m alembic upgrade head

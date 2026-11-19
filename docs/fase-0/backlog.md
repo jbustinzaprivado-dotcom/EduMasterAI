@@ -72,8 +72,17 @@ de habilidades (D35).
 - ✅ Cambio de contraseña, restablecimiento con cambio obligatorio y política mínima (D37).
 - ✅ Migraciones seguras sobre datos existentes (D38).
 
-## Fase 7 · Endurecimiento (⏳)
-Seguridad (OWASP, rate limits), accesibilidad, carga, respaldo y restauración.
+## Fase 7 · Endurecimiento ✅ (19-11-2026)
+- ✅ Cabeceras de seguridad, límite de tamaño y de peticiones por IP (D40).
+- ✅ Métricas operativas y pantalla Operación frente a los objetivos de §10.5 (D41).
+- ✅ Respaldo cifrado con prueba de restauración y restauración con vuelta atrás (D42).
+- ✅ Prueba de carga (aula y estrés), que encontró y corrigió un bloqueo del pool de conexiones (D43).
+- ✅ Modelo de amenazas STRIDE y revisión OWASP Top 10 (`docs/fase-7/seguridad.md`).
+- ✅ Acta de aceptación (UAT) con los criterios 22-31 (`docs/fase-7/aceptacion-uat.md`).
+- ⏳ Escaneo automático de dependencias en la CI (A06).
 
-## Fase 8 · Puesta en marcha de la demostración (⏳)
-Túnel de Cloudflare, runbook y guion de exposición.
+## Fase 8 · Puesta en marcha de la demostración ✅ (19-11-2026)
+- ✅ Túnel de Cloudflare con smoke test antes de publicar (D44).
+- ✅ Retiro del modelo (rollback) con motivo auditado.
+- ✅ Runbooks: instalación, demo, actualización, respaldo, restauración, rollback, incidentes y monitoreo (`docs/runbooks.md`).
+- ✅ Guion de exposición (README).

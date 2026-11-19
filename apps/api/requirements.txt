@@ -19,6 +19,9 @@ reportlab==5.1.0
 # Exportación de analítica a Excel (§4.4)
 openpyxl==3.1.5
 
+# Respaldos cifrados con AES-256-GCM (§11, §16.4, D42)
+cryptography==50.0.2
+
 # Autenticación OAuth2 con tokens JWT (§10.1, decisión D08)
 PyJWT==2.15.1
 

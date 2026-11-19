@@ -7,6 +7,7 @@ import {
   Bot,
   Building2,
   ClipboardCheck,
+  Gauge,
   Grid3x3,
   LayoutDashboard,
   MessagesSquare,
@@ -131,6 +132,12 @@ export const MODULES: ModuleDef[] = [
     summary: "Instituciones de la plataforma (multi-tenant).",
     features: [],
   },
+  {
+    path: "/operacion", label: "Operación", icon: Gauge, section: "Gestión", phase: 7, ready: true,
+    permission: "ops.read", docRef: "§12.1",
+    summary: "Latencia, errores, conexiones en vivo y frescura de datos frente a los objetivos de §10.5.",
+    features: [],
+  },
 ];
 
 export type PhaseStatus = "done" | "partial" | "pending";
@@ -144,6 +151,6 @@ export const PHASES: { n: number; name: string; status: PhaseStatus; note?: stri
   { n: 4, name: "Dataset y analítica", status: "done", note: "dataset DEMO, analítica y dominio de habilidades" },
   { n: 5, name: "Modelo neuronal", status: "done", note: "riesgo de abandono" },
   { n: 6, name: "IA en producto", status: "done", note: "alertas, recomendaciones e IA Tutor (reglas-v1)" },
-  { n: 7, name: "Endurecimiento", status: "pending" },
-  { n: 8, name: "Producción", status: "pending" },
+  { n: 7, name: "Endurecimiento", status: "done", note: "seguridad HTTP, métricas, respaldo, carga y UAT" },
+  { n: 8, name: "Producción", status: "done", note: "smoke test, runbooks y rollback (demo por túnel)" },
 ];

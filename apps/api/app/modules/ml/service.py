@@ -86,6 +86,23 @@ def publish(db: Session, version: ModelVersion, organization_id: uuid.UUID, appr
     return deployment
 
 
+def retire(db: Session, version: ModelVersion, organization_id: uuid.UUID, actor: uuid.UUID, reason: str) -> None:
+    """Vuelta atrás (§16.3 paso 38, D44): la institución deja de usar el modelo. Las predicciones guardadas se
+    conservan como historial; no se generan nuevas alertas hasta aprobar otra versión (o la misma de nuevo)."""
+    current = active_deployment(db, organization_id)
+    if current is None or current.model_version_id != version.id:
+        raise AppError(409, "conflict", "Esta versión no está publicada en la institución.")
+    current.status, current.retired_at = "retired", datetime.now(UTC)
+    current.note = f"{current.note or ''} | Retirado: {reason}".strip(" |")
+    record(db, action="model.retired", resource="model", resource_id=version.id, actor_id=actor,
+           organization_id=organization_id, details={"model": version.name, "version": version.version, "reason": reason})
+    staff = db.scalars(select(User.id).where(User.organization_id == organization_id, User.status == "active",
+                                             User.roles.any(Role.code.in_(["ml_engineer", "admin", "coordinador"]))))
+    notify(db, list(staff), organization_id=organization_id, kind="model.retired",
+           title=f"Modelo {version.name} v{version.version} retirado",
+           body=f"Motivo: {reason}. No se generarán alertas nuevas hasta aprobar otra versión.", link="/modelos")
+
+
 def features_for(db: Session, enrollment: Enrollment, t: datetime) -> tuple[list[float], list[list[float]]]:
     """Variables de una matrícula en el instante t, desde la base (mismo cálculo que en el entrenamiento)."""
     offering: CourseOffering = enrollment.offering
