@@ -2,16 +2,19 @@
 
 - Cabeceras de seguridad en todas las respuestas (CSP, anti-clickjacking, nosniff, HSTS con HTTPS).
 - Límite de tamaño del cuerpo: una petición enorme se rechaza antes de leerla (413).
-- Límite general de peticiones por IP y minuto en /api (429 con Retry-After); el login tiene el suyo, más estricto.
+- Límite general de peticiones por minuto en /api (429 con Retry-After): por persona (IP + usuario del token) y un
+  tope 10 veces mayor por IP (D49). Así un aula entera detrás del mismo Wi-Fi no se bloquea. El login tiene el suyo.
 """
 
 from __future__ import annotations
 
+import jwt
 from fastapi.responses import JSONResponse
 from starlette.requests import Request
 
 from app.core.config import get_settings
 from app.core.rate_limit import SlidingWindowLimiter
+from app.core.security import decode_access_token
 
 # La web solo carga código propio; las fuentes vienen de Google Fonts (index.html).
 CSP = "; ".join([
@@ -39,7 +42,35 @@ BASE_HEADERS = {
 _NO_CSP = ("/api/docs", "/api/v1/openapi.json")
 
 _settings = get_settings()
-api_limiter = SlidingWindowLimiter(max_hits=_settings.api_rate_limit, window_seconds=60)
+
+
+class ApiLimiter:
+    """Ventana de 60 s por persona (IP + usuario; sin sesión cuenta como «anónimo» de esa IP) y por IP (×10)."""
+
+    def __init__(self, per_user: int):
+        self.user = SlidingWindowLimiter(max_hits=per_user, window_seconds=60)
+        self.ip = SlidingWindowLimiter(max_hits=per_user * 10, window_seconds=60)
+
+    def allow(self, ip: str, subject: str) -> bool:
+        return self.user.allow(f"{ip}|{subject}") and self.ip.allow(ip)
+
+    def reset(self) -> None:
+        self.user.reset()
+        self.ip.reset()
+
+
+api_limiter = ApiLimiter(per_user=_settings.api_rate_limit)
+
+
+def _subject(request: Request) -> str:
+    """Usuario del token de acceso (firma verificada). Un token falso o vencido cuenta como anónimo."""
+    auth = request.headers.get("authorization", "")
+    if not auth.lower().startswith("bearer "):
+        return "anonimo"
+    try:
+        return str(decode_access_token(auth[7:]).get("sub", "anonimo"))
+    except jwt.PyJWTError:
+        return "anonimo"
 
 
 def _error(status: int, code: str, message: str, cid: str, headers: dict | None = None) -> JSONResponse:
@@ -56,7 +87,7 @@ def precheck(request: Request, ip: str | None, cid: str) -> JSONResponse | None:
         return _error(413, "payload_too_large", f"La petición supera el máximo de {mb:g} MB.", cid)
     # Health checks y el flujo de notificaciones quedan fuera: los consultan monitores y reconexiones.
     if path.startswith("/api/") and not path.startswith(("/api/v1/health", "/api/v1/notifications/stream")):
-        if not api_limiter.allow(ip or "desconocida"):
+        if not api_limiter.allow(ip or "desconocida", _subject(request)):
             return _error(429, "rate_limited", "Demasiadas peticiones. Espera un momento e inténtalo de nuevo.", cid,
                           {"Retry-After": "60"})
     return None

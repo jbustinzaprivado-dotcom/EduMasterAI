@@ -90,6 +90,11 @@ jobs:
       - run: npm run typecheck
       - run: npm test
       - run: npm run build
+      # La web compilada se versiona para instalar sin npm (D49). Si alguien cambia la web y no recompila, falla aquí.
+      - name: dist versionada al día
+        run: |
+          git add -N dist
+          git diff --stat --exit-code -- dist || (echo "::error::apps/web/dist no coincide con el código: ejecuta npm run build y súbela" && exit 1)
 
   e2e:
     name: E2E (Playwright sobre la web real)

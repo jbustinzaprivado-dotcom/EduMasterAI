@@ -1,7 +1,6 @@
 """Fase 7: cabeceras de seguridad, límites de tamaño y de frecuencia, métricas operativas (D40, D41)."""
 
 from app.core import hardening
-from app.core.rate_limit import SlidingWindowLimiter
 from tests.conftest import auth
 
 
@@ -21,14 +20,22 @@ def test_cuerpo_demasiado_grande(client):
     assert r.status_code == 413 and r.json()["code"] == "payload_too_large" and r.json()["correlation_id"]
 
 
-def test_limite_general_por_ip(client, monkeypatch):
-    monkeypatch.setattr(hardening, "api_limiter", SlidingWindowLimiter(max_hits=3, window_seconds=60))
-    admin = auth(client, "ANDINO", "admin@andino.demo")  # 1
-    assert client.get("/api/v1/auth/me", headers=admin).status_code == 200  # 2
-    assert client.get("/api/v1/auth/me", headers=admin).status_code == 200  # 3
+def test_limite_general_por_persona_y_aula(client, monkeypatch):
+    """D49: cada persona tiene su cupo; un aula detrás de la misma IP no se bloquea entre sí."""
+    monkeypatch.setattr(hardening, "api_limiter", hardening.ApiLimiter(per_user=3))
+    admin = auth(client, "ANDINO", "admin@andino.demo")  # el login no lleva token: cuenta como anónimo
+    for _ in range(3):
+        assert client.get("/api/v1/auth/me", headers=admin).status_code == 200
     r = client.get("/api/v1/auth/me", headers=admin)
     assert r.status_code == 429 and r.headers["Retry-After"] == "60" and r.json()["code"] == "rate_limited"
+    # Otra persona desde la MISMA IP sigue entrando: el cupo es por persona.
+    doc = auth(client, "ANDINO", "docente@andino.demo")
+    assert client.get("/api/v1/auth/me", headers=doc).status_code == 200
     assert client.get("/api/v1/health").status_code == 200  # los health checks no cuentan
+    # Un token inventado no da cupo nuevo: cuenta como anónimo.
+    fake = {"Authorization": "Bearer inventado"}
+    codes = [client.get("/api/v1/auth/me", headers=fake).status_code for _ in range(4)]
+    assert codes[-1] == 429
 
 
 def test_metricas_operativas_con_permiso(client):
