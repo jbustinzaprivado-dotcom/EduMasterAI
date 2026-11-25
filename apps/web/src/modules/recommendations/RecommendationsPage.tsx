@@ -140,7 +140,10 @@ export function TutorPage() {
           ) : (
             <>
               <p className="text-sm text-muted">Te sugiero esto, en orden de prioridad:</p>
-              {recs.data.slice(0, 3).map((r) => <RecommendationCard key={r.id} r={r} />)}
+              {/* Solo por prioridad (no por estado): al aceptar, la tarjeta queda en su sitio como «aceptada»
+                  en vez de bajar y salir de las 3 visibles. */}
+              {[...recs.data].sort((a, b) => b.priority - a.priority).slice(0, 3)
+                .map((r) => <RecommendationCard key={r.id} r={r} />)}
               <p className="text-[11px] text-muted">Motor <Badge tone="muted">{recs.data[0]?.source}</Badge> · orientativo, no reemplaza a tu docente.</p>
             </>
           ))}

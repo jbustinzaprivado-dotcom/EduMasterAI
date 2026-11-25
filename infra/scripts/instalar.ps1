@@ -5,6 +5,7 @@
 #   4. Migraciones de la base y cuentas DEMO.
 # Sin PostgreSQL configurado usa SQLite en data/ (suficiente para probar). Para PostgreSQL: crear_base.ps1.
 
+param([switch]$RecompilarWeb)
 $ErrorActionPreference = "Stop"
 $root = Resolve-Path (Join-Path $PSScriptRoot "..\..")
 $api = Join-Path $root "apps\api"
@@ -20,12 +21,21 @@ Step "API: entorno virtual y dependencias"
 if (-not (Test-Path (Join-Path $api ".venv"))) { python -m venv (Join-Path $api ".venv") }
 & (Join-Path $api ".venv\Scripts\python.exe") -m pip install -q --upgrade pip
 & (Join-Path $api ".venv\Scripts\python.exe") -m pip install -q -r (Join-Path $api "requirements.txt")
+if ($LASTEXITCODE -ne 0) { throw "Fallo la instalacion de dependencias de Python (revisa la conexion a internet)." }
 
-Step "Web: dependencias y compilación"
-Push-Location $web
-npm ci
-npm run build
-Pop-Location
+# La web compilada (apps/web/dist) viene en el repositorio: sin npm se puede instalar en redes que bloquean
+# registry.npmjs.org (p. ej. la del centro de estudios). Para recompilarla: npm run build (o instalar.ps1 -RecompilarWeb).
+if ((Test-Path (Join-Path $web "dist\index.html")) -and -not $RecompilarWeb) {
+    Step "Web: ya viene compilada (se omite npm)"
+} else {
+    Step "Web: dependencias y compilación"
+    Push-Location $web
+    npm.cmd ci
+    if ($LASTEXITCODE -ne 0) { Pop-Location; throw "Fallo npm ci (revisa la conexion a internet)." }
+    npm.cmd run build
+    if ($LASTEXITCODE -ne 0) { Pop-Location; throw "Fallo la compilacion de la web." }
+    Pop-Location
+}
 
 $envFile = Join-Path $root ".env"
 if (-not (Test-Path $envFile)) {

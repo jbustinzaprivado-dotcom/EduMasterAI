@@ -83,3 +83,21 @@
     transition-duration: 0.01ms !important;
   }
 }
+
+/* Mapa mundial (D47): onda que sale desde el Perú. Con movimiento reducido queda quieta (regla anterior). */
+@keyframes world-pulse {
+  from { transform: scale(0.6); opacity: 0.9; }
+  to { transform: scale(2.6); opacity: 0; }
+}
+.world-pulse {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: world-pulse 2.4s ease-out infinite;
+}
+
+/* Red neuronal (D48): cada capa aparece después de la anterior. */
+@keyframes nn-layer-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+.nn-layer-in { animation: nn-layer-in 0.45s ease-out both; }

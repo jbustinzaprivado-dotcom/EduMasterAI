@@ -272,14 +272,16 @@ Navegador ──HTTPS──▶ Cloudflare Tunnel ──▶ API FastAPI (puerto 8
 ## 11. Mapa de progreso y comunidad
 
 **Mapa.**
-- Muestra el progreso promedio por departamento del Perú, como un **cartograma de mosaicos**: un cuadrado por región.
+- Tiene dos vistas (D47):
+  - **Mundo** (por defecto), como en la imagen de referencia: un mapa de puntos con la cantidad de estudiantes por continente. Hoy todos los estudiantes DEMO están en el Perú, así que solo brilla Sudamérica, con un punto por departamento.
+  - **Perú:** el progreso promedio por departamento, como un **cartograma de mosaicos**, con un cuadrado por región.
 - Las regiones con menos de 3 estudiantes no se muestran ni se nombran (**k-anonimato**, D30).
 - Solo lo ven los docentes y la gestión.
 
 | Alternativa | Por qué no |
 |---|---|
-| Mapa geográfico real (GeoJSON) | Pesa varios MB por el túnel. El mosaico se lee igual de bien. |
-| Mapa mundial, como en la referencia | No aporta para una institución peruana. |
+| Mapa geográfico real (GeoJSON) | Pesa varios MB por el túnel. El mundo es una cuadrícula de puntos de 1,3 KB, dibujada como un solo trazo, y el Perú un mosaico. |
+| Inventar alumnos en otros continentes para que se vea como la referencia | El §1 prohíbe cifras inventadas: los otros continentes muestran 0. |
 
 **Comunidad.**
 - Cada oferta tiene su espacio de anuncios y debates.
@@ -415,6 +417,8 @@ Navegador ──HTTPS──▶ Cloudflare Tunnel ──▶ API FastAPI (puerto 8
 **Cómo funciona.**
 - La topología **viene de la API**, no está dibujada a mano.
 - Sin un modelo publicado, la red aparece en estado "Diseño". La animación es una "SIMULACIÓN DEMO" que el usuario inicia y que lleva ese rótulo (D14).
+- **Por capas (D48):** al cargar, la red se arma una capa tras otra. La simulación envía una onda que recorre una capa por vez, de la entrada a la salida, y vuelve a empezar.
+- **Liviana:** las conexiones de cada par de capas son un solo trazo y el brillo es un halo simple, sin filtros por nodo. En cada cuadro solo se redibujan los pulsos.
 - Respeta `prefers-reduced-motion`.
 - Al hacer clic en una capa se ve su operación, sus unidades y su dimensión tensorial.
 

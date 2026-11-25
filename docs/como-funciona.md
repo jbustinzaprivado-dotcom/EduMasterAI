@@ -132,7 +132,7 @@ para encontrar rápido qué pasó.
 
 ## 13. Mapa y comunidad
 
-- **Mapa:** cada departamento es un cuadrado (cartograma) pintado según el progreso promedio de sus estudiantes.
+- **Mapa:** la vista **Mundo** muestra cuántos estudiantes hay por continente; hoy todos son DEMO del Perú, así que solo brilla Sudamérica. La vista **Perú** muestra cada departamento como un cuadrado (cartograma) pintado según el progreso promedio de sus estudiantes.
   Si una región tiene menos de 3 personas, no se muestra ni se nombra: con tan pocos sería fácil adivinar quién es.
 - **Comunidad:** cada curso tiene su espacio. El docente publica anuncios (llegan como notificación), cualquiera del
   curso abre debates y responde, y quien escribió recibe aviso de las respuestas.

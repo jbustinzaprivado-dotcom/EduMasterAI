@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
 import {
   ArrowDownRight,
   ArrowUpRight,
@@ -15,6 +16,7 @@ import { Link } from "react-router";
 import { PHASES } from "../../app/modules";
 import { Donut, TrendChart } from "../../components/charts";
 import { PeruTileMap, type RegionValue } from "../../components/charts/PeruTileMap";
+import { WorldMap } from "../../components/charts/WorldMap";
 import { HeatmapTable, LevelDots } from "../skills/SkillsPage";
 import { api } from "../../lib/api";
 import { useAuth } from "../../lib/auth";
@@ -161,14 +163,27 @@ function MapPanel() {
   const { can } = useAuth();
   const staff = can("course.read.all") || can("assessment.manage");
   const geo = useQuery({ queryKey: ["dashboard", "geo"], queryFn: () => api<Geo>("/dashboard/geo"), enabled: staff });
+  const [view, setView] = useState<"mundo" | "peru">("mundo");
+  const total = geo.data ? geo.data.regions.reduce((a, r) => a + r.students, 0) + geo.data.suppressed_students + geo.data.without_region : 0;
   return (
-    <Panel title="Mapa de progreso" subtitle="Progreso promedio por región · solo agregados">
+    <Panel title="Mapa de progreso de aprendizaje"
+      subtitle={view === "mundo" ? "Estudiantes registrados por continente · solo agregados" : "Progreso promedio por región · solo agregados"}
+      actions={staff && (
+        <div role="tablist" aria-label="Vista del mapa" className="flex rounded-lg border border-line p-0.5 text-[11px]">
+          {(["mundo", "peru"] as const).map((v) => (
+            <button key={v} role="tab" aria-selected={view === v} onClick={() => setView(v)}
+              className={cx("rounded-md px-2 py-0.5", view === v ? "bg-primary/25 text-cyan" : "text-muted hover:text-text")}>
+              {v === "mundo" ? "Mundo" : "Perú"}
+            </button>
+          ))}
+        </div>
+      )}>
       {!staff && <EmptyState icon={Map} title="Vista institucional" description="El mapa agregado está disponible para docentes y coordinación." />}
       {staff && geo.isPending && <Skeleton className="h-52" />}
       {staff && geo.isError && <ErrorState error={geo.error} onRetry={() => geo.refetch()} />}
       {geo.data && (
         <>
-          <PeruTileMap data={geo.data.regions} />
+          {view === "mundo" ? <WorldMap regions={geo.data.regions} total={total} /> : <PeruTileMap data={geo.data.regions} />}
           <p className="mt-3 text-[11px] text-muted">
             Regiones con menos de {geo.data.k} estudiantes no se muestran ni se nombran
             ({geo.data.suppressed_students} ocultos){geo.data.without_region ? ` · ${geo.data.without_region} sin región` : ""}.
