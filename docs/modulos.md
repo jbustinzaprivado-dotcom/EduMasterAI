@@ -434,7 +434,8 @@ Navegador ──HTTPS──▶ Cloudflare Tunnel ──▶ API FastAPI (puerto 8
 
 **Cómo funciona.**
 - **Cabeceras de seguridad** (D40): CSP que solo permite scripts propios, anti-clickjacking, HSTS cuando hay HTTPS y `no-store` en la API.
-- **Límites** (D40): 2 MB por petición y 600 peticiones por minuto por IP.
+- **Límites** (D40, D49): 2 MB por petición y 600 peticiones por minuto por persona (IP + usuario), con un
+  tope de 6 000 por IP para que un aula en el mismo Wi-Fi no se bloquee.
 - **Pantalla Operación** (D41): latencia p50/p95/p99 por ruta, errores 5xx, conexiones en vivo, frescura de los datos y predicciones, comparadas con los objetivos del §10.5. Las rutas se registran por plantilla, sin identificadores, así que no hay datos personales.
 - **Modelo de amenazas y revisión OWASP:** ver [`fase-7/seguridad.md`](fase-7/seguridad.md).
 
@@ -484,8 +485,8 @@ Navegador ──HTTPS──▶ Cloudflare Tunnel ──▶ API FastAPI (puerto 8
 |---|---|---|
 | API (89 pruebas) | Reglas de negocio, permisos, aislamiento, IA, seguridad, respaldo | pytest, sobre SQLite y PostgreSQL |
 | ML | Sin fuga de datos, etiqueta correcta, NumPy = PyTorch | pytest |
-| Web (7 pruebas) | Componentes y formato seguro del texto | Vitest |
-| E2E (20 recorridos) | La web real en un navegador: login, permisos, accesibilidad (axe), móvil, notas en vivo entre dos navegadores, IA, certificados, analítica, operación y rollback | Playwright (D35) |
+| Web (8 pruebas) | Componentes y formato seguro del texto | Vitest |
+| E2E (22 recorridos) | La web real en un navegador: login, permisos, accesibilidad (axe), móvil, notas en vivo entre dos navegadores, IA, certificados, analítica, operación y rollback | Playwright (D35) |
 
 La CI de GitHub ejecuta los cuatro grupos en cada cambio.
 

@@ -4,8 +4,8 @@ Plataforma empresarial de aprendizaje inteligente: gestión académica, analíti
 supervisión humana. Proyecto académico grupal construido según la *Especificación funcional y técnica v1.0*
 (12-11-2026), citada como **§N**.
 
-> **Estado:** Fases 0 a 6 ✅, pruebas E2E ✅, lecciones con contenido y gestión de contraseñas ✅ ·
-> pendientes: ranking aprendido y Fases 7-8.
+> **Estado:** Fases 0 a 8 ✅ · 89 pruebas de API, 5 de ML, 8 de web y 22 E2E, con la CI en verde ·
+> pendientes no bloqueantes: ranking aprendido (cabeza D) y escaneo de dependencias en la CI.
 > La hoja de ruta completa está en [docs/fase-0/backlog.md](docs/fase-0/backlog.md).
 
 ## Qué funciona hoy
@@ -32,7 +32,7 @@ supervisión humana. Proyecto académico grupal construido según la *Especifica
 | Certificados | Emisión automática por criterio oficial, PDF con QR, anulación y verificación pública en `/verificar`. |
 | Recomendaciones e IA Tutor | Sugerencias explicadas (siguiente actividad, entrega próxima, reforzar, retomar) con feedback y métricas de utilidad. |
 | Administración | Usuarios, roles e instituciones. |
-| Seguridad | Cabeceras CSP/HSTS, límites de tamaño y de peticiones por IP, modelo de amenazas y revisión OWASP (`docs/fase-7/seguridad.md`). |
+| Seguridad | Cabeceras CSP/HSTS, límites de tamaño y de peticiones por persona e IP, modelo de amenazas y revisión OWASP (`docs/fase-7/seguridad.md`). |
 | Operación | Pantalla con latencia p95, errores y conexiones en vivo frente a los objetivos; logs JSON con `correlation_id`; health checks; CI en GitHub Actions. |
 | Respaldo | Respaldo cifrado (AES-256) con prueba de restauración automática; restauración con vuelta atrás. |
 | Puesta en marcha | Smoke test antes de abrir el túnel, retiro del modelo (rollback), prueba de carga y runbooks (`docs/runbooks.md`). |
@@ -101,7 +101,7 @@ cd apps/api && .venv/Scripts/python -m pytest          # pruebas de la API
 cd apps/api && .venv/Scripts/python -m uvicorn app.main:app --reload
 cd apps/web && npm run dev                              # web en http://localhost:5173 (reenvía /api)
 cd apps/web && npm run typecheck && npm test
-cd apps/web && npm run build && npm run e2e              # 15 pruebas E2E (Edge en Windows, base aislada)
+cd apps/web && npm run build && npm run e2e              # 22 pruebas E2E (Edge en Windows, base aislada)
 cd ml && .venv/Scripts/python -m edumaster_ml.train      # reentrena (requiere ml/requirements.txt + torch)
 cd ml && .venv/Scripts/python -m pytest
 ```

@@ -21,7 +21,7 @@ le corresponde (otro estudiante, otra institución) y bots de fuerza bruta.
 
 | Amenaza | Ejemplo | Control | Evidencia |
 |---|---|---|---|
-| **S**uplantación | Adivinar contraseñas | PBKDF2-SHA256 600 000 iteraciones, mensaje genérico, 10 intentos/min por IP, política de contraseñas (D37) | `test_auth.py`, `test_lecciones_contrasenas.py` |
+| **S**uplantación | Adivinar contraseñas | PBKDF2-SHA256 600 000 iteraciones, mensaje genérico, 10 intentos/min por IP y correo y 60 por IP (D46), política de contraseñas (D37) | `test_auth.py`, `test_lecciones_contrasenas.py` |
 | **S**uplantación | Robar el token de renovación | Cookie httpOnly + Secure + SameSite=Strict, rotación y detección de reutilización (revoca la sesión) | `test_auth.py` |
 | **T**ampering | Alterar la bitácora | Sin endpoints de UPDATE/DELETE; en PostgreSQL un trigger los bloquea | trigger en la migración 0001 (la CI corre sobre PostgreSQL) |
 | **T**ampering | Alterar un respaldo | AES-256-GCM autenticado + SHA-256 en el manifiesto (D42) | `test_respaldo.py` |
@@ -29,7 +29,7 @@ le corresponde (otro estudiante, otra institución) y bots de fuerza bruta.
 | **I**nformation disclosure | Ver otra institución | Filtro por `organization_id` en cada consulta; otra institución → 404 (no revela que existe) | `test_permisos_y_aislamiento.py`, E2E 01 |
 | **I**nformation disclosure | Estudiante que ve a otro | ABAC por matrícula y oferta (`offerings_query`) | `test_academico.py` |
 | **I**nformation disclosure | Reidentificar en el mapa | k-anonimato k=3 por región (D30) | `test_mapa_comunidad.py` |
-| **D**enegación de servicio | Inundar la API | 600 pet/min por IP, cuerpo ≤ 2 MB, pool de conexiones alineado y espera máxima de 10 s (D40, D43) | `test_endurecimiento.py`, prueba de carga |
+| **D**enegación de servicio | Inundar la API | 600 pet/min por persona y 6 000 por IP, cuerpo ≤ 2 MB, pool de conexiones alineado y espera máxima de 10 s (D40, D43, D49) | `test_endurecimiento.py`, prueba de carga |
 | **E**levación de privilegios | Docente que se asigna "admin" | RBAC por permisos en la API (la web solo oculta); roles globales solo por superadmin | `test_permisos_y_aislamiento.py` |
 | **E**levación de privilegios | ML Engineer que publica su modelo | Separación de funciones: `ml.manage` registra, `ml.approve` publica/retira | `test_ia.py` |
 

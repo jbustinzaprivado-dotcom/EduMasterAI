@@ -166,12 +166,12 @@ para encontrar rápido qué pasó.
 
 ## 17. Cómo se comprueba que funciona
 
-- **80 pruebas automáticas de la API**: login, robo de sesión, permisos, aislamiento entre instituciones,
+- **89 pruebas automáticas de la API**: login, robo de sesión, permisos, aislamiento entre instituciones,
   bitácora, cursos, eventos idempotentes, entregas, notas, panel, aprobación del modelo, predicción, revisión,
   recomendaciones, notificaciones en vivo, certificados, mapa, comunidad, rutas, analítica, habilidades, lecciones y contraseñas.
 - **5 pruebas de ML**: sin fuga de información, definición de la etiqueta, simulación reproducible y
   NumPy = PyTorch.
-- **18 pruebas E2E (Playwright)**: un navegador real recorre la web como lo haría una persona: inicia sesión, marca
+- **22 pruebas E2E (Playwright)**: un navegador real recorre la web como lo haría una persona: inicia sesión, marca
   actividades, pide ayuda al IA Tutor, recibe una nota en vivo mientras otro navegador califica, aprueba el modelo,
   verifica un certificado sin sesión, exporta analítica y valida una competencia. También revisa accesibilidad
   y que en celular no haya desplazamiento horizontal.
