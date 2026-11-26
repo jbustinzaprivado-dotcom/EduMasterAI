@@ -12,11 +12,20 @@ $root = Resolve-Path (Join-Path $PSScriptRoot "..\..")
 $api = Join-Path $root "apps\api"
 $web = Join-Path $root "apps\web"
 
-$cloudflared = (Get-Command cloudflared -ErrorAction SilentlyContinue).Source
-if (-not $cloudflared -and (Test-Path "C:\Program Files (x86)\cloudflared\cloudflared.exe")) {
-    $cloudflared = "C:\Program Files (x86)\cloudflared\cloudflared.exe"
+# cloudflared: instalado (winget) o portable, sin permisos de administrador: basta con dejar cloudflared.exe en la
+# carpeta del proyecto o en tools\ (docs/despliegue.md).
+$candidates = @(
+    (Get-Command cloudflared -ErrorAction SilentlyContinue).Source,
+    (Join-Path $root "cloudflared.exe"),
+    (Join-Path $root "tools\cloudflared.exe"),
+    "C:\Program Files (x86)\cloudflared\cloudflared.exe",
+    "C:\Program Files\cloudflared\cloudflared.exe"
+)
+$cloudflared = $candidates | Where-Object { $_ -and (Test-Path $_) } | Select-Object -First 1
+if (-not $cloudflared) {
+    throw "Falta cloudflared. Con permisos: winget install --id Cloudflare.cloudflared. Sin permisos: descarga cloudflared-windows-amd64.exe de github.com/cloudflare/cloudflared/releases, renómbralo cloudflared.exe y déjalo en la carpeta del proyecto."
 }
-if (-not $cloudflared) { throw "Falta cloudflared: winget install --id Cloudflare.cloudflared" }
+if (-not (Test-Path (Join-Path $api ".venv\Scripts\python.exe"))) { throw "Falta instalar: ejecuta instalar.bat primero." }
 if (Get-NetTCPConnection -State Listen -LocalPort 8000 -ErrorAction SilentlyContinue) {
     throw "El puerto 8000 está en uso: cierra iniciar.bat antes de la demo."
 }

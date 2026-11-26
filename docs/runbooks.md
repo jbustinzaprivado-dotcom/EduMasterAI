@@ -1,7 +1,8 @@
 # Runbooks de operación (Fase 8)
 
 Procedimientos paso a paso para el PC que hospeda la demo (D03). Cada uno dice **cuándo usarlo**, **qué hacer** y
-**cómo comprobar** que salió bien. Todos los `.bat` están en la raíz del proyecto.
+**cómo comprobar** que salió bien. Todos los `.bat` están en la raíz del proyecto. Para instalar en **otro equipo**
+(sin administrador, con ZIP, trasladando los datos) ver la guía de despliegue: [`despliegue.md`](despliegue.md).
 
 | Situación | Runbook |
 |---|---|
@@ -20,7 +21,9 @@ Procedimientos paso a paso para el PC que hospeda la demo (D03). Cada uno dice *
 
 ## 1. Instalación
 
-1. Instala Python 3.13, Node 24 y Git. Para la demo pública, instala también `cloudflared`:
+1. Instala Python 3.12+ (recomendado 3.13) y Git. Node no hace falta: la web viene compilada. Para la demo pública,
+   instala también `cloudflared` (sin permisos de administrador: `cloudflared.exe` portable en la carpeta del
+   proyecto, ver [`despliegue.md`](despliegue.md#5-equipos-sin-permisos-de-administrador-o-con-red-restringida)):
    ```bash
    winget install --id Cloudflare.cloudflared
    ```
@@ -52,14 +55,10 @@ Para terminar, pulsa Ctrl+C en la ventana. Se cierran el túnel y la API.
 Sigue el §16.3: primero respaldo, después migraciones compatibles, y al final smoke test.
 
 1. Detén `demo.bat` o `iniciar.bat`.
-2. Ejecuta `respaldo.bat` y comprueba que diga `"ok": true`.
-3. Actualiza el código:
-   ```bash
-   git pull
-   ```
-   Si instalaste desde un ZIP, descarga el ZIP nuevo y cópialo encima. `.env` y `data/` se conservan.
-4. Ejecuta `instalar.bat`. Es idempotente: instala dependencias, compila la web, migra la base y completa los datos DEMO sin borrar nada.
-5. Abre `demo.bat`. El smoke test debe salir en verde.
+2. Ejecuta **`actualizar.bat`**. En un solo paso hace el respaldo previo verificado (si falla, se detiene), `git pull`
+   (solo avance rápido) e `instalar.bat` (dependencias, migraciones sin perder datos y datos DEMO que falten).
+   Si instalaste desde un ZIP, descarga el ZIP nuevo, cópialo encima (`.env` y `data/` se conservan) y ejecuta `instalar.bat`.
+3. Abre `demo.bat`. El smoke test debe salir en verde. En el navegador, **Ctrl+F5**.
 
 Si algo falla, vuelve a la versión anterior: `git checkout <commit anterior>`, después `instalar.bat`, y restaura el respaldo del paso 2 (runbook 5).
 
@@ -129,6 +128,8 @@ Si el respaldo no se puede descifrar, revisa que `EDUMASTER_BACKUP_KEY` en `.env
 | Las notificaciones no llegan en vivo | El navegador perdió la conexión | Se reconecta solo y recupera lo perdido. Si no, recarga la página (F5). |
 | La web va lenta | Demasiados usuarios para un solo proceso | Mira **Operación**: si el p95 pasa del objetivo, limita la demo a unas 40 personas a la vez (D43). |
 | La web muestra una versión vieja | Caché del navegador | Pulsa Ctrl+F5. |
+| «El sistema no puede encontrar la ruta especificada» al abrir `iniciar.bat` | Esa carpeta no está instalada (p. ej. un ZIP recién descomprimido) | Ejecuta `instalar.bat` en esa carpeta. |
+| Una sección nueva falla después de actualizar | La API sigue con la versión anterior en memoria | Cierra la ventana de la API, ejecuta `actualizar.bat` y vuelve a abrir. |
 | La API no arranca en modo demo | Falta un secreto o la cookie no es segura | Lee el mensaje: `EDUMASTER_JWT_SECRET` debe tener al menos 32 caracteres. `demo.bat` ya fija la cookie segura. |
 
 Todos los errores incluyen un `correlation_id`. Búscalo en la ventana de la API para ver qué pasó.

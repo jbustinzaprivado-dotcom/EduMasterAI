@@ -42,14 +42,19 @@ Los módulos que aún no existen muestran **qué incluirán y en qué fase llega
 
 ## Instalar y abrir (Windows)
 
-Requisitos: Python 3.13, Node 24 y Git. PostgreSQL es opcional en local (sin él se usa SQLite).
+**Guía completa para instalar en otro equipo: [`docs/despliegue.md`](docs/despliegue.md)** (requisitos, equipos sin
+administrador, actualizar, llevar los datos de un equipo a otro y problemas frecuentes).
+
+Requisitos: Python 3.12+ (recomendado 3.13) y Git. Node solo para recompilar la web, que ya viene compilada; cloudflared
+solo para la demo pública. PostgreSQL es opcional (sin él se usa SQLite).
 
 1. `instalar.bat`: instala todo, crea el `.env` con secretos aleatorios y carga las cuentas DEMO.
 2. `iniciar.bat`: abre http://localhost:8000.
 3. Opcional: `infra\scripts\crear_base.ps1` pasa la base a PostgreSQL.
 
-Otros scripts: `demo.bat` (demo pública), `comprobar.bat` (smoke test) y `respaldo.bat` (respaldo cifrado y prueba de
-restauración). Todos los procedimientos de operación están en [`docs/runbooks.md`](docs/runbooks.md).
+Otros scripts: `demo.bat` (demo pública), `actualizar.bat` (versión nueva con respaldo previo), `comprobar.bat` (smoke
+test) y `respaldo.bat` (respaldo cifrado y prueba de restauración). Los procedimientos de operación están en
+[`docs/runbooks.md`](docs/runbooks.md).
 
 ### Cuentas DEMO
 La contraseña común está en `.env` (`EDUMASTER_DEMO_PASSWORD`). La pantalla de login lista las cuentas.
@@ -70,11 +75,11 @@ La estudiante DEMO `estudiante@andino.demo` tiene un perfil "en riesgo" para mos
 
 ## Actualizar una instalación existente (sin perder datos)
 
-Con la API detenida (cierra `iniciar.bat` o `demo.bat`):
+Con la API detenida (cierra `iniciar.bat` o `demo.bat`), doble clic en **`actualizar.bat`**. Hace en un solo paso:
 
-1. `respaldo.bat` (respaldo previo, §16.3).
-2. `git pull` (o descarga el ZIP nuevo y cópialo encima: `.env` y `data/` se conservan).
-3. `instalar.bat`: es idempotente; instala dependencias, compila la web, migra la base y completa los datos DEMO.
+1. Respaldo cifrado previo, verificado (§16.3). Si falla, no sigue.
+2. `git pull` (con ZIP: descarga el nuevo y cópialo encima; `.env` y `data/` se conservan).
+3. `instalar.bat`: es idempotente; instala dependencias, migra la base y completa los datos DEMO.
 
 Las migraciones están preparadas para bases con datos (D38) y `app.seed` solo completa lo que falte (no duplica ni
 borra). Luego vuelve a abrir `iniciar.bat` o `demo.bat`. Subir cambios a GitHub **no afecta** a una demo que está

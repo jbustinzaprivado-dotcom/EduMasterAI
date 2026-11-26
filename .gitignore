@@ -11,6 +11,10 @@ backups/
 ml/data/
 mlruns/
 
+# cloudflared portable (cada equipo descarga el suyo; ver docs/despliegue.md)
+cloudflared.exe
+tools/
+
 # Frontend
 node_modules/
 apps/web/dist/
