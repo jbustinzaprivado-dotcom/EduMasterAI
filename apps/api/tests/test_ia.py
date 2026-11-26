@@ -179,3 +179,22 @@ def test_recorrido_del_grupo(client):
     url = f"/api/v1/ml/offerings/{py['id']}/trace"
     assert client.get(url, headers=auth(client, "ANDINO", "estudiante@andino.demo")).status_code == 403
     assert client.get(url, headers=auth(client, "ANDINO", "docente2@andino.demo")).status_code == 404
+
+
+def test_cada_variable_llega_a_la_salida(client):
+    """D53: desde cada variable mostrada hay un camino de conexiones hasta la cabeza de riesgo."""
+    _approve(client)
+    doc = auth(client, "ANDINO", "docente@andino.demo")
+    py, valeria = _valeria(client, doc)
+    for url in (f"/api/v1/ml/enrollments/{valeria['enrollment_id']}/trace", f"/api/v1/ml/offerings/{py['id']}/trace"):
+        t = client.get(url, headers=doc).json()
+        out: dict = {}
+        for e in t["edges"]:
+            out.setdefault((e["source_layer"], e["source"]), []).append((e["target_layer"], e["target"]))
+        for node in t["layers"][0]["nodes"]:
+            frontier, seen = [("input", node["index"])], set()
+            while frontier:
+                cur = frontier.pop()
+                seen.add(cur)
+                frontier += [n for n in out.get(cur, []) if n not in seen]
+            assert ("heads", 2) in seen, node["label"]

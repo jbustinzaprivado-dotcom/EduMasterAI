@@ -137,6 +137,8 @@ Navegador ──HTTPS──▶ Cloudflare Tunnel ──▶ API FastAPI (puerto 8
 | **Texto con formato propio, nunca HTML** (D36) | Editor HTML enriquecido | Interpretar HTML del docente abre la puerta a XSS. Una prueba lo verifica. |
 | **Video por enlace** | Subida de archivos | Subir archivos exige almacenamiento, antivirus y URLs firmadas (§11). Se pospuso hasta tenerlos. |
 
+**Pestañas (D54).** La ficha del curso se ordena en Contenido · Estudiantes y riesgo · Recomendaciones · Certificados; el estudiante solo ve Contenido. La pestaña queda en la URL (`?seccion=estudiantes`), así la notificación de una alerta abre directo la lista.
+
 **Cómo mostrarlo.** Como docente, editar una lección: la versión sube. Como estudiante, marcar una actividad: la barra de progreso avanza.
 
 ---
@@ -390,14 +392,31 @@ Navegador ──HTTPS──▶ Cloudflare Tunnel ──▶ API FastAPI (puerto 8
 **Para qué.** Decirle al estudiante "¿qué hago ahora?", siempre con el motivo, y medir si la sugerencia le sirvió.
 
 **Cómo funciona.**
-- El motor `reglas-v1` (D27) genera cuatro tipos de sugerencia:
-  - la siguiente actividad pendiente;
-  - una entrega que vence pronto;
-  - reforzar un tema tras una nota baja;
-  - retomar el curso tras días de inactividad.
+- El motor `reglas-v1` (D27, D55) genera diez tipos de sugerencia, todos con datos que el sistema ya tiene:
+
+  | Tipo | Cuándo aparece |
+  |---|---|
+  | Siguiente actividad | La próxima actividad obligatoria del curso |
+  | Entrega próxima | Una evaluación vence en 7 días y no se entregó |
+  | Entrega vencida | Venció hace menos de 14 días sin entrega (aún se puede entregar como tardía) |
+  | Mejorar nota | Quedan intentos y la mejor nota está bajo 14/20 (cuenta el mejor intento) |
+  | Reforzar | Nota bajo 55 %: se sugiere la práctica de esa unidad |
+  | Retomar | 7 o más días sin actividad (el riesgo solo sube su prioridad, D22) |
+  | Competencia | Nivel estimado principiante o elemental con evidencia de notas (D34) |
+  | Certificado | Avance de 70 % o más y algo concreto que falta para certificarse (D29) |
+  | Ruta | El curso es la etapa que sigue en una ruta asignada y aún no se empieza (D32) |
+  | Anuncio | Un anuncio del docente en el curso sin leer |
+
+- Cada sugerencia dice **por qué va en ese lugar** («vence en 2 días», «46 días sin actividad») y, al cerrarse, **por qué se cerró** («La entregaste», «La fecha de entrega pasó»).
+- El estudiante tiene un solo botón de acción por tarjeta («Entregar ahora», «Intentar de nuevo», «Ver mi nivel»…): ir a hacerlo cuenta como aceptar.
 - El modelo de riesgo solo **sube la prioridad** de "retomar", sin mostrar el puntaje.
 - Cada sugerencia pasa por los estados nueva, aceptada, descartada, completada y expirada. El estudiante puede marcarla como útil o no útil.
 - Se mide la aceptación y la utilidad por tipo de sugerencia, no solo los clics.
+- **Por rol (D55):** el estudiante tiene su bandeja (Vigentes · Historial · Cómo me han servido) y el IA Tutor queda
+  para la pregunta rápida; el docente ve **Acciones sugeridas** calculadas en el momento (entregas por calificar,
+  alertas sin atender, estudiantes sin entregar algo que vence, inactivos y competencias bajas en el grupo) y las
+  sugerencias de cada estudiante; la gestión ve la aceptación por tipo, por semana y por curso, y los motivos de
+  descarte más frecuentes para ajustar las reglas.
 
 **Código.** `recommendations/engine.py` y `router.py`. En la web: `modules/recommendations` (IA Tutor y Recomendaciones).
 
@@ -429,6 +448,12 @@ Navegador ──HTTPS──▶ Cloudflare Tunnel ──▶ API FastAPI (puerto 8
 - **Animación real:** la señal avanza capa por capa; los pulsos viajan solo por las conexiones reales, con tamaño
   según cuánto aportaron, y cada neurona se enciende al llegarle, con brillo según su activación. Pausa, repetir,
   velocidad y respeto al movimiento reducido.
+- **Topología real (D53):** la rama tabular y el bloque temporal son paralelos, así que se dibujan en la misma
+  columna (tabular arriba, temporal abajo) y la señal llega a ambas a la vez. Ninguna conexión cruza neuronas
+  ajenas; una captura cuadro a cuadro de 26 recorridos (escritorio y celular) lo midió en cero.
+- **Por variable (D53):** «Por turnos» recorre las variables una tras otra y «Variable específica» muestra solo el
+  camino de una. Las neuronas de cada capa se encienden una por una al llegarles la señal de esa variable, y el
+  texto dice por cuántas neuronas pasa hasta la salida (o que aporta muy poco si su valor es casi 0).
 - La API repite la propagación hacia delante con los datos actuales y guarda la activación de cada capa. La
   probabilidad final es la misma que da el modelo publicado (una prueba lo verifica).
 - Como no caben 24 + 24 + 32 neuronas, se muestran **las que más aportaron**, de la salida hacia atrás: las 5 de
@@ -500,10 +525,10 @@ Navegador ──HTTPS──▶ Cloudflare Tunnel ──▶ API FastAPI (puerto 8
 
 | Nivel | Qué cubre | Herramienta |
 |---|---|---|
-| API (92 pruebas) | Reglas de negocio, permisos, aislamiento, IA, seguridad, respaldo | pytest, sobre SQLite y PostgreSQL |
+| API (98 pruebas) | Reglas de negocio, permisos, aislamiento, IA, seguridad, respaldo | pytest, sobre SQLite y PostgreSQL |
 | ML | Sin fuga de datos, etiqueta correcta, NumPy = PyTorch | pytest |
 | Web (8 pruebas) | Componentes y formato seguro del texto | Vitest |
-| E2E (24 recorridos) | La web real en un navegador: login, permisos, accesibilidad (axe), móvil, notas en vivo entre dos navegadores, IA, recorrido de la red, certificados, analítica, operación y rollback | Playwright (D35) |
+| E2E (27 recorridos) | La web real en un navegador: login, permisos, accesibilidad (axe), móvil, notas en vivo entre dos navegadores, IA, recorrido de la red, certificados, analítica, operación y rollback | Playwright (D35) |
 
 La CI de GitHub ejecuta los cuatro grupos en cada cambio.
 

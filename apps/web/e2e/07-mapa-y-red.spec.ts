@@ -44,6 +44,17 @@ test("recorrido real de una predicción por la red (D51)", async ({ page }) => {
   // Al terminar el recorrido, la salida muestra la probabilidad.
   await expect(trace.getByText(/C · Riesgo de abandono · \d+ %/)).toBeVisible({ timeout: 8000 });
 
+  // D53: seguir una variable elegida, o todas por turnos, neurona por neurona hasta la salida.
+  // Las variables mostradas dependen de los datos del momento: se elige la primera de la lista.
+  await page.getByLabel("Variable específica").selectOption({ index: 1 });
+  await expect(page.getByTestId("trace-focus")).toContainText(/\(-?\d\.\d\d\): su señal pasa por \d+ neuronas hasta la salida/);
+  await expect(trace.getByText(/C · Riesgo de abandono · \d+ %/)).toBeVisible({ timeout: 8000 });
+  await page.getByRole("button", { name: "Por turnos" }).click();
+  await expect(page.getByTestId("trace-focus")).toContainText("Variable 1 de 8");
+  await expect(page.getByTestId("trace-focus")).toContainText("Variable 2 de 8", { timeout: 12000 });
+  await page.getByRole("button", { name: "Todas las variables" }).click();
+  await expect(page.getByTestId("trace-focus")).toHaveCount(0);
+
   // D52: «Todos los estudiantes» recorre la red con el promedio del grupo.
   await page.getByLabel("Estudiante", { exact: true }).selectOption("todos");
   await expect(trace).toHaveAccessibleName(/Recorrido del grupo de \d+ estudiantes: \d+ % de riesgo promedio/);

@@ -65,11 +65,22 @@ const DOWN = "#ff5c8a";
 const RISK_TONE = { alto: "danger", medio: "warning", bajo: "teal" } as const;
 
 const W = 820;
-const H = 330;
+const H = 440;
 const PAD_L = 185; // cabe "Evaluaciones sin entregar 0.50"
 const PAD_R = 185; // cabe "C · Riesgo de abandono · 80 %"
-const PAD_Y = 34;
-const HOP_S = 0.9; // segundos que tarda la señal en pasar de una capa a la siguiente (1×)
+const TOP = 30; // borde superior del dibujo
+const BOTTOM = H - 34; // borde inferior (debajo van los nombres de las capas)
+const STEP_Y = 30; // separación entre neuronas de una rama
+const HOP_S = 0.9; // segundos que tarda la señal en pasar de una columna a la siguiente (1×)
+
+/**
+ * Columnas de la topología real: la rama tabular y el bloque temporal son PARALELOS (§9.1), así que comparten la
+ * columna 1 (tabular arriba, temporal abajo). Ninguna conexión salta una columna ni cruza neuronas ajenas, y la
+ * señal llega a las dos ramas a la vez.
+ */
+const COLUMN: Record<TraceLayer["id"], number> = { input: 0, projection: 1, temporal: 1, fusion: 2, heads: 3 };
+const LAST = 3;
+const MODES = [["all", "Todas las variables"], ["turns", "Por turnos"]] as const;
 
 type Point = [number, number];
 type Selection = { kind: "node"; key: string } | { kind: "layer"; id: string } | null;
@@ -110,53 +121,120 @@ export function TraceView({ arch, offeringId, enrollment }: { arch: Architecture
 
 export function TraceDiagram({ arch, trace }: { arch: Architecture; trace: Trace }) {
   const reduced = useMemo(prefersReducedMotion, []);
-  const total = trace.layers.length;
-  const last = total - 1;
+  const last = LAST;
+  const inputs = trace.layers[0]!.nodes;
   const [selected, setSelected] = useState<Selection>(null);
   const [playing, setPlaying] = useState(!reduced);
   const [speed, setSpeed] = useState(1);
-  // step = última capa ya encendida; t = avance de los pulsos hacia la capa step + 1.
-  const anim = useRef({ step: reduced ? last : 0, t: 0 });
+  // Modo (D53): todas las variables a la vez, una tras otra por turnos, o una variable elegida.
+  const [mode, setMode] = useState<"all" | "turns" | "one">("all");
+  const [focusVar, setFocusVar] = useState<number | null>(null);
+  // step = última columna encendida; t = avance hacia la siguiente; rest = pausa entre turnos; turn = variable actual.
+  const anim = useRef({ step: reduced ? last : 0, t: 0, rest: 0, turn: 0 });
   const [, setFrame] = useState(0);
   const redraw = () => setFrame((f) => (f + 1) % 1_000_000);
 
-  const replay = () => { anim.current = { step: 0, t: 0 }; setPlaying(true); redraw(); };
-  // Cada traza nueva (otro estudiante o el grupo) se recorre desde la entrada.
-  useEffect(() => { anim.current = { step: reduced ? last : 0, t: 0 }; setPlaying(!reduced); setSelected(null); redraw(); }, [trace, reduced, last]);
+  const replay = () => { anim.current = { step: reduced ? last : 0, t: 0, rest: 0, turn: 0 }; setPlaying(!reduced); redraw(); };
+  // Otra traza, otro modo u otra variable: el recorrido empieza de nuevo desde la entrada.
+  useEffect(() => { setSelected(null); }, [trace]);
+  useEffect(replay, [trace, reduced, mode, focusVar]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  const focusing = mode !== "all";
+  const hop = HOP_S * (focusing ? 1.5 : 1);
   useEffect(() => {
     if (!playing) return;
     let raf = 0;
     let prev = performance.now();
     const tick = (now: number) => {
-      const a = anim.current;
-      a.t += (Math.min(now - prev, 250) / 1000) * (speed / HOP_S);
+      const dt = Math.min(now - prev, 250) / 1000;
       prev = now;
-      if (a.t >= 1) { a.step += 1; a.t = 0; }
+      const a = anim.current;
+      if (a.rest > 0) {
+        a.rest -= dt * speed;
+        if (a.rest <= 0) { a.rest = 0; a.turn += 1; a.step = 0; a.t = 0; } // siguiente variable
+      } else {
+        a.t += (dt * speed) / hop;
+        if (a.t >= 1) { a.step += 1; a.t = 0; }
+        if (a.step >= last) {
+          a.step = last;
+          if (mode === "turns" && a.turn < inputs.length - 1) a.rest = 1.1; // pausa y pasa a la siguiente
+          else { redraw(); setPlaying(false); return; } // la señal llegó a la salida
+        }
+      }
       redraw();
-      if (a.step >= last) { a.step = last; setPlaying(false); return; } // la señal llegó a la salida
       raf = requestAnimationFrame(tick);
     };
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
-  }, [playing, speed, last]);
+  }, [playing, speed, last, hop, mode, inputs.length]);
 
-  const { step, t } = anim.current;
+  const { step, t, turn } = anim.current;
   const done = step >= last;
-  const layerIndex = useMemo(() => new Map(trace.layers.map((l, i) => [l.id as string, i])), [trace]);
+  const layerIndex = useMemo(() => new Map(trace.layers.map((l) => [l.id as string, COLUMN[l.id]])), [trace]);
   const pos = useMemo(() => {
     const map = new Map<string, Point>();
-    trace.layers.forEach((layer, i) => {
-      const x = PAD_L + (i * (W - PAD_L - PAD_R)) / last;
+    const tabular = trace.layers.find((l) => l.id === "projection")?.nodes.length ?? 0;
+    const branchTop = { projection: TOP + 22, temporal: TOP + 22 + (tabular - 1) * STEP_Y + 46 };
+    trace.layers.forEach((layer) => {
+      const x = PAD_L + (COLUMN[layer.id] * (W - PAD_L - PAD_R)) / LAST;
       const n = layer.nodes.length;
-      const span = Math.min(H - 2 * PAD_Y - 14, n * 36);
       layer.nodes.forEach((node, j) => {
-        const y = (H - 14) / 2 - span / 2 + (n === 1 ? span / 2 : (j * span) / (n - 1));
+        let y: number;
+        if (layer.id === "projection" || layer.id === "temporal") {
+          y = branchTop[layer.id] + j * STEP_Y; // cada rama en su mitad de la columna, con su nombre encima
+        } else {
+          const gap = layer.id === "input" ? (BOTTOM - TOP - 10) / Math.max(n - 1, 1) : Math.min(54, (BOTTOM - TOP) / Math.max(n - 1, 1));
+          y = (TOP + BOTTOM) / 2 - (gap * (n - 1)) / 2 + j * gap;
+        }
         map.set(key(layer.id, node.index), [x, y]);
       });
     });
     return map;
-  }, [trace, last]);
+  }, [trace]);
+
+  // Camino de cada variable: las neuronas y conexiones que alcanza su señal, de la entrada a la salida.
+  const reach = useMemo(() => {
+    const out = new Map<string, number[]>();
+    trace.edges.forEach((e, k) => {
+      const s = key(e.source_layer, e.source);
+      out.set(s, [...(out.get(s) ?? []), k]);
+    });
+    return new Map(inputs.map((n) => {
+      const nodes = new Set<string>([key("input", n.index)]);
+      const edges = new Set<number>();
+      const queue = [key("input", n.index)];
+      while (queue.length) {
+        for (const k of out.get(queue.shift()!) ?? []) {
+          const e = trace.edges[k]!;
+          const target = key(e.target_layer, e.target);
+          edges.add(k);
+          if (!nodes.has(target)) { nodes.add(target); queue.push(target); }
+        }
+      }
+      return [n.index, { nodes, edges }] as const;
+    }));
+  }, [trace, inputs]);
+  const focusIndex = mode === "one" ? focusVar : mode === "turns" ? inputs[Math.min(turn, inputs.length - 1)]?.index ?? null : null;
+  const focus = focusIndex !== null ? reach.get(focusIndex) ?? null : null;
+  const focusNode = focusIndex !== null ? inputs.find((n) => n.index === focusIndex) ?? null : null;
+
+  // Señal en tránsito hacia la columna step + 1. Con una variable en foco, sus neuronas destino se encienden por
+  // turnos (de arriba abajo); con todas, salen primero los pulsos que más aportan.
+  const travelling = trace.edges.map((e, k) => ({ e, k }))
+    .filter(({ e, k }) => !done && layerIndex.get(e.target_layer) === step + 1 && (!focus || focus.edges.has(k)));
+  const order = [...new Set(travelling.map(({ e }) => key(e.target_layer, e.target)))]
+    .sort((a, b) => pos.get(a)![1] - pos.get(b)![1]);
+  const progress = (e: TraceEdge) => {
+    if (focus) {
+      const rank = order.indexOf(key(e.target_layer, e.target));
+      const delay = order.length > 1 ? (0.55 * rank) / (order.length - 1) : 0;
+      return Math.min(Math.max((t - delay) / 0.45, 0), 1);
+    }
+    const delay = 0.35 * (1 - e.strength);
+    return Math.min(Math.max((t - delay) / (1 - delay), 0), 1);
+  };
+  const arrived = new Set(order.filter((k) => travelling.filter(({ e }) => key(e.target_layer, e.target) === k).every(({ e }) => progress(e) >= 1)));
+  const isLit = (k: string, col: number) => (col <= step || (col === step + 1 && arrived.has(k))) && (!focus || focus.nodes.has(k));
 
   const labelOf = (layerId: string, index: number) =>
     trace.layers.find((l) => l.id === layerId)?.nodes.find((n) => n.index === index)?.label ?? "";
@@ -175,6 +253,7 @@ export function TraceDiagram({ arch, trace }: { arch: Architecture; trace: Trace
   const group = trace.scope === "group";
   const selKey = selected?.kind === "node" ? selected.key : null;
   const pct = Math.round(trace.probability * 100);
+  const pathSize = focus ? [...focus.nodes].filter((k) => !k.startsWith("input:") && !k.startsWith("heads:")).length : 0;
 
   return (
     <div className="flex flex-col gap-3">
@@ -197,7 +276,7 @@ export function TraceDiagram({ arch, trace }: { arch: Architecture; trace: Trace
           ) : (
             <>
               <Button variant="ghost" icon={playing ? Pause : Play} className="px-2.5 py-1.5 text-xs"
-                onClick={() => (done ? replay() : setPlaying((v) => !v))}>
+                onClick={() => (done && anim.current.rest === 0 ? replay() : setPlaying((v) => !v))}>
                 {playing ? "Pausar" : done ? "Repetir" : "Reanudar"}
               </Button>
               <Button variant="ghost" icon={RotateCcw} onClick={replay} className="px-2.5 py-1.5 text-xs" aria-label="Recorrer de nuevo" />
@@ -212,11 +291,37 @@ export function TraceDiagram({ arch, trace }: { arch: Architecture; trace: Trace
         </div>
       </div>
 
+      {/* Modo del recorrido (D53) */}
+      <div className="flex flex-wrap items-center gap-2 text-xs">
+        <div role="group" aria-label="Modo del recorrido" className="flex overflow-hidden rounded-[10px] border border-line">
+          {(reduced ? MODES.slice(0, 1) : MODES).map(([m, label]) => (
+            <button key={m} type="button" aria-pressed={mode === m}
+              className={cx("px-2.5 py-1.5", mode === m ? "bg-primary/20 text-cyan" : "text-muted hover:text-text")}
+              onClick={() => { setMode(m); setFocusVar(null); }}>{label}</button>
+          ))}
+        </div>
+        <label className="sr-only" htmlFor="trace-variable">Variable específica</label>
+        <select id="trace-variable" className="field w-auto px-2 py-1 text-xs" value={mode === "one" && focusVar !== null ? focusVar : ""}
+          onChange={(e) => { if (e.target.value === "") { setMode("all"); setFocusVar(null); } else { setMode("one"); setFocusVar(Number(e.target.value)); } }}>
+          <option value="">Variable específica…</option>
+          {inputs.map((n) => <option key={n.index} value={n.index}>{n.label}</option>)}
+        </select>
+        {focusNode && (
+          <span data-testid="trace-focus" className="text-muted">
+            {mode === "turns" && <>Variable {Math.min(turn, inputs.length - 1) + 1} de {inputs.length} · </>}
+            <span className="font-semibold text-text">{focusNode.label}</span> ({focusNode.value?.toFixed(2)}): su señal pasa por{" "}
+            {pathSize} neuronas hasta la salida{focusNode.intensity < 0.05 ? "; con valor casi 0, aporta muy poco" : ""}.
+          </span>
+        )}
+      </div>
+
+      {/* En pantallas angostas el diagrama conserva un ancho legible y se desplaza dentro del panel */}
+      <div className="overflow-x-auto">
       <svg viewBox={`0 0 ${W} ${H}`} role="img" data-testid="trace-svg"
         aria-label={group
           ? `Recorrido del grupo de ${trace.count} estudiantes: ${pct} % de riesgo promedio`
           : `Recorrido de la predicción de ${trace.student_name}: ${pct} % de riesgo`}
-        className="w-full rounded-xl bg-[radial-gradient(ellipse_at_center,rgb(0_191_166/0.08),transparent_70%)]">
+        className="w-full min-w-[680px] rounded-xl bg-[radial-gradient(ellipse_at_center,rgb(0_191_166/0.08),transparent_70%)]">
         {/* Conexiones reales: las ya recorridas se ven con su fuerza; las que recorre la señal ahora, tenues */}
         {trace.edges.map((e, k) => {
           const target = layerIndex.get(e.target_layer)!;
@@ -224,25 +329,28 @@ export function TraceDiagram({ arch, trace }: { arch: Architecture; trace: Trace
           const from = pos.get(key(e.source_layer, e.source))!;
           const to = pos.get(key(e.target_layer, e.target))!;
           const mx = (from[0] + to[0]) / 2;
-          const onPath = !selNode || selKey === key(e.source_layer, e.source) || selKey === key(e.target_layer, e.target);
-          const travelling = target === step + 1;
+          const inFocus = !focus || focus.edges.has(k);
+          const onPath = inFocus && (!selNode || selKey === key(e.source_layer, e.source) || selKey === key(e.target_layer, e.target));
+          const moving = target === step + 1;
           return (
             <path key={k} d={`M${from[0]} ${from[1]}C${mx} ${from[1]} ${mx} ${to[1]} ${to[0]} ${to[1]}`} fill="none"
               stroke={e.sign > 0 ? UP : DOWN} strokeWidth={0.6 + 2.6 * e.strength}
-              strokeOpacity={travelling ? 0.08 : onPath ? 0.2 + 0.65 * e.strength : 0.06} />
+              strokeOpacity={!inFocus ? 0.04 : moving ? 0.1 : onPath ? 0.2 + 0.65 * e.strength : 0.06} />
           );
         })}
-        {/* Pulsos de la señal viajando por las conexiones de la capa actual */}
-        {!done && (
-          <g pointerEvents="none">
-            {trace.edges.filter((e) => layerIndex.get(e.target_layer) === step + 1).map((e, k) => {
-              const [x, y] = onCurve(pos.get(key(e.source_layer, e.source))!, pos.get(key(e.target_layer, e.target))!, t);
-              return <circle key={k} cx={x} cy={y} r={1.8 + 2.6 * e.strength} fill={e.sign > 0 ? UP : DOWN} fillOpacity={0.9} />;
-            })}
-          </g>
-        )}
-        {trace.layers.map((layer, i) => {
-          const lit = i <= step;
+        {/* Pulsos de la señal viajando hacia la siguiente columna */}
+        <g pointerEvents="none">
+          {travelling.map(({ e, k }) => {
+            const te = progress(e);
+            if (te <= 0 || te >= 1) return null;
+            const [x, y] = onCurve(pos.get(key(e.source_layer, e.source))!, pos.get(key(e.target_layer, e.target))!, te);
+            return <circle key={k} cx={x} cy={y} r={1.8 + 2.6 * e.strength} fill={e.sign > 0 ? UP : DOWN} fillOpacity={0.9} />;
+          })}
+        </g>
+        {trace.layers.map((layer) => {
+          const col = COLUMN[layer.id];
+          const branch = layer.id === "projection" || layer.id === "temporal";
+          const [lx, firstY] = pos.get(key(layer.id, layer.nodes[0]!.index))!;
           const layerSel = selected?.kind === "layer" && selected.id === layer.id;
           return (
             <g key={layer.id}>
@@ -250,7 +358,9 @@ export function TraceDiagram({ arch, trace }: { arch: Architecture; trace: Trace
                 const k = key(layer.id, node.index);
                 const [x, y] = pos.get(k)!;
                 const isSel = selKey === k;
-                const dim = (selNode && !isSel && !linked.has(k)) || !lit;
+                const lit = isLit(k, col);
+                const outOfFocus = !!focus && !focus.nodes.has(k);
+                const dim = outOfFocus || (selNode && !isSel && !linked.has(k)) || !lit;
                 const planned = node.value === null;
                 const glow = lit && !planned;
                 return (
@@ -258,9 +368,9 @@ export function TraceDiagram({ arch, trace }: { arch: Architecture; trace: Trace
                     aria-label={`${layer.name}, ${node.label}: ${fmt(node.value)}`}
                     onClick={() => setSelected(isSel ? null : { kind: "node", key: k })}
                     onKeyDown={(ev) => (ev.key === "Enter" || ev.key === " ") && setSelected(isSel ? null : { kind: "node", key: k })}
-                    opacity={dim ? 0.3 : 1}>
+                    opacity={outOfFocus ? 0.15 : dim ? 0.3 : 1}>
                     <title>{`${node.label} · ${fmt(node.value)}`}</title>
-                    {glow && <circle cx={x} cy={y} r={9 + 7 * node.intensity} fill={COLOR[layer.id]} fillOpacity={0.08 + 0.3 * node.intensity} />}
+                    {glow && <circle cx={x} cy={y} r={9 + 5 * node.intensity} fill={COLOR[layer.id]} fillOpacity={0.08 + 0.3 * node.intensity} />}
                     <circle cx={x} cy={y} r={isSel ? 8.5 : 7} fill={planned || !lit ? "#06152b" : COLOR[layer.id]}
                       fillOpacity={planned || !lit ? 1 : 0.15 + 0.8 * node.intensity}
                       stroke={planned ? "#4a5d7a" : COLOR[layer.id]} strokeWidth={isSel || layerSel ? 2.6 : 1.6}
@@ -268,7 +378,7 @@ export function TraceDiagram({ arch, trace }: { arch: Architecture; trace: Trace
                   </g>
                 );
               })}
-              <text x={pos.get(key(layer.id, layer.nodes[0]!.index))![0]} y={H - 8} textAnchor="middle" fontSize={11}
+              <text x={lx} y={branch ? firstY - 20 : H - 8} textAnchor="middle" fontSize={11}
                 fill={layerSel ? "#eaf2ff" : "#8ea3c2"} className="cursor-pointer" role="button" tabIndex={0}
                 aria-label={`Capa ${layer.name}`} aria-pressed={layerSel}
                 onClick={() => setSelected(layerSel ? null : { kind: "layer", id: layer.id })}
@@ -279,15 +389,17 @@ export function TraceDiagram({ arch, trace }: { arch: Architecture; trace: Trace
           );
         })}
         {/* Variables de entrada con su valor real y cabezas de salida con la probabilidad */}
-        {trace.layers[0]!.nodes.map((node) => {
+        {inputs.map((node) => {
           const [x, y] = pos.get(key("input", node.index))!;
+          const on = !focus || focusIndex === node.index;
           return (
-            <text key={`in-${node.index}`} x={x - 14} y={y + 3.5} textAnchor="end" fontSize={10.5} fill="#9fb4d4">
-              {node.label} <tspan fill="#eaf2ff">{node.value?.toFixed(2)}</tspan>
+            <text key={`in-${node.index}`} x={x - 14} y={y + 3.5} textAnchor="end" fontSize={10.5}
+              fill={on ? "#9fb4d4" : "#4a5d7a"} fontWeight={focus && on ? 600 : 400}>
+              {node.label} <tspan fill={on ? "#eaf2ff" : "#4a5d7a"}>{node.value?.toFixed(2)}</tspan>
             </text>
           );
         })}
-        {trace.layers[last]!.nodes.map((node) => {
+        {trace.layers.find((l) => l.id === "heads")!.nodes.map((node) => {
           const [x, y] = pos.get(key("heads", node.index))!;
           const reached = done && node.value !== null;
           return (
@@ -298,6 +410,7 @@ export function TraceDiagram({ arch, trace }: { arch: Architecture; trace: Trace
           );
         })}
       </svg>
+      </div>
 
       <div className="grid gap-3 text-xs sm:grid-cols-2">
         <div className="rounded-xl border border-line bg-bg/40 p-3">

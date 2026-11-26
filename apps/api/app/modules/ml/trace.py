@@ -46,12 +46,19 @@ def _top(scores: np.ndarray, k: int, allowed: list[int] | None = None) -> list[i
     return sorted(sorted(idx, key=lambda i: -abs(float(scores[i])))[:k])
 
 
-def _edges(src_layer: str, src_ids: list[int], dst_layer: str, dst_ids: list[int], contrib, per_target: int = 2):
-    """Para cada nodo destino, sus `per_target` fuentes con mayor |aporte medio|. Fuerza normalizada a [0, 1]."""
-    raw = []
+def _edges(src_layer: str, src_ids: list[int], dst_layer: str, dst_ids: list[int], contrib, per_target: int = 2,
+           per_source: int = 2):
+    """Conexiones a mostrar: para cada destino sus `per_target` fuentes con mayor |aporte medio|, y para cada fuente
+    sus `per_source` destinos principales (D53: así toda neurona mostrada tiene un camino hasta la salida y se puede
+    seguir el recorrido de cada variable). Fuerza normalizada a [0, 1]."""
+    pairs: dict[tuple[int, int], float] = {}
     for d in dst_ids:
-        ranked = sorted(src_ids, key=lambda s: -abs(contrib(s, d)))[:per_target]
-        raw += [(s, d, contrib(s, d)) for s in ranked]
+        for s in sorted(src_ids, key=lambda s: -abs(contrib(s, d)))[:per_target]:
+            pairs[(s, d)] = contrib(s, d)
+    for s in src_ids:
+        for d in sorted(dst_ids, key=lambda d: -abs(contrib(s, d)))[:per_source]:
+            pairs[(s, d)] = contrib(s, d)
+    raw = [(s, d, c) for (s, d), c in pairs.items()]
     peak = max((abs(c) for *_, c in raw), default=0.0) or 1.0
     return [{"source_layer": src_layer, "source": s, "target_layer": dst_layer, "target": d,
              "strength": round(abs(c) / peak, 3), "sign": 1 if c >= 0 else -1} for s, d, c in raw]

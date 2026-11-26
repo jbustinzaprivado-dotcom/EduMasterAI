@@ -2,7 +2,7 @@ import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { BarChart3, Download, FileSpreadsheet, FileText, Info } from "lucide-react";
 import { useState } from "react";
 import { TrendChart } from "../../components/charts";
-import { Badge, Button, EmptyState, ErrorState, PageHeader, Panel, Skeleton } from "../../components/ui";
+import { Badge, Button, EmptyState, ErrorState, PageHeader, Panel, Skeleton, Tabs } from "../../components/ui";
 import { ApiError, api, apiBlob } from "../../lib/api";
 import { formatDateTime } from "../../lib/format";
 
@@ -128,6 +128,8 @@ export function AnalyticsPage() {
             {d.totals.enrolled} matrículas vigentes · Generado {formatDateTime(d.generated_at)} · Pasa el cursor sobre un indicador para ver su definición.
           </p>
 
+          <Tabs label="Vistas de la analítica" param="vista" items={[
+            { id: "tendencia", label: "Tendencia semanal", content: (
           <Panel title="Tendencia semanal" subtitle="Estudiantes activos, horas y entregas dentro del rango">
             {d.weekly.every((w) => !w.active_students && !w.submissions) ? (
               <EmptyState icon={BarChart3} title="Sin actividad en el rango" description="Amplía las fechas o quita filtros." />
@@ -139,7 +141,8 @@ export function AnalyticsPage() {
               ]} />
             )}
           </Panel>
-
+            ) },
+            { id: "ofertas", label: "Por oferta", badge: <Badge tone="muted">{d.by_offering.length}</Badge>, content: (
           <Panel title="Por oferta" subtitle="Curso, cohorte y docente"
             actions={
               <div className="flex flex-wrap gap-1.5">
@@ -174,8 +177,9 @@ export function AnalyticsPage() {
               </table>
             </div>
           </Panel>
-
-          {d.students_visible && d.students ? (
+            ) },
+            { id: "estudiantes", label: "Por estudiante", content: (
+              d.students_visible && d.students ? (
             <Panel title="Por estudiante" subtitle="Detalle nominal: visible para gestión, docentes (sus ofertas) y auditoría"
               actions={
                 <div className="flex flex-wrap gap-1.5">
@@ -213,7 +217,9 @@ export function AnalyticsPage() {
             </Panel>
           ) : (
             <p className="text-xs text-muted">Tu rol ve solo agregados: el detalle por estudiante no está disponible (§3).</p>
-          )}
+          )
+            ) },
+          ]} />
           {exportError && <p role="alert" className="text-sm text-danger">{exportError}</p>}
           <p className="text-[11px] text-muted">Cada exportación incluye fecha y filtros en el encabezado y queda registrada en la bitácora.</p>
         </>

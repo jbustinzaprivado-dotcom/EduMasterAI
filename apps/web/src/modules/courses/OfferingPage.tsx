@@ -3,7 +3,7 @@ import { ArrowLeft, BookOpenText, CheckCircle2, Circle, Code2, PlayCircle, UserP
 import { useState } from "react";
 import { Link, useParams } from "react-router";
 import { ProgressBar } from "../../components/charts";
-import { Badge, Button, ErrorState, PageHeader, Panel, Skeleton, cx } from "../../components/ui";
+import { Badge, Button, ErrorState, PageHeader, Panel, Skeleton, Tabs, cx, type TabItem } from "../../components/ui";
 import { ApiError, api } from "../../lib/api";
 import { useAuth } from "../../lib/auth";
 import { formatDateTime, relativeTime } from "../../lib/format";
@@ -280,47 +280,52 @@ export function OfferingPage() {
         description={`${o.course_code} · ${LEVEL_LABEL[o.course_level]} · ${o.cohort} · ${o.period} · Docente: ${o.instructor_name}`}
         actions={can("course.manage") && <Button icon={UserPlus} variant="ghost" onClick={() => setEnrolling(true)}>Matricular</Button>} />
 
-      <div className="grid gap-4 lg:grid-cols-[1fr_300px]">
-        <Panel title="Contenido" subtitle="Unidades y actividades del curso">
-          <ol className="flex flex-col gap-4">
-            {o.units?.map((u) => (
-              <li key={u.id}>
-                <p className="text-xs font-semibold tracking-wide text-cyan uppercase">Unidad {u.position} · {u.title}</p>
-                <ul className="divide-y divide-line">
-                  {u.activities.map((a) => <ActivityRow key={a.id} offering={o} activity={a} done={done.has(a.id)} />)}
-                </ul>
-              </li>
-            ))}
-          </ol>
-        </Panel>
-        <div className="flex flex-col gap-4">
-          <Panel title={o.my_enrollment ? "Mi avance" : "Resumen de la oferta"}>
-            {o.my_enrollment ? (
-              <div className="flex flex-col gap-2">
-                <p className="text-3xl font-semibold">{Math.round(o.my_enrollment.progress * 100)} %</p>
-                <ProgressBar value={o.my_enrollment.progress} />
-                <Badge tone={o.my_enrollment.status === "completed" ? "teal" : "cyan"}>{STATUS_LABEL[o.my_enrollment.status]}</Badge>
-                <p className="text-xs text-muted">Progreso = actividades requeridas completadas / total (§4.4).</p>
-              </div>
-            ) : (
-              <dl className="grid grid-cols-2 gap-3 text-sm">
-                <div><dt className="text-xs text-muted">Matriculados</dt><dd className="text-xl font-semibold">{o.enrolled}</dd></div>
-                <div><dt className="text-xs text-muted">Completaron</dt><dd className="text-xl font-semibold">{o.completed}</dd></div>
-                <div className="col-span-2"><dt className="mb-1 text-xs text-muted">Progreso promedio</dt>
-                  <dd><ProgressBar value={o.avg_progress ?? 0} /><span className="text-xs text-muted">{Math.round((o.avg_progress ?? 0) * 100)} %</span></dd></div>
-              </dl>
-            )}
-          </Panel>
-          <Panel title="Evaluaciones">
-            <p className="text-sm text-muted">Entregas, notas y rúbricas de esta oferta.</p>
-            <Link to="/evaluaciones" className="mt-2 text-sm text-cyan hover:underline">Ir a evaluaciones →</Link>
-          </Panel>
-        </div>
-      </div>
-
-      {showRoster && <Panel title="Estudiantes" subtitle="Progreso, última actividad y nota oficial ponderada"><Roster offering={o} /></Panel>}
-      {showRoster && <GroupRecommendations offering={o} />}
-      {showRoster && <OfferingCertificates offering={o} />}
+      <Tabs label="Secciones del curso" param="seccion" items={[
+        { id: "contenido", label: "Contenido", content: (
+          <div className="grid gap-4 lg:grid-cols-[1fr_300px]">
+            <Panel title="Contenido" subtitle="Unidades y actividades del curso">
+              <ol className="flex flex-col gap-4">
+                {o.units?.map((u) => (
+                  <li key={u.id}>
+                    <p className="text-xs font-semibold tracking-wide text-cyan uppercase">Unidad {u.position} · {u.title}</p>
+                    <ul className="divide-y divide-line">
+                      {u.activities.map((a) => <ActivityRow key={a.id} offering={o} activity={a} done={done.has(a.id)} />)}
+                    </ul>
+                  </li>
+                ))}
+              </ol>
+            </Panel>
+            <div className="flex flex-col gap-4">
+              <Panel title={o.my_enrollment ? "Mi avance" : "Resumen de la oferta"}>
+                {o.my_enrollment ? (
+                  <div className="flex flex-col gap-2">
+                    <p className="text-3xl font-semibold">{Math.round(o.my_enrollment.progress * 100)} %</p>
+                    <ProgressBar value={o.my_enrollment.progress} />
+                    <Badge tone={o.my_enrollment.status === "completed" ? "teal" : "cyan"}>{STATUS_LABEL[o.my_enrollment.status]}</Badge>
+                    <p className="text-xs text-muted">Progreso = actividades requeridas completadas / total (§4.4).</p>
+                  </div>
+                ) : (
+                  <dl className="grid grid-cols-2 gap-3 text-sm">
+                    <div><dt className="text-xs text-muted">Matriculados</dt><dd className="text-xl font-semibold">{o.enrolled}</dd></div>
+                    <div><dt className="text-xs text-muted">Completaron</dt><dd className="text-xl font-semibold">{o.completed}</dd></div>
+                    <div className="col-span-2"><dt className="mb-1 text-xs text-muted">Progreso promedio</dt>
+                      <dd><ProgressBar value={o.avg_progress ?? 0} /><span className="text-xs text-muted">{Math.round((o.avg_progress ?? 0) * 100)} %</span></dd></div>
+                  </dl>
+                )}
+              </Panel>
+              <Panel title="Evaluaciones">
+                <p className="text-sm text-muted">Entregas, notas y rúbricas de esta oferta.</p>
+                <Link to="/evaluaciones" className="mt-2 text-sm text-cyan hover:underline">Ir a evaluaciones →</Link>
+              </Panel>
+            </div>
+          </div>
+        ) },
+        ...(showRoster ? [
+          { id: "estudiantes", label: "Estudiantes y riesgo", content: <Panel title="Estudiantes" subtitle="Progreso, última actividad, nota oficial ponderada y riesgo estimado por la IA"><Roster offering={o} /></Panel> },
+          { id: "recomendaciones", label: "Recomendaciones", content: <GroupRecommendations offering={o} /> },
+          { id: "certificados", label: "Certificados", content: <OfferingCertificates offering={o} /> },
+        ] satisfies TabItem[] : []),
+      ]} />
       {enrolling && <EnrollDialog offering={o} onClose={() => setEnrolling(false)} />}
     </div>
   );

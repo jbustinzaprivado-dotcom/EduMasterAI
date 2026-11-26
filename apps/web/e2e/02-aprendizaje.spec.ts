@@ -26,8 +26,21 @@ test.describe("Aprendizaje del estudiante (§4.3, §4.5)", () => {
     const title = (await page.locator("article h3").first().textContent())!;
     const card = page.locator("article").filter({ has: page.getByRole("heading", { name: title }) });
     await expect(card.getByText("Por qué:")).toBeVisible();
-    await card.getByRole("button", { name: "Aceptar" }).click();
-    await expect(card.getByText("aceptada")).toBeVisible();
+    // D55: un solo botón de acción; ir a hacerlo cuenta como aceptar.
+    await expect(card.getByText(/^Prioridad: /)).toBeVisible();
+    await card.getByRole("link").first().click();
+    await page.goto("/recomendaciones");
+    await expect(page.locator("article").filter({ has: page.getByRole("heading", { name: title }) }).getByText("aceptada")).toBeVisible();
+  });
+
+  test("mis recomendaciones: historial con el motivo de cierre y cómo me han servido (D55)", async ({ page }) => {
+    await login(page, "ANDINO", "estudiante@andino.demo");
+    await page.goto("/recomendaciones");
+    await expect(page.getByRole("tab", { name: /Vigentes/ })).toHaveAttribute("aria-selected", "true");
+    await page.getByRole("tab", { name: "Cómo me han servido" }).click();
+    await expect(page.getByText("Recibidas", { exact: true })).toBeVisible();
+    await page.getByRole("tab", { name: "Historial" }).click();
+    await expect(page.getByRole("tabpanel")).toBeVisible();
   });
 
   test("la ruta de aprendizaje muestra las etapas bloqueadas", async ({ page }) => {

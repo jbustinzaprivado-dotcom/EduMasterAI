@@ -15,6 +15,7 @@ test("aprobación humana del modelo y alerta de riesgo para el docente (§9.6-§
   await login(page, "ANDINO", "docente@andino.demo");
   await page.goto("/cursos");
   await page.getByRole("link", { name: /Fundamentos de Python/ }).click();
+  await page.getByRole("tab", { name: "Estudiantes y riesgo" }).click();
   await page.getByRole("button", { name: "Actualizar riesgo con IA" }).click();
   // Los estudiantes DEMO "en riesgo" llevan semanas sin entrar: el modelo debe marcar al menos uno en alto.
   const alert = page.locator("tr").filter({ has: page.getByRole("button", { name: /Riesgo alto/ }) }).first();
@@ -46,6 +47,7 @@ test("analítica: filtrar y exportar a CSV queda auditado (§4.4)", async ({ pag
   await page.goto("/analitica");
   await expect(page.getByText("Participación").first()).toBeVisible();
   await page.getByLabel("Oferta").selectOption({ label: "DS-201 · Grupo A · 2026-II" });
+  await page.getByRole("tab", { name: /Por oferta/ }).click();
   await expect(page.locator("table").first().getByText("DS-201 · Grupo A")).toBeVisible();
   const [download] = await Promise.all([
     page.waitForEvent("download"),
@@ -62,7 +64,8 @@ test("dominio de habilidades: el docente valida el nivel oficial (§4.9)", async
   await page.goto("/habilidades");
   await expect(page.getByText("Sintaxis de Python").first()).toBeVisible();
   await page.getByLabel("Oferta").selectOption({ label: "PY-101 · Grupo A" });
-  await page.getByLabel("Estudiante").selectOption({ label: "Valeria Mendoza" });
+  await page.getByRole("tab", { name: "Por estudiante y validación" }).click();
+  await page.getByLabel("Estudiante", { exact: true }).selectOption({ label: "Valeria Mendoza" });
   const card = page.locator("div.rounded-xl").filter({ hasText: "Sintaxis de Python" }).first();
   await card.getByLabel("Nivel validado").selectOption({ label: "avanzado" });
   await card.getByLabel("Nota de validación").fill("Explicó bien variables y tipos en clase.");

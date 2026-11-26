@@ -60,7 +60,7 @@ export function TrendChart({ labels, series, height = 200 }: { labels: string[];
           ))}
         </svg>
         {hover !== null && (
-          <div className="panel pointer-events-none absolute top-1 px-3 py-2 text-xs"
+          <div className="panel panel-solid pointer-events-none absolute top-1 px-3 py-2 text-xs"
             style={{ left: `${Math.min(80, Math.max(0, (x(hover) / W) * 100 - 10))}%` }}>
             <p className="mb-1 font-semibold">{labels[hover]}</p>
             {series.map((s) => (

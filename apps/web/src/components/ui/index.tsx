@@ -147,3 +147,5 @@ export function PageHeader({ title, description, actions }: { title: string; des
 export function DemoTag({ children = "DEMO" }: { children?: ReactNode }) {
   return <Badge tone="warning">{children}</Badge>;
 }
+
+export { Tabs, type TabItem } from "./Tabs";

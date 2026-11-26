@@ -39,6 +39,7 @@ test("el docente ve la lista con progreso y crea un anuncio en la comunidad", as
   await login(page, "ANDINO", "docente@andino.demo");
   await page.goto("/cursos");
   await page.getByRole("link", { name: /Fundamentos de Python/ }).click();
+  await page.getByRole("tab", { name: "Estudiantes y riesgo" }).click(); // D54: la lista está en su pestaña
   await expect(page.getByRole("heading", { name: "Estudiantes" })).toBeVisible();
   await expect(page.getByText("Valeria Mendoza").first()).toBeVisible();
 

@@ -49,6 +49,11 @@
   .panel-solid {
     background: var(--color-surface);
   }
+  /* Ventanas modales: siempre opacas, aunque usen la clase .panel normal (el fondo de .panel es 55 % transparente
+     y dejaba ver la página detrás). */
+  [role="dialog"] .panel {
+    background: var(--color-surface);
+  }
   .panel-glow {
     box-shadow: 0 0 0 1px rgb(32 200 245 / 0.12), 0 0 32px -6px rgb(32 200 245 / 0.28);
   }

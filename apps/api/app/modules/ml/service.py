@@ -170,7 +170,7 @@ def score_enrollments(db: Session, organization_id: uuid.UUID, enrollments: list
         offering = db.get(CourseOffering, offering_id)
         notify(db, [offering.instructor_id], organization_id=organization_id, kind="risk.alerts",
                title=f"{count} alerta{'s' if count > 1 else ''} de riesgo en {offering.course.title}",
-               body="Revísalas y márcalas como atendidas o descártalas con un motivo.", link=f"/cursos/{offering_id}")
+               body="Revísalas y márcalas como atendidas o descártalas con un motivo.", link=f"/cursos/{offering_id}?seccion=estudiantes")
     record(db, action="predictions.generated", resource="model", resource_id=version.id, actor_id=actor_id,
            organization_id=organization_id,
            details={"count": len(created), "alto": sum(p.risk_level == "alto" for p in created)})

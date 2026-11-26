@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { BrainCircuit, CheckCircle2, Play, ShieldCheck, Undo2 } from "lucide-react";
 import { useState } from "react";
-import { Badge, Button, EmptyState, ErrorState, PageHeader, Panel, Skeleton, cx } from "../../components/ui";
+import { Badge, Button, cx, EmptyState, ErrorState, PageHeader, Panel, Skeleton, Tabs } from "../../components/ui";
 import { ApiError, api } from "../../lib/api";
 import { useAuth } from "../../lib/auth";
 import { formatDateTime } from "../../lib/format";
@@ -113,78 +113,90 @@ function ModelCard({ m }: { m: ModelOut }) {
         {run.isSuccess && <p className="mb-2 text-sm text-teal">{run.data.predictions} predicciones generadas · {run.data.high_risk} con riesgo alto.</p>}
         {run.isError && <p role="alert" className="mb-2 text-sm text-danger">{run.error instanceof ApiError ? run.error.message : "Error"}</p>}
 
-        <p className="mb-2 text-xs text-muted">Comparación en el conjunto de <b>prueba</b> (cohortes más recientes, nunca usadas para elegir):</p>
-        <div className="overflow-x-auto">
-          <table className="w-full min-w-[640px] text-left text-sm">
-            <thead className="text-xs text-muted">
-              <tr className="border-b border-line">
-                <th className="py-2 pr-3 font-medium">Modelo</th><th className="py-2 pr-3 font-medium">PR-AUC val.</th>
-                <th className="py-2 pr-3 font-medium">ROC-AUC</th><th className="py-2 pr-3 font-medium">PR-AUC</th>
-                <th className="py-2 pr-3 font-medium">F1</th><th className="py-2 pr-3 font-medium">Recall</th>
-                <th className="py-2 font-medium">Brier ↓</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-line">
-              {Object.entries(c.results).map(([name, r]) => (
-                <tr key={name} className={cx(name === c.selection.chosen && "bg-primary/10")}>
-                  <td className="py-2 pr-3">{MODEL_LABEL[name] ?? name}{name === c.selection.chosen && <Badge tone="cyan">elegido</Badge>}</td>
-                  <td className="py-2 pr-3 text-muted">{r.validation.pr_auc.toFixed(3)}</td>
-                  <td className="py-2 pr-3">{r.test.roc_auc.toFixed(3)}</td>
-                  <td className="py-2 pr-3">{r.test.pr_auc.toFixed(3)}</td>
-                  <td className="py-2 pr-3">{r.test.f1.toFixed(3)}</td>
-                  <td className="py-2 pr-3">{r.test.recall.toFixed(3)}</td>
-                  <td className="py-2">{r.test.brier.toFixed(3)}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-        <p className="mt-3 text-xs text-muted"><b>Regla de selección:</b> {c.selection.criterion}</p>
+        <p className="text-xs text-muted">Revisa las pestañas antes de aprobar: comparación, dataset, calibración y limitaciones (§9.6).</p>
       </Panel>
 
-      <div className="grid gap-4 lg:grid-cols-3">
-        <Panel title="Dataset" subtitle="Ficha (datasheet) · §8">
-          <dl className="space-y-1.5 text-xs">
-            <div><dt className="text-muted">Versión</dt><dd>{c.dataset.name} {c.dataset.version} <Badge tone="warning">DEMO sintético</Badge></dd></div>
-            <div><dt className="text-muted">Filas</dt><dd>{c.dataset.rows.toLocaleString("es-PE")}</dd></div>
-            <div><dt className="text-muted">Separación</dt><dd>{split.method}</dd></div>
-            {(["train", "val", "test"] as const).map((k) => split[k] && (
-              <div key={k}><dt className="text-muted">{k}</dt><dd>{split[k].rows} filas · {pct(split[k].positive_rate)} positivos</dd></div>
-            ))}
-            <div><dt className="text-muted">Etiqueta</dt><dd>{c.dataset.label}</dd></div>
-            <div><dt className="text-muted">Huella SHA-256</dt><dd className="truncate font-mono text-[10px]" title={c.dataset.sha256}>{c.dataset.sha256}</dd></div>
-          </dl>
-        </Panel>
-        <Panel title="Calibración (prueba)" subtitle="Probabilidad predicha vs. tasa observada">
-          <ul className="space-y-2 text-xs">
-            {c.calibration_test.map((b) => (
-              <li key={b.bin}>
-                <div className="flex justify-between text-muted"><span>{b.bin} · {b.n} casos</span>
-                  <span>pred. {pct(b.mean_predicted)} · obs. {pct(b.observed_rate)}</span></div>
-                <div className="relative mt-1 h-1.5 rounded-full bg-surface-2">
-                  <div className="absolute h-full rounded-full bg-primary" style={{ width: pct(b.mean_predicted) }} />
-                  <div className="absolute top-[-3px] h-3 w-0.5 bg-teal" style={{ left: pct(b.observed_rate) }} />
-                </div>
-              </li>
-            ))}
+      <Tabs label={`Ficha del modelo ${m.version}`} items={[
+        { id: "comparacion", label: "Comparación", content: (
+          <Panel>
+            <p className="mb-2 text-xs text-muted">Comparación en el conjunto de <b>prueba</b> (cohortes más recientes, nunca usadas para elegir):</p>
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[640px] text-left text-sm">
+                <thead className="text-xs text-muted">
+                  <tr className="border-b border-line">
+                    <th className="py-2 pr-3 font-medium">Modelo</th><th className="py-2 pr-3 font-medium">PR-AUC val.</th>
+                    <th className="py-2 pr-3 font-medium">ROC-AUC</th><th className="py-2 pr-3 font-medium">PR-AUC</th>
+                    <th className="py-2 pr-3 font-medium">F1</th><th className="py-2 pr-3 font-medium">Recall</th>
+                    <th className="py-2 font-medium">Brier ↓</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-line">
+                  {Object.entries(c.results).map(([name, r]) => (
+                    <tr key={name} className={cx(name === c.selection.chosen && "bg-primary/10")}>
+                      <td className="py-2 pr-3">{MODEL_LABEL[name] ?? name}{name === c.selection.chosen && <Badge tone="cyan">elegido</Badge>}</td>
+                      <td className="py-2 pr-3 text-muted">{r.validation.pr_auc.toFixed(3)}</td>
+                      <td className="py-2 pr-3">{r.test.roc_auc.toFixed(3)}</td>
+                      <td className="py-2 pr-3">{r.test.pr_auc.toFixed(3)}</td>
+                      <td className="py-2 pr-3">{r.test.f1.toFixed(3)}</td>
+                      <td className="py-2 pr-3">{r.test.recall.toFixed(3)}</td>
+                      <td className="py-2">{r.test.brier.toFixed(3)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <p className="mt-3 text-xs text-muted"><b>Regla de selección:</b> {c.selection.criterion}</p>
+          </Panel>
+        ) },
+        { id: "dataset", label: "Dataset", content: (
+            <Panel title="Dataset" subtitle="Ficha (datasheet) · §8">
+              <dl className="space-y-1.5 text-xs">
+                <div><dt className="text-muted">Versión</dt><dd>{c.dataset.name} {c.dataset.version} <Badge tone="warning">DEMO sintético</Badge></dd></div>
+                <div><dt className="text-muted">Filas</dt><dd>{c.dataset.rows.toLocaleString("es-PE")}</dd></div>
+                <div><dt className="text-muted">Separación</dt><dd>{split.method}</dd></div>
+                {(["train", "val", "test"] as const).map((k) => split[k] && (
+                  <div key={k}><dt className="text-muted">{k}</dt><dd>{split[k].rows} filas · {pct(split[k].positive_rate)} positivos</dd></div>
+                ))}
+                <div><dt className="text-muted">Etiqueta</dt><dd>{c.dataset.label}</dd></div>
+                <div><dt className="text-muted">Huella SHA-256</dt><dd className="truncate font-mono text-[10px]" title={c.dataset.sha256}>{c.dataset.sha256}</dd></div>
+              </dl>
+            </Panel>
+        ) },
+        { id: "calibracion", label: "Calibración y segmentos", content: (
+          <div className="grid gap-4 lg:grid-cols-2">
+            <Panel title="Calibración (prueba)" subtitle="Probabilidad predicha vs. tasa observada">
+              <ul className="space-y-2 text-xs">
+                {c.calibration_test.map((b) => (
+                  <li key={b.bin}>
+                    <div className="flex justify-between text-muted"><span>{b.bin} · {b.n} casos</span>
+                      <span>pred. {pct(b.mean_predicted)} · obs. {pct(b.observed_rate)}</span></div>
+                    <div className="relative mt-1 h-1.5 rounded-full bg-surface-2">
+                      <div className="absolute h-full rounded-full bg-primary" style={{ width: pct(b.mean_predicted) }} />
+                      <div className="absolute top-[-3px] h-3 w-0.5 bg-teal" style={{ left: pct(b.observed_rate) }} />
+                    </div>
+                  </li>
+                ))}
+              </ul>
+              <p className="mt-2 text-[11px] text-muted">Barra azul: predicho · línea verde: observado. Cerca = probabilidades honestas.</p>
+            </Panel>
+            <Panel title="Por segmento (prueba)" subtitle="Nivel del curso · §9.6 paso 15">
+              <ul className="space-y-2 text-sm">
+                {Object.entries(c.segments_test).map(([seg, s]) => (
+                  <li key={seg} className="flex justify-between"><span className="capitalize text-muted">{seg}</span>
+                    <span>ROC {s.roc_auc.toFixed(2)} · recall {s.recall.toFixed(2)}</span></li>
+                ))}
+              </ul>
+            </Panel>
+          </div>
+        ) },
+        { id: "limitaciones", label: "Limitaciones", content: (
+        <Panel title="Limitaciones y uso responsable" subtitle="Model card · §9.8">
+          <ul className="list-inside list-disc space-y-1 text-sm text-muted">
+            {c.limitations.map((l) => <li key={l}><span className="text-text/90">{l}</span></li>)}
           </ul>
-          <p className="mt-2 text-[11px] text-muted">Barra azul: predicho · línea verde: observado. Cerca = probabilidades honestas.</p>
         </Panel>
-        <Panel title="Por segmento (prueba)" subtitle="Nivel del curso · §9.6 paso 15">
-          <ul className="space-y-2 text-sm">
-            {Object.entries(c.segments_test).map(([seg, s]) => (
-              <li key={seg} className="flex justify-between"><span className="capitalize text-muted">{seg}</span>
-                <span>ROC {s.roc_auc.toFixed(2)} · recall {s.recall.toFixed(2)}</span></li>
-            ))}
-          </ul>
-        </Panel>
-      </div>
-
-      <Panel title="Limitaciones y uso responsable" subtitle="Model card · §9.8">
-        <ul className="list-inside list-disc space-y-1 text-sm text-muted">
-          {c.limitations.map((l) => <li key={l}><span className="text-text/90">{l}</span></li>)}
-        </ul>
-      </Panel>
+        ) },
+      ]} />
     </div>
   );
 }

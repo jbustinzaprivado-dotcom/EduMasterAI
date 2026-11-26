@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { BadgeCheck, Grid3x3, Plus, Sparkles } from "lucide-react";
 import { useState, type FormEvent, type ReactNode } from "react";
-import { Button, EmptyState, ErrorState, PageHeader, Panel, Skeleton, cx } from "../../components/ui";
+import { Button, cx, EmptyState, ErrorState, PageHeader, Panel, Skeleton, Tabs } from "../../components/ui";
 import { ApiError, api } from "../../lib/api";
 import { useAuth } from "../../lib/auth";
 import { formatDateTime } from "../../lib/format";
@@ -197,14 +197,17 @@ function StaffView() {
   return (
     <div className="mx-auto flex max-w-6xl flex-col gap-4">
       <PageHeader title="Dominio de habilidades" description="Heatmap por competencia y nivel; el nivel estimado se muestra separado del validado por el docente (§4.9)." />
-      <div className="grid gap-4 lg:grid-cols-[1fr_320px]">
-        <Panel title="Heatmap" subtitle={heat.data ? `${heat.data.students} estudiantes · motor ${heat.data.engine}` : undefined}
-          actions={
-            <div className="flex flex-wrap gap-2">
-              <select className="field w-56" aria-label="Oferta" value={offeringId} onChange={(e) => setOfferingId(e.target.value)}>
-                <option value="">Todas mis ofertas</option>
-                {offerings.data?.map((o) => <option key={o.id} value={o.id}>{o.course_code} · {o.cohort}</option>)}
-              </select>
+      <div className="flex flex-wrap items-center gap-2">
+        <label className="text-xs text-muted" htmlFor="skills-offering">Oferta</label>
+        <select id="skills-offering" className="field w-64" value={offeringId} onChange={(e) => setOfferingId(e.target.value)}>
+          <option value="">Todas mis ofertas</option>
+          {offerings.data?.map((o) => <option key={o.id} value={o.id}>{o.course_code} · {o.cohort}</option>)}
+        </select>
+      </div>
+      <Tabs label="Secciones de habilidades" param="seccion" items={[
+        { id: "mapa", label: "Mapa de calor", content: (
+          <Panel title="Heatmap" subtitle={heat.data ? `${heat.data.students} estudiantes · motor ${heat.data.engine}` : undefined}
+            actions={
               <div className="flex rounded-[10px] border border-line text-xs">
                 {(["estimated", "validated"] as const).map((m) => (
                   <button key={m} onClick={() => setMode(m)} className={cx("px-3 py-1.5", mode === m ? "bg-primary/20 text-cyan" : "text-muted")}>
@@ -212,17 +215,19 @@ function StaffView() {
                   </button>
                 ))}
               </div>
-            </div>
-          }>
-          {heat.isPending && <Skeleton className="h-64" />}
-          {heat.isError && <ErrorState error={heat.error} />}
-          {heat.data && (heat.data.rows.length ? <HeatmapTable data={heat.data} mode={mode} /> :
-            <EmptyState icon={Grid3x3} title="Sin competencias vinculadas" description="Vincula competencias a los cursos desde el catálogo." />)}
-          <p className="mt-2 flex items-center gap-1 text-[11px] text-muted"><Sparkles className="size-3" /> Estimado = reglas sobre notas oficiales y avance por unidad (orientativo). Validado = decisión del docente (oficial).</p>
-        </Panel>
-        <Catalog />
-      </div>
-      {offering ? <StudentDrilldown offering={offering} /> : <p className="text-xs text-muted">Elige una oferta para ver y validar competencias por estudiante.</p>}
+            }>
+            {heat.isPending && <Skeleton className="h-64" />}
+            {heat.isError && <ErrorState error={heat.error} />}
+            {heat.data && (heat.data.rows.length ? <HeatmapTable data={heat.data} mode={mode} /> :
+              <EmptyState icon={Grid3x3} title="Sin competencias vinculadas" description="Vincula competencias a los cursos desde el catálogo." />)}
+            <p className="mt-2 flex items-center gap-1 text-[11px] text-muted"><Sparkles className="size-3" /> Estimado = reglas sobre notas oficiales y avance por unidad (orientativo). Validado = decisión del docente (oficial).</p>
+          </Panel>
+        ) },
+        { id: "estudiantes", label: "Por estudiante y validación", content: offering
+          ? <StudentDrilldown offering={offering} />
+          : <p className="text-sm text-muted">Elige una oferta arriba para ver y validar competencias por estudiante.</p> },
+        { id: "catalogo", label: "Catálogo", content: <Catalog /> },
+      ]} />
     </div>
   );
 }

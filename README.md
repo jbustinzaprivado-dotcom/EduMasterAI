@@ -4,7 +4,7 @@ Plataforma empresarial de aprendizaje inteligente: gestión académica, analíti
 supervisión humana. Proyecto académico grupal construido según la *Especificación funcional y técnica v1.0*
 (12-11-2026), citada como **§N**.
 
-> **Estado:** Fases 0 a 8 ✅ · 92 pruebas de API, 5 de ML, 8 de web y 24 E2E, con la CI en verde ·
+> **Estado:** Fases 0 a 8 ✅ · 98 pruebas de API, 5 de ML, 8 de web y 27 E2E, con la CI en verde ·
 > pendientes no bloqueantes: ranking aprendido (cabeza D) y escaneo de dependencias en la CI.
 > La hoja de ruta completa está en [docs/fase-0/backlog.md](docs/fase-0/backlog.md).
 
@@ -31,7 +31,7 @@ supervisión humana. Proyecto académico grupal construido según la *Especifica
 | Dominio de habilidades | Catálogo de competencias, heatmap por nivel y nivel estimado separado del validado por el docente. |
 | Mapa y comunidad | Progreso por región sin exponer grupos pequeños; foros por curso con anuncios, debates y moderación. |
 | Certificados | Emisión automática por criterio oficial, PDF con QR, anulación y verificación pública en `/verificar`. |
-| Recomendaciones e IA Tutor | Sugerencias explicadas (siguiente actividad, entrega próxima, reforzar, retomar) con feedback y métricas de utilidad. |
+| Recomendaciones e IA Tutor | 10 tipos de sugerencia explicada (D55), cada una con su prioridad y su motivo de cierre; bandeja del estudiante, acciones sugeridas para el docente y métricas de utilidad para la gestión. |
 | Administración | Usuarios, roles e instituciones. |
 | Seguridad | Cabeceras CSP/HSTS, límites de tamaño y de peticiones por persona e IP, modelo de amenazas y revisión OWASP (`docs/fase-7/seguridad.md`). |
 | Operación | Pantalla con latencia p95, errores y conexiones en vivo frente a los objetivos; logs JSON con `correlation_id`; health checks; CI en GitHub Actions. |
@@ -102,7 +102,7 @@ cd apps/api && .venv/Scripts/python -m pytest          # pruebas de la API
 cd apps/api && .venv/Scripts/python -m uvicorn app.main:app --reload
 cd apps/web && npm run dev                              # web en http://localhost:5173 (reenvía /api)
 cd apps/web && npm run typecheck && npm test
-cd apps/web && npm run build && npm run e2e              # 24 pruebas E2E (Edge en Windows, base aislada)
+cd apps/web && npm run build && npm run e2e              # 27 pruebas E2E (Edge en Windows, base aislada)
 cd ml && .venv/Scripts/python -m edumaster_ml.train      # reentrena (requiere ml/requirements.txt + torch)
 cd ml && .venv/Scripts/python -m pytest
 ```
@@ -114,7 +114,8 @@ cd ml && .venv/Scripts/python -m pytest
 4. **Red neuronal** muestra el modelo publicado, sus métricas y la latencia de la última inferencia. Con el
    selector de arriba, elige PY-101 y a Valeria (o «Todos los estudiantes»): la misma red se recorre con datos
    reales y la señal avanza capa por capa; un clic en una neurona muestra su activación y de dónde recibe la
-   señal (D51, D52).
+   señal (D51, D52). **Por turnos** sigue cada variable, una tras otra, neurona por neurona hasta la salida, y
+   **Variable específica** muestra solo el camino de la que elijas (D53).
 5. `estudiante@andino.demo` → **IA Tutor** → «¿Qué hago ahora?»: sugerencias con su motivo; acepta o valora una.
 6. De vuelta como docente, el curso muestra las **recomendaciones del grupo**.
 7. **En vivo:** con Valeria abierta en otra ventana, el docente califica su entrega en **Evaluaciones** y a ella
