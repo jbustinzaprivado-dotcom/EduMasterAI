@@ -338,7 +338,7 @@ Navegador ──HTTPS──▶ Cloudflare Tunnel ──▶ API FastAPI (puerto 8
 2. **Variables sin fuga.** Solo usa hechos anteriores a la fecha de corte. El mismo código calcula las variables al entrenar y al predecir.
 3. **Separación temporal por cohorte.** Entrena con las cohortes antiguas, valida con las intermedias y prueba con las más recientes. Así se simula predecir el futuro, no repartir al azar.
 4. **Modelos.** Se compararon dos baselines (regresión logística y Gradient Boosting) con una **red multitarea**:
-   - una rama densa para las 8 variables;
+   - una rama densa para las 13 variables (10 de comportamiento y notas + el nivel del curso en 3 columnas);
    - una **GRU** para la secuencia semanal;
    - una capa de fusión;
    - y las cabezas de salida.
@@ -422,9 +422,21 @@ Navegador ──HTTPS──▶ Cloudflare Tunnel ──▶ API FastAPI (puerto 8
 - Respeta `prefers-reduced-motion`.
 - Al hacer clic en una capa se ve su operación, sus unidades y su dimensión tensorial.
 
-**Código.** `ml/router.py` (`/architecture`) y `modules/neural-visualizer`.
+**Recorrido real de una predicción (D51).**
+- El docente (o la administración o la auditoría) elige un estudiante, o pulsa **Ver su recorrido en la red** en la alerta.
+- La API repite la propagación hacia delante con los datos actuales y guarda la activación de cada capa. La
+  probabilidad final es la misma que da el modelo publicado (una prueba lo verifica).
+- Como no caben 24 + 24 + 32 neuronas, se muestran **las que más aportaron**, de la salida hacia atrás: las 5 de
+  fusión que más empujan la salida, las 6 tabulares y 6 temporales que más alimentan a esas, y las 7 variables que
+  más alimentan a las tabulares, más la secuencia semanal.
+- Solo se dibujan conexiones que existen: la secuencia entra al bloque temporal, no a la rama tabular. El grosor es
+  cuánto aportó; el verde sube la activación y el rosado la baja.
+- No crea una alerta y queda en la bitácora (`prediction.traced`). El estudiante no lo ve (D22).
 
-**Por qué así.** Se descartó una animación permanente "en vivo" porque haría creer que el modelo está procesando datos cuando no lo hace (§5.4, §13.1, criterio 27).
+**Código.** `ml/router.py` (`/architecture` y `/enrollments/{id}/trace`), `ml/trace.py` y `modules/neural-visualizer`
+(`TraceView.tsx`).
+
+**Por qué así.** Se descartó una animación permanente "en vivo" porque haría creer que el modelo está procesando datos cuando no lo hace (§5.4, §13.1, criterio 27). Para ver la red trabajar de verdad está el recorrido real (D51), que usa valores calculados y no necesita el rótulo de simulación. Se descartó elegir las neuronas al azar o por posición: no explicarían nada de esa predicción.
 
 ---
 
@@ -483,10 +495,10 @@ Navegador ──HTTPS──▶ Cloudflare Tunnel ──▶ API FastAPI (puerto 8
 
 | Nivel | Qué cubre | Herramienta |
 |---|---|---|
-| API (89 pruebas) | Reglas de negocio, permisos, aislamiento, IA, seguridad, respaldo | pytest, sobre SQLite y PostgreSQL |
+| API (91 pruebas) | Reglas de negocio, permisos, aislamiento, IA, seguridad, respaldo | pytest, sobre SQLite y PostgreSQL |
 | ML | Sin fuga de datos, etiqueta correcta, NumPy = PyTorch | pytest |
 | Web (8 pruebas) | Componentes y formato seguro del texto | Vitest |
-| E2E (22 recorridos) | La web real en un navegador: login, permisos, accesibilidad (axe), móvil, notas en vivo entre dos navegadores, IA, certificados, analítica, operación y rollback | Playwright (D35) |
+| E2E (24 recorridos) | La web real en un navegador: login, permisos, accesibilidad (axe), móvil, notas en vivo entre dos navegadores, IA, recorrido de la red, certificados, analítica, operación y rollback | Playwright (D35) |
 
 La CI de GitHub ejecuta los cuatro grupos en cada cambio.
 

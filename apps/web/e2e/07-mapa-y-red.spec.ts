@@ -23,3 +23,29 @@ test("la red neuronal aparece capa por capa y simula por capas (D48)", async ({ 
   await expect(page.getByText(/SIMULACIÓN DEMO|Ilustración del recorrido/).first()).toBeVisible();
   await page.getByRole("button", { name: "Pausar" }).first().click();
 });
+
+test("recorrido real de una predicción por la red (D51)", async ({ page }) => {
+  // El modelo quedó publicado en 06; el docente traza a Valeria (perfil en riesgo) con sus datos actuales.
+  await login(page, "ANDINO", "docente@andino.demo");
+  await page.getByRole("link", { name: "Red neuronal" }).click();
+  const offering = page.getByLabel("Oferta");
+  const py101 = await offering.locator("option", { hasText: "PY-101" }).first().getAttribute("value");
+  await offering.selectOption(py101!);
+  await page.getByLabel("Estudiante").selectOption({ label: "Valeria Mendoza" });
+  const trace = page.getByTestId("trace-svg");
+  await expect(trace).toHaveAccessibleName(/Recorrido de la predicción de Valeria Mendoza: \d+ % de riesgo/);
+  await expect(page.getByText(/Datos reales · modelo v/)).toBeVisible();
+  // La señal llega a la salida: solo la cabeza C tiene valor; las otras están sin entrenar.
+  const riskHead = trace.getByRole("button", { name: /Cabezas de salida, C · Riesgo de abandono: 0\.\d{3}/ });
+  await expect(riskHead).toBeVisible({ timeout: 5000 });
+  await expect(trace.getByRole("button", { name: "Cabezas de salida, A · Finalización: sin entrenar" })).toBeVisible();
+  await riskHead.click();
+  await expect(page.getByText("Recibe sobre todo de:")).toBeVisible();
+});
+
+test("el estudiante no ve el recorrido de su predicción (D22)", async ({ page }) => {
+  await login(page, "ANDINO", "estudiante@andino.demo");
+  await page.getByRole("link", { name: "Red neuronal" }).click();
+  await expect(page.getByRole("heading", { name: "Arquitectura neuronal" })).toBeVisible();
+  await expect(page.getByText("Recorrido real de una predicción")).toHaveCount(0);
+});

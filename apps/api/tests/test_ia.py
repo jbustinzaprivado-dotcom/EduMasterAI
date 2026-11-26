@@ -106,3 +106,51 @@ def test_retirar_modelo_es_la_vuelta_atras(client):
     assert logs and logs[0]["details"]["reason"] == "Prueba de rollback"
     # Se puede volver a publicar la misma versión.
     assert client.post(f"/api/v1/ml/models/{model['id']}/approve", json={}, headers=admin).status_code == 200
+
+
+def _valeria(client, doc):
+    py = _offering(client, doc, "PY-101")
+    roster = client.get(f"/api/v1/offerings/{py['id']}/enrollments", headers=doc).json()
+    return py, next(r for r in roster if r["student_email"] == "estudiante@andino.demo")
+
+
+def test_recorrido_real_de_una_prediccion(client):
+    """D51: la traza usa las activaciones reales y su probabilidad coincide con la del modelo publicado."""
+    doc = auth(client, "ANDINO", "docente@andino.demo")
+    py, valeria = _valeria(client, doc)
+    url = f"/api/v1/ml/enrollments/{valeria['enrollment_id']}/trace"
+    r = client.get(url, headers=doc)
+    assert r.status_code == 409 and r.json()["code"] == "no_model"  # sin aprobación no hay traza
+
+    _approve(client)
+    client.post("/api/v1/ml/predictions/run", json={"offering_id": py["id"]}, headers=doc)
+    alert = next(a for a in client.get(f"/api/v1/ml/offerings/{py['id']}/risk", headers=doc).json()
+                 if a["enrollment_id"] == valeria["enrollment_id"])
+    t = client.get(url, headers=doc).json()
+    assert abs(t["probability"] - alert["score"]) < 1e-3 and t["risk_level"] == alert["risk_level"] == "alto"
+    assert [layer["id"] for layer in t["layers"]] == ["input", "projection", "temporal", "fusion", "heads"]
+    assert [len(layer["nodes"]) for layer in t["layers"]] == [8, 6, 6, 5, 4]
+    heads = t["layers"][-1]["nodes"]
+    assert heads[2]["value"] == t["probability"] and all(h["value"] is None for i, h in enumerate(heads) if i != 2)
+    ids = {layer["id"]: {n["index"] for n in layer["nodes"]} for layer in t["layers"]}
+    assert t["edges"] and all(e["source"] in ids[e["source_layer"]] and e["target"] in ids[e["target_layer"]]
+                              and 0 <= e["strength"] <= 1 for e in t["edges"])
+    # Solo conexiones que existen en la red: la secuencia entra al bloque temporal, no a la rama tabular.
+    pairs = {(e["source_layer"], e["target_layer"]) for e in t["edges"]}
+    assert pairs == {("input", "projection"), ("input", "temporal"), ("projection", "fusion"),
+                     ("temporal", "fusion"), ("fusion", "heads")}
+    admin = auth(client, "ANDINO", "admin@andino.demo")
+    audit = client.get("/api/v1/audit-logs?action=prediction.traced", headers=admin).json()
+    assert any(e["resource_id"] == valeria["enrollment_id"] for e in audit["items"])
+
+
+def test_quien_ve_el_recorrido(client):
+    _approve(client)
+    doc = auth(client, "ANDINO", "docente@andino.demo")
+    _, valeria = _valeria(client, doc)
+    url = f"/api/v1/ml/enrollments/{valeria['enrollment_id']}/trace"
+    assert client.get(url, headers=auth(client, "ANDINO", "auditoria@andino.demo")).status_code == 200
+    assert client.get(url, headers=auth(client, "ANDINO", "estudiante@andino.demo")).status_code == 403  # D22
+    assert client.get(url, headers=auth(client, "ANDINO", "analista@andino.demo")).status_code == 403
+    assert client.get(url, headers=auth(client, "ANDINO", "docente2@andino.demo")).status_code == 404
+    assert client.get(url, headers=auth(client, "PACIFICO", "admin@pacifico.demo")).status_code == 404

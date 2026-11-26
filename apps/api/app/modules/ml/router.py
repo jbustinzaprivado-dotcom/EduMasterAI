@@ -13,7 +13,7 @@ from app.core.errors import AppError, forbidden, not_found
 from app.modules.academic.models import CourseOffering, Enrollment
 from app.modules.academic.service import can_manage_offering, can_view_roster, get_offering
 from app.modules.audit.service import record
-from app.modules.ml import service
+from app.modules.ml import service, trace
 from app.modules.ml.models import ModelVersion, Prediction
 
 router = APIRouter(prefix="/ml", tags=["ml"])
@@ -216,6 +216,79 @@ def offering_risk(offering_id: uuid.UUID, db: DB, principal: CurrentPrincipal) -
                 created_at=p.created_at, review_status=p.review_status, review_note=p.review_note)
         for p in service.latest_predictions(db, offering.id).values()
     ]
+
+
+class TraceNode(BaseModel):
+    index: int
+    label: str
+    value: float | None  # activación real (None = cabeza planificada, sin entrenar)
+    intensity: float  # 0-1 respecto de la neurona más activa de su capa, para dibujar
+
+
+class TraceLayer(BaseModel):
+    id: str
+    name: str
+    total: str  # tamaño real de la capa; se muestran solo las neuronas que más aportaron
+    nodes: list[TraceNode]
+
+
+class TraceEdge(BaseModel):
+    source_layer: str
+    source: int
+    target_layer: str
+    target: int
+    strength: float  # |aporte| normalizado 0-1 dentro de cada par de capas
+    sign: int  # 1 sube la activación del destino, -1 la baja
+
+
+class TraceOut(BaseModel):
+    enrollment_id: uuid.UUID
+    student_name: str
+    course: str
+    model_version: str
+    computed_at: datetime
+    probability: float
+    threshold: float
+    risk_level: str
+    factors: list[dict]
+    layers: list[TraceLayer]
+    edges: list[TraceEdge]
+
+
+@router.get("/enrollments/{enrollment_id}/trace", response_model=TraceOut)
+def trace_enrollment(enrollment_id: uuid.UUID, db: DB, principal: CurrentPrincipal) -> TraceOut:
+    """Recorrido real de una predicción por la red (D51): activaciones de cada capa con los datos actuales.
+    Lo ven quienes ven el riesgo nominal (docente de la oferta, administración, auditoría); nunca el estudiante (D22).
+    No crea una alerta: es una consulta, y queda en la bitácora porque muestra datos de una persona."""
+    enrollment = db.get(Enrollment, enrollment_id)
+    if enrollment is None or not principal.can_see_org(enrollment.offering.organization_id):
+        raise not_found("Matrícula")
+    offering = get_offering(db, principal, enrollment.offering_id)
+    if not can_view_roster(principal, offering):
+        raise forbidden()
+    deployment = service.active_deployment(db, principal.organization_id)
+    if deployment is None:
+        raise AppError(409, "no_model", "No hay un modelo aprobado para esta institución. Un administrador debe publicarlo.")
+    version = deployment.model_version
+    model = service.load_model(version.artifact_path)
+    tabular, sequence = service.features_for(db, enrollment, datetime.now(UTC))
+    try:
+        result = trace.build(model, tabular, sequence)
+    except trace.TraceUnavailable:
+        raise AppError(409, "no_hidden_layers",
+                       "El modelo publicado es el baseline logístico: no tiene capas ocultas que recorrer.") from None
+    record(db, action="prediction.traced", resource="enrollment", resource_id=enrollment.id, actor_id=principal.user.id,
+           organization_id=offering.organization_id, details={"model_version": version.version})
+    db.commit()
+    probability = result["probability"]
+    explain = model.explain(tabular, sequence) if probability >= model.threshold * 0.6 else []
+    return TraceOut(
+        enrollment_id=enrollment.id, student_name=enrollment.student.full_name,
+        course=f"{offering.course.code} · {offering.course.title}", model_version=version.version,
+        computed_at=datetime.now(UTC), probability=round(probability, 4), threshold=round(model.threshold, 4),
+        risk_level=service.risk_level(probability, model.threshold), factors=[f.__dict__ for f in explain],
+        layers=result["layers"], edges=result["edges"],
+    )
 
 
 class ReviewIn(BaseModel):

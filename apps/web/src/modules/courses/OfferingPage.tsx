@@ -90,6 +90,8 @@ function RiskCell({ risk, canReview, offeringId }: { risk: Risk | undefined; can
             </ul>
           ) : <p className="mt-2 text-muted">Sin factores destacados.</p>}
           {risk.review_note && <p className="mt-2 text-muted">Nota: {risk.review_note}</p>}
+          <Link to={`/red-neuronal?oferta=${offeringId}&matricula=${risk.enrollment_id}`}
+            className="mt-2 inline-block text-cyan hover:underline">Ver su recorrido en la red neuronal →</Link>
           {canReview && risk.review_status === "pendiente" && risk.risk_level !== "bajo" && (
             <div className="mt-3 flex gap-2">
               <Button className="px-2 py-1 text-xs" loading={review.isPending}
