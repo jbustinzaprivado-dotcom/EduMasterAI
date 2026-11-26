@@ -28,10 +28,10 @@ test("recorrido real de una predicción por la red (D51)", async ({ page }) => {
   // El modelo quedó publicado en 06; el docente traza a Valeria (perfil en riesgo) con sus datos actuales.
   await login(page, "ANDINO", "docente@andino.demo");
   await page.getByRole("link", { name: "Red neuronal" }).click();
-  const offering = page.getByLabel("Oferta");
+  const offering = page.getByLabel("Oferta", { exact: true });
   const py101 = await offering.locator("option", { hasText: "PY-101" }).first().getAttribute("value");
   await offering.selectOption(py101!);
-  await page.getByLabel("Estudiante").selectOption({ label: "Valeria Mendoza" });
+  await page.getByLabel("Estudiante", { exact: true }).selectOption({ label: "Valeria Mendoza" });
   const trace = page.getByTestId("trace-svg");
   await expect(trace).toHaveAccessibleName(/Recorrido de la predicción de Valeria Mendoza: \d+ % de riesgo/);
   await expect(page.getByText(/Datos reales · modelo v/)).toBeVisible();
@@ -41,11 +41,22 @@ test("recorrido real de una predicción por la red (D51)", async ({ page }) => {
   await expect(trace.getByRole("button", { name: "Cabezas de salida, A · Finalización: sin entrenar" })).toBeVisible();
   await riskHead.click();
   await expect(page.getByText("Recibe sobre todo de:")).toBeVisible();
+  // Al terminar el recorrido, la salida muestra la probabilidad.
+  await expect(trace.getByText(/C · Riesgo de abandono · \d+ %/)).toBeVisible({ timeout: 8000 });
+
+  // D52: «Todos los estudiantes» recorre la red con el promedio del grupo.
+  await page.getByLabel("Estudiante", { exact: true }).selectOption("todos");
+  await expect(trace).toHaveAccessibleName(/Recorrido del grupo de \d+ estudiantes: \d+ % de riesgo promedio/);
+  await expect(page.getByText(/^Alto: \d+$/)).toBeVisible();
+  // Y «Ver la arquitectura» vuelve al plano de la red.
+  await page.getByLabel("Estudiante", { exact: true }).selectOption("");
+  await expect(page.getByRole("img", { name: /^Arquitectura/ })).toBeVisible();
 });
 
 test("el estudiante no ve el recorrido de su predicción (D22)", async ({ page }) => {
   await login(page, "ANDINO", "estudiante@andino.demo");
   await page.getByRole("link", { name: "Red neuronal" }).click();
   await expect(page.getByRole("heading", { name: "Arquitectura neuronal" })).toBeVisible();
-  await expect(page.getByText("Recorrido real de una predicción")).toHaveCount(0);
+  await expect(page.getByRole("img", { name: /^Arquitectura/ })).toBeVisible();
+  await expect(page.getByLabel("Estudiante", { exact: true })).toHaveCount(0);
 });

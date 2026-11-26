@@ -4,7 +4,7 @@ Plataforma empresarial de aprendizaje inteligente: gestión académica, analíti
 supervisión humana. Proyecto académico grupal construido según la *Especificación funcional y técnica v1.0*
 (12-11-2026), citada como **§N**.
 
-> **Estado:** Fases 0 a 8 ✅ · 91 pruebas de API, 5 de ML, 8 de web y 24 E2E, con la CI en verde ·
+> **Estado:** Fases 0 a 8 ✅ · 92 pruebas de API, 5 de ML, 8 de web y 24 E2E, con la CI en verde ·
 > pendientes no bloqueantes: ranking aprendido (cabeza D) y escaneo de dependencias en la CI.
 > La hoja de ruta completa está en [docs/fase-0/backlog.md](docs/fase-0/backlog.md).
 
@@ -25,7 +25,7 @@ supervisión humana. Proyecto académico grupal construido según la *Especifica
 | Panel | KPIs académicos reales con variación, tendencia semanal, finalización, alertas abiertas y actividad. |
 | Modelo de IA | Riesgo de abandono: baselines vs. red con GRU, model card, calibración y aprobación por institución. |
 | Alertas | El docente ve el riesgo de sus estudiantes con los factores que lo explican y lo marca atendido o descartado. |
-| Recorrido de la red | El docente sigue una predicción real capa por capa: activaciones y conexiones que más aportaron (D51). |
+| Recorrido de la red | El docente sigue una predicción real capa por capa, de un estudiante o del grupo, con la señal animada por las conexiones que más aportaron (D51, D52). |
 | Notificaciones en vivo | Campana con contador y avisos al instante (SSE): notas, evaluaciones, certificados, alertas. |
 | Analítica | 9 indicadores definidos, filtros, desglose por oferta/estudiante y exportación CSV/XLSX/PDF auditada. |
 | Dominio de habilidades | Catálogo de competencias, heatmap por nivel y nivel estimado separado del validado por el docente. |
@@ -111,9 +111,10 @@ cd ml && .venv/Scripts/python -m pytest
 1. `admin@andino.demo` → **Modelos de IA** → revisa la model card → **Aprobar publicación**.
 2. `docente@andino.demo` → **Cursos** → PY-101 → **Actualizar riesgo con IA**.
 3. Abre la alerta de `Valeria Mendoza` (perfil en riesgo): probabilidad, factores y **Marcar atendida**.
-4. **Red neuronal** muestra el modelo publicado, sus métricas y la latencia de la última inferencia. Abajo,
-   **Recorrido real de una predicción**: elige PY-101 y a Valeria y la red se recorre con sus datos actuales;
-   un clic en una neurona muestra su activación real y de dónde recibe la señal (D51).
+4. **Red neuronal** muestra el modelo publicado, sus métricas y la latencia de la última inferencia. Con el
+   selector de arriba, elige PY-101 y a Valeria (o «Todos los estudiantes»): la misma red se recorre con datos
+   reales y la señal avanza capa por capa; un clic en una neurona muestra su activación y de dónde recibe la
+   señal (D51, D52).
 5. `estudiante@andino.demo` → **IA Tutor** → «¿Qué hago ahora?»: sugerencias con su motivo; acepta o valora una.
 6. De vuelta como docente, el curso muestra las **recomendaciones del grupo**.
 7. **En vivo:** con Valeria abierta en otra ventana, el docente califica su entrega en **Evaluaciones** y a ella

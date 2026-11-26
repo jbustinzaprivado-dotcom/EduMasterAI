@@ -17,66 +17,78 @@ const STATES = [
   ["Error", "Fallo del proceso con su correlation_id."],
 ];
 
-/** Recorrido real (D51): solo para quien ve el riesgo nominal (docente, administración, auditoría; nunca el estudiante). */
-function TracePanel() {
-  const [params, setParams] = useSearchParams();
-  const enrollmentId = params.get("matricula");
-  const offeringId = params.get("oferta");
+/**
+ * Selector del visualizador unificado (D52): sin estudiante se ve la arquitectura; con «Todos» o una persona, la
+ * misma red se recorre con datos reales. Solo para quien ve el riesgo nominal (docente, administración, auditoría).
+ */
+function TraceSelector({ offeringId, enrollment, onChange }: {
+  offeringId: string | null;
+  enrollment: string | null;
+  onChange: (next: { oferta?: string | null; matricula?: string | null }) => void;
+}) {
   const offerings = useQuery({ queryKey: ["offerings"], queryFn: () => api<Offering[]>("/offerings") });
   const roster = useQuery({
     queryKey: ["roster", offeringId],
     queryFn: () => api<RosterRow[]>(`/offerings/${offeringId}/enrollments`),
     enabled: !!offeringId,
   });
-  const set = (next: Record<string, string | null>) => {
-    const p = new URLSearchParams(params);
-    Object.entries(next).forEach(([k, v]) => (v ? p.set(k, v) : p.delete(k)));
-    setParams(p, { replace: true });
-  };
-
   return (
-    <Panel title="Recorrido real de una predicción"
-      subtitle="Elige un estudiante: la red se recorre con sus datos actuales y muestra las neuronas que más aportaron.">
-      <div className="mb-3 flex flex-wrap gap-2">
-        <label className="sr-only" htmlFor="trace-offering">Oferta</label>
-        <select id="trace-offering" className="field w-auto text-sm" value={offeringId ?? ""}
-          onChange={(e) => set({ oferta: e.target.value || null, matricula: null })}>
-          <option value="">Elige una oferta…</option>
-          {(offerings.data ?? []).filter((o) => o.status === "active").map((o) => (
-            <option key={o.id} value={o.id}>{o.course_code} · {o.course_title} ({o.cohort})</option>
-          ))}
-        </select>
-        <label className="sr-only" htmlFor="trace-student">Estudiante</label>
-        <select id="trace-student" className="field w-auto text-sm" value={enrollmentId ?? ""} disabled={!offeringId}
-          onChange={(e) => set({ matricula: e.target.value || null })}>
-          <option value="">Elige un estudiante…</option>
-          {(roster.data ?? []).filter((r) => r.status === "active").map((r) => (
-            <option key={r.enrollment_id} value={r.enrollment_id}>{r.student_name}</option>
-          ))}
-        </select>
-      </div>
-      {enrollmentId
-        ? <TraceView enrollmentId={enrollmentId} />
-        : <p className="text-xs text-muted">Aún no elegiste un estudiante. También puedes abrirlo desde la alerta de riesgo en la ficha del curso.</p>}
-    </Panel>
+    <div className="flex flex-wrap gap-2">
+      <label className="sr-only" htmlFor="trace-offering">Oferta</label>
+      <select id="trace-offering" className="field w-auto py-1.5 text-xs" value={offeringId ?? ""}
+        onChange={(e) => onChange({ oferta: e.target.value || null, matricula: null })}>
+        <option value="">Elige una oferta…</option>
+        {(offerings.data ?? []).filter((o) => o.status === "active").map((o) => (
+          <option key={o.id} value={o.id}>{o.course_code} · {o.course_title} ({o.cohort})</option>
+        ))}
+      </select>
+      <label className="sr-only" htmlFor="trace-student">Estudiante</label>
+      <select id="trace-student" className="field w-auto py-1.5 text-xs" value={enrollment ?? ""} disabled={!offeringId}
+        onChange={(e) => onChange({ matricula: e.target.value || null })}>
+        <option value="">Ver la arquitectura</option>
+        <option value="todos">Todos los estudiantes (promedio)</option>
+        {(roster.data ?? []).filter((r) => r.status === "active").map((r) => (
+          <option key={r.enrollment_id} value={r.enrollment_id}>{r.student_name}</option>
+        ))}
+      </select>
+    </div>
   );
 }
 
 export function NeuralPage() {
   const arch = useArchitecture();
   const { can } = useAuth();
+  const [params, setParams] = useSearchParams();
   const canTrace = can("assessment.manage") || can("audit.read");
+  const offeringId = params.get("oferta");
+  const enrollment = params.get("matricula");
+  const published = arch.data && arch.data.status !== "design";
+  const tracing = canTrace && published && !!enrollment;
+  const update = (next: Record<string, string | null | undefined>) => {
+    const p = new URLSearchParams(params);
+    Object.entries(next).forEach(([k, v]) => { if (v === undefined) return; if (v) p.set(k, v); else p.delete(k); });
+    setParams(p, { replace: true });
+  };
+
   return (
     <div className="mx-auto max-w-6xl">
-      <PageHeader title="Arquitectura neuronal" description="Visualizador de §4.10: topología y estado del modelo publicado en tu institución." />
+      <PageHeader title="Arquitectura neuronal" description="Visualizador de §4.10: topología y estado del modelo publicado; con un estudiante o el grupo, el recorrido real de la predicción." />
       {arch.isPending && <Skeleton className="h-96" />}
       {arch.isError && <ErrorState error={arch.error} onRetry={() => arch.refetch()} />}
       {arch.data && (
-        <div className="grid gap-4 lg:grid-cols-[1fr_300px]">
-          <Panel glow title={arch.data.model_name} subtitle={arch.data.note}>
-            <NeuralNetwork arch={arch.data} />
+        <div className={tracing ? "flex flex-col gap-4" : "grid gap-4 lg:grid-cols-[1fr_300px]"}>
+          <Panel glow title={tracing ? `${arch.data.model_name} · recorrido real` : arch.data.model_name}
+            subtitle={tracing
+              ? "La señal avanza capa por capa con los datos actuales; se muestran las neuronas que más aportaron."
+              : canTrace && published
+                ? `${arch.data.note} Elige una oferta y un estudiante (o todos) para ver el recorrido real.`
+                : arch.data.note}
+            actions={canTrace && published ? <TraceSelector offeringId={offeringId} enrollment={enrollment} onChange={update} /> : undefined}>
+            {tracing
+              ? <TraceView arch={arch.data} offeringId={offeringId} enrollment={enrollment!} />
+              : <NeuralNetwork arch={arch.data} />}
           </Panel>
-          <div className="flex flex-col gap-4">
+          <div className={tracing ? "grid gap-4 md:grid-cols-2" : "flex flex-col gap-4"}>
             <Panel title="Estado del modelo"><ModelStatus arch={arch.data} /></Panel>
             <Panel title="Estados que distinguirá la interfaz" subtitle="Principio de transparencia (§1)">
               <ul className="space-y-1.5 text-xs">
@@ -86,7 +98,6 @@ export function NeuralPage() {
               </ul>
             </Panel>
           </div>
-          {canTrace && arch.data.status !== "design" && <div className="lg:col-span-2"><TracePanel /></div>}
         </div>
       )}
     </div>

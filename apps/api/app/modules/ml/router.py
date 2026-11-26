@@ -242,17 +242,58 @@ class TraceEdge(BaseModel):
 
 
 class TraceOut(BaseModel):
-    enrollment_id: uuid.UUID
+    scope: Literal["student", "group"]
+    enrollment_id: uuid.UUID | None  # None en la traza del grupo
     student_name: str
     course: str
     model_version: str
     computed_at: datetime
-    probability: float
+    count: int  # matrículas recorridas (1 o el grupo)
+    probability: float  # del estudiante, o promedio del grupo
     threshold: float
     risk_level: str
-    factors: list[dict]
+    levels: dict[str, int]  # cuántas matrículas en alto / medio / bajo
+    factors: list[dict]  # solo en la traza individual
     layers: list[TraceLayer]
     edges: list[TraceEdge]
+
+
+def _published_model(db, principal):
+    deployment = service.active_deployment(db, principal.organization_id)
+    if deployment is None:
+        raise AppError(409, "no_model", "No hay un modelo aprobado para esta institución. Un administrador debe publicarlo.")
+    version = deployment.model_version
+    return version, service.load_model(version.artifact_path)
+
+
+def _trace(db, principal, offering, enrollments: list[Enrollment], scope: str) -> TraceOut:
+    """Traza de una matrícula o de todas las activas de la oferta (D51, D52). Queda en la bitácora."""
+    version, model = _published_model(db, principal)
+    now = datetime.now(UTC)
+    feats = [service.features_for(db, e, now) for e in enrollments]
+    try:
+        result = trace.build(model, [f[0] for f in feats], [f[1] for f in feats])
+    except trace.TraceUnavailable:
+        raise AppError(409, "no_hidden_layers",
+                       "El modelo publicado es el baseline logístico: no tiene capas ocultas que recorrer.") from None
+    single = scope == "student"
+    record(db, action="prediction.traced", resource="enrollment" if single else "offering",
+           resource_id=enrollments[0].id if single else offering.id, actor_id=principal.user.id,
+           organization_id=offering.organization_id, details={"model_version": version.version, "count": len(enrollments)})
+    db.commit()
+    probability = result["probability"]
+    levels = {"alto": 0, "medio": 0, "bajo": 0}
+    for p in result["probabilities"]:
+        levels[service.risk_level(p, model.threshold)] += 1
+    explain = model.explain(*feats[0]) if single and probability >= model.threshold * 0.6 else []
+    return TraceOut(
+        scope=scope, enrollment_id=enrollments[0].id if single else None,
+        student_name=enrollments[0].student.full_name if single else f"Todos los estudiantes ({len(enrollments)})",
+        course=f"{offering.course.code} · {offering.course.title}", model_version=version.version, computed_at=now,
+        count=len(enrollments), probability=round(probability, 4), threshold=round(model.threshold, 4),
+        risk_level=service.risk_level(probability, model.threshold), levels=levels,
+        factors=[f.__dict__ for f in explain], layers=result["layers"], edges=result["edges"],
+    )
 
 
 @router.get("/enrollments/{enrollment_id}/trace", response_model=TraceOut)
@@ -266,29 +307,20 @@ def trace_enrollment(enrollment_id: uuid.UUID, db: DB, principal: CurrentPrincip
     offering = get_offering(db, principal, enrollment.offering_id)
     if not can_view_roster(principal, offering):
         raise forbidden()
-    deployment = service.active_deployment(db, principal.organization_id)
-    if deployment is None:
-        raise AppError(409, "no_model", "No hay un modelo aprobado para esta institución. Un administrador debe publicarlo.")
-    version = deployment.model_version
-    model = service.load_model(version.artifact_path)
-    tabular, sequence = service.features_for(db, enrollment, datetime.now(UTC))
-    try:
-        result = trace.build(model, tabular, sequence)
-    except trace.TraceUnavailable:
-        raise AppError(409, "no_hidden_layers",
-                       "El modelo publicado es el baseline logístico: no tiene capas ocultas que recorrer.") from None
-    record(db, action="prediction.traced", resource="enrollment", resource_id=enrollment.id, actor_id=principal.user.id,
-           organization_id=offering.organization_id, details={"model_version": version.version})
-    db.commit()
-    probability = result["probability"]
-    explain = model.explain(tabular, sequence) if probability >= model.threshold * 0.6 else []
-    return TraceOut(
-        enrollment_id=enrollment.id, student_name=enrollment.student.full_name,
-        course=f"{offering.course.code} · {offering.course.title}", model_version=version.version,
-        computed_at=datetime.now(UTC), probability=round(probability, 4), threshold=round(model.threshold, 4),
-        risk_level=service.risk_level(probability, model.threshold), factors=[f.__dict__ for f in explain],
-        layers=result["layers"], edges=result["edges"],
-    )
+    return _trace(db, principal, offering, [enrollment], "student")
+
+
+@router.get("/offerings/{offering_id}/trace", response_model=TraceOut)
+def trace_offering(offering_id: uuid.UUID, db: DB, principal: CurrentPrincipal) -> TraceOut:
+    """Recorrido del grupo (D52): las activaciones y aportes promedio de todas las matrículas activas de la oferta."""
+    offering = get_offering(db, principal, offering_id)
+    if not can_view_roster(principal, offering):
+        raise forbidden()
+    enrollments = list(db.scalars(select(Enrollment).where(Enrollment.offering_id == offering.id,
+                                                           Enrollment.status == "active")))
+    if not enrollments:
+        raise AppError(409, "no_active_enrollments", "La oferta no tiene estudiantes en curso que recorrer.")
+    return _trace(db, principal, offering, enrollments, "group")
 
 
 class ReviewIn(BaseModel):

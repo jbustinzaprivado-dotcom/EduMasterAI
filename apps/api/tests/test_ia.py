@@ -154,3 +154,28 @@ def test_quien_ve_el_recorrido(client):
     assert client.get(url, headers=auth(client, "ANDINO", "analista@andino.demo")).status_code == 403
     assert client.get(url, headers=auth(client, "ANDINO", "docente2@andino.demo")).status_code == 404
     assert client.get(url, headers=auth(client, "PACIFICO", "admin@pacifico.demo")).status_code == 404
+
+
+def test_recorrido_del_grupo(client):
+    """D52: la traza del grupo promedia a todas las matrículas activas y cuenta los niveles de riesgo."""
+    _approve(client)
+    doc = auth(client, "ANDINO", "docente@andino.demo")
+    py, valeria = _valeria(client, doc)
+    roster = client.get(f"/api/v1/offerings/{py['id']}/enrollments", headers=doc).json()
+    active = [r for r in roster if r["status"] == "active"]
+    client.post("/api/v1/ml/predictions/run", json={"offering_id": py["id"]}, headers=doc)
+    risk = client.get(f"/api/v1/ml/offerings/{py['id']}/risk", headers=doc).json()
+
+    g = client.get(f"/api/v1/ml/offerings/{py['id']}/trace", headers=doc).json()
+    assert g["scope"] == "group" and g["enrollment_id"] is None and g["count"] == len(active)
+    assert sum(g["levels"].values()) == len(active) and g["levels"]["alto"] >= 1 and g["factors"] == []
+    mean = sum(r["score"] for r in risk) / len(risk)
+    assert abs(g["probability"] - mean) < 1e-3  # la salida es el promedio real del grupo
+    assert [len(layer["nodes"]) for layer in g["layers"]] == [8, 6, 6, 5, 4]
+
+    one = client.get(f"/api/v1/ml/enrollments/{valeria['enrollment_id']}/trace", headers=doc).json()
+    assert one["scope"] == "student" and one["count"] == 1 and sum(one["levels"].values()) == 1
+
+    url = f"/api/v1/ml/offerings/{py['id']}/trace"
+    assert client.get(url, headers=auth(client, "ANDINO", "estudiante@andino.demo")).status_code == 403
+    assert client.get(url, headers=auth(client, "ANDINO", "docente2@andino.demo")).status_code == 404

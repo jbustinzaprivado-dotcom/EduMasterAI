@@ -166,7 +166,7 @@ para encontrar rápido qué pasó.
 
 ## 17. Cómo se comprueba que funciona
 
-- **91 pruebas automáticas de la API**: login, robo de sesión, permisos, aislamiento entre instituciones,
+- **92 pruebas automáticas de la API**: login, robo de sesión, permisos, aislamiento entre instituciones,
   bitácora, cursos, eventos idempotentes, entregas, notas, panel, aprobación del modelo, predicción, revisión,
   recomendaciones, notificaciones en vivo, certificados, mapa, comunidad, rutas, analítica, habilidades, lecciones y contraseñas.
 - **5 pruebas de ML**: sin fuga de información, definición de la etiqueta, simulación reproducible y

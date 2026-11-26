@@ -422,8 +422,13 @@ Navegador ──HTTPS──▶ Cloudflare Tunnel ──▶ API FastAPI (puerto 8
 - Respeta `prefers-reduced-motion`.
 - Al hacer clic en una capa se ve su operación, sus unidades y su dimensión tensorial.
 
-**Recorrido real de una predicción (D51).**
-- El docente (o la administración o la auditoría) elige un estudiante, o pulsa **Ver su recorrido en la red** en la alerta.
+**Recorrido real de una predicción (D51, D52).**
+- Es el mismo visualizador: arriba hay un selector de oferta y de estudiante. «Ver la arquitectura» muestra el
+  plano; «Todos los estudiantes» recorre la red con el promedio del grupo; un nombre, con los datos de esa persona.
+- El docente (o la administración o la auditoría) también llega desde **Ver su recorrido en la red** en la alerta.
+- **Animación real:** la señal avanza capa por capa; los pulsos viajan solo por las conexiones reales, con tamaño
+  según cuánto aportaron, y cada neurona se enciende al llegarle, con brillo según su activación. Pausa, repetir,
+  velocidad y respeto al movimiento reducido.
 - La API repite la propagación hacia delante con los datos actuales y guarda la activación de cada capa. La
   probabilidad final es la misma que da el modelo publicado (una prueba lo verifica).
 - Como no caben 24 + 24 + 32 neuronas, se muestran **las que más aportaron**, de la salida hacia atrás: las 5 de
@@ -495,7 +500,7 @@ Navegador ──HTTPS──▶ Cloudflare Tunnel ──▶ API FastAPI (puerto 8
 
 | Nivel | Qué cubre | Herramienta |
 |---|---|---|
-| API (91 pruebas) | Reglas de negocio, permisos, aislamiento, IA, seguridad, respaldo | pytest, sobre SQLite y PostgreSQL |
+| API (92 pruebas) | Reglas de negocio, permisos, aislamiento, IA, seguridad, respaldo | pytest, sobre SQLite y PostgreSQL |
 | ML | Sin fuga de datos, etiqueta correcta, NumPy = PyTorch | pytest |
 | Web (8 pruebas) | Componentes y formato seguro del texto | Vitest |
 | E2E (24 recorridos) | La web real en un navegador: login, permisos, accesibilidad (axe), móvil, notas en vivo entre dos navegadores, IA, recorrido de la red, certificados, analítica, operación y rollback | Playwright (D35) |
