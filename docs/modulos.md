@@ -519,6 +519,20 @@ Navegador ──HTTPS──▶ Cloudflare Tunnel ──▶ API FastAPI (puerto 8
 - `demo.bat` ejecuta un **smoke test** antes de abrir el túnel. `comprobar.bat` lo repite cuando haga falta.
 - Hay runbooks para cada situación: [`runbooks.md`](runbooks.md).
 
+**Instalar en otro equipo** (D56).
+- Guía única [`despliegue.md`](despliegue.md): requisitos, Git o ZIP, equipos sin administrador o con npm bloqueado,
+  actualizar, trasladar los datos y problemas frecuentes.
+- `instalar.bat` exige Python 3.12+ y ya no exige Node, porque la web viene compilada (D49). Se detiene con un
+  mensaje claro si fallan las migraciones o los datos DEMO.
+- `actualizar.bat` se niega a correr con la plataforma abierta; hace un respaldo verificado, `git pull --ff-only`
+  (nunca borra cambios locales) e `instalar.bat`.
+- `demo.bat` encuentra un `cloudflared.exe` portable en la carpeta del proyecto o en `tools\`.
+- Probado con una instalación limpia en una carpeta nueva: 46 s, migraciones al día y smoke test en verde.
+
+| Alternativa | Por qué no |
+|---|---|
+| Instalador `.exe` o Docker | Docker exige administrador y virtualización, que los equipos del centro de estudios no permiten; un `.exe` ocultaría lo que hace. Los `.bat` se leen y se repiten sin riesgo. |
+
 ---
 
 ## 20. Pruebas automáticas

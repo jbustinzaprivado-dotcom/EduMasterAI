@@ -12,7 +12,8 @@ flowchart LR
   A --> L[Bitácora de<br/>auditoría]
 ```
 
-- **Web (React):** la vitrina. Muestra datos y botones, pero no decide nada importante.
+- **Web (React):** la vitrina. Muestra datos y botones, pero no decide nada importante. Las pantallas más
+  cargadas se ordenan en pestañas, como las carpetas de un archivador (D54).
 - **API (FastAPI):** el mostrador del banco. Toda petición pasa por aquí y aquí se revisan los permisos.
 - **Base de datos:** la bóveda. Guarda instituciones, usuarios, roles y la bitácora.
 - **Túnel de Cloudflare:** un pasillo seguro desde internet hasta la computadora que aloja el sistema,
@@ -98,19 +99,29 @@ para encontrar rápido qué pasó.
    marca la alerta como atendida o la descarta explicando por qué. El estudiante no ve su puntaje.
 7. **Ligero en el servidor:** la API no carga PyTorch; usa los pesos exportados con NumPy y una prueba
    confirma que da el mismo resultado.
+8. **Ver la red por dentro:** como una radiografía, el docente elige a un estudiante (o a todo el grupo) y ve
+   cómo sus datos reales cruzan la red capa por capa hasta la probabilidad final. Puede seguir una variable a
+   la vez, neurona por neurona, para explicar de dónde salió el resultado (D51-D53).
 
 ## 10. Recomendaciones e IA Tutor: un GPS de estudio
 
-- El estudiante pregunta «¿qué hago ahora?» y el tutor revisa su situación real en el curso:
-  - **Siguiente actividad** obligatoria, indicando si va atrasado frente al calendario.
-  - **Entrega próxima** que vence en menos de 7 días y aún no envía.
-  - **Reforzar** un tema si su nota oficial quedó por debajo del 55 %.
-  - **Retomar** con la actividad más corta si lleva 7 días o más sin entrar.
-- Cada sugerencia dice **por qué** y qué ganaría. El estudiante la acepta, la descarta o dice si le sirvió.
-- Cuando cumple (completa la actividad o entrega), la sugerencia se cierra sola como «completada»; si la
-  situación cambia sin hacerlo, queda «expirada». Lo descartado no se vuelve a insistir.
+- El estudiante pregunta «¿qué hago ahora?» y el tutor revisa su situación real. Hay 10 tipos de sugerencia (D55):
+  - **Para avanzar:** siguiente actividad, siguiente etapa de su ruta y un anuncio del docente sin leer.
+  - **Para no atrasarse:** entrega próxima (vence en 7 días), entrega vencida que aún acepta tardías y retomar
+    si lleva 7 días o más sin entrar.
+  - **Para mejorar:** reforzar si la nota quedó bajo 55 %, mejorar la nota si le quedan intentos y practicar una
+    competencia con nivel bajo.
+  - **Para cerrar:** qué le falta para el certificado cuando ya va por el 70 %.
+- Cada sugerencia dice **por qué va en ese lugar** («vence en 2 días») y tiene **un solo botón** para hacerla
+  («Entregar ahora»). Ir a hacerla cuenta como aceptarla.
+- Cuando cumple, se cierra sola y dice por qué («La entregaste»); si la situación cambia, también lo dice
+  («La fecha de entrega pasó»). Lo descartado no se vuelve a insistir.
 - El modelo de riesgo solo decide qué tan arriba va «retomar»; el estudiante nunca ve su puntaje.
-- El docente ve las sugerencias de su grupo, y la coordinación mide aceptación y utilidad (no solo clics).
+- Cada rol lo usa a su manera:
+  - **Estudiante:** su bandeja con Vigentes · Historial · Cómo me han servido; el IA Tutor queda para la pregunta rápida.
+  - **Docente:** «Acciones sugeridas» para su grupo: entregas por calificar, alertas sin atender, quién no entrega.
+  - **Gestión:** cuántas se aceptan y sirven por tipo, semana y curso, y por qué se descartan (no solo clics).
+- No es un chatbot: cada motivo sale de un dato concreto, así nunca inventa.
 
 ## 11. Notificaciones en vivo: el timbre
 
@@ -163,6 +174,8 @@ para encontrar rápido qué pasó.
 - Un panel sin datos reales muestra **en qué fase se construye**, nunca números inventados.
 - La red neuronal se ve como **diseño**. Su animación solo aparece al pulsar "Simular", con la etiqueta
   "SIMULACIÓN DEMO" mientras la institución no aprueba un modelo (§1, §5.4).
+- El recorrido de un estudiante o del grupo usa sus datos de verdad, por eso lleva el rótulo «Datos reales» y no el
+  de simulación (D52).
 
 ## 17. Cómo se comprueba que funciona
 
@@ -177,3 +190,15 @@ para encontrar rápido qué pasó.
   y que en celular no haya desplazamiento horizontal.
 - **GitHub Actions (CI)** repite las pruebas contra PostgreSQL real, verifica las migraciones y que la
   bitácora rechace borrados, y compila la web.
+
+## 18. Instalar en otro equipo: una mudanza con lista
+
+- La guía `docs/despliegue.md` es la lista de la mudanza: qué instalar, cómo descargar, qué hacer si el equipo
+  no tiene permisos de administrador y cómo llevar los datos (D56).
+- Solo hace falta **Python 3.12 o superior**; la web ya viene armada, así que no se necesita Node.
+- **`instalar.bat`** monta todo y carga las cuentas DEMO. Se puede repetir sin miedo: no borra ni duplica.
+- **`actualizar.bat`** es «guardar antes de mover»: hace un respaldo cifrado y lo verifica, descarga la versión
+  nueva y migra la base sin perder datos. Si la plataforma está abierta, no arranca.
+- **`demo.bat`** abre la dirección pública; si no se puede instalar `cloudflared`, basta con dejar el archivo
+  `cloudflared.exe` en la carpeta del proyecto.
+- Una instalación limpia, desde cero, tardó 46 segundos y pasó el smoke test.

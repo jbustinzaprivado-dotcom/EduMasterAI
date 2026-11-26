@@ -91,6 +91,7 @@ await step("docente", async () => {
   await doc.goto("/cursos");
   await shot(doc, "07-cursos-docente");
   await doc.getByRole("link", { name: /Fundamentos de Python/ }).click();
+  await doc.getByRole("tab", { name: "Estudiantes y riesgo" }).click(); // D54: la lista está en su pestaña
   await doc.getByRole("button", { name: "Actualizar riesgo con IA" }).click();
   await doc.getByRole("button", { name: /Riesgo alto/ }).first().waitFor();
   await shot(doc, "08-oferta-riesgo-ia", { full: true });
@@ -111,6 +112,26 @@ await step("docente", async () => {
   await shot(doc, "12-habilidades-heatmap", { full: true });
   await doc.goto("/comunidad");
   await shot(doc, "13-comunidad");
+});
+
+// Recorrido real de una predicción (D51-D53): el docente traza a Valeria (perfil en riesgo).
+await step("recorrido", async () => {
+  await doc.goto("/red-neuronal");
+  await settle(doc);
+  const offering = doc.getByLabel("Oferta", { exact: true });
+  const py101 = await offering.locator("option", { hasText: "PY-101" }).first().getAttribute("value");
+  await offering.selectOption(py101);
+  await doc.getByLabel("Estudiante", { exact: true }).selectOption({ label: "Valeria Mendoza" });
+  // Se espera a que la señal llegue a la salida y muestre la probabilidad.
+  await doc.getByTestId("trace-svg").getByText(/C · Riesgo de abandono · \d+ %/).waitFor({ timeout: 12000 });
+  await shot(doc, "26-red-recorrido", { full: true });
+});
+
+// Recomendaciones v2 (D55): acciones sugeridas del docente.
+await step("acciones-docente", async () => {
+  await doc.goto("/recomendaciones");
+  await doc.locator("li.panel").first().waitFor();
+  await shot(doc, "28-acciones-docente", { full: true });
 });
 
 // ---------- Coordinación ----------
@@ -134,6 +155,9 @@ await step("estudiante", async () => {
   await settle(est);
   await est.getByRole("button", { name: "¿Qué hago ahora?" }).first().click();
   await shot(est, "17-ia-tutor");
+  await est.goto("/recomendaciones");
+  await est.getByRole("tab", { name: /Vigentes/ }).waitFor();
+  await shot(est, "27-recomendaciones-estudiante", { full: true });
   await est.goto("/rutas");
   await shot(est, "18-ruta-estudiante");
   await est.getByRole("button", { name: /Notificaciones/ }).click();
@@ -158,6 +182,9 @@ await step("gestion", async () => {
   await shot(admin, "23-usuarios-roles");
   await admin.goto("/operacion");
   await shot(admin, "24-operacion", { full: true });
+  await admin.goto("/recomendaciones?seccion=metricas");
+  await admin.getByText("Aceptación y utilidad por tipo").waitFor();
+  await shot(admin, "29-recomendaciones-metricas", { full: true });
 });
 
 // ---------- Móvil ----------

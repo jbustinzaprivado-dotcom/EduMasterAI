@@ -1,7 +1,7 @@
 """Genera los PDF de la documentación con capturas del sistema (docs/pdf).
 
   0. EduMaster_AI_Como_Funciona.pdf: la explicación sencilla (docs/como-funciona.md) con capturas.
-  1. EduMaster_AI_Documentacion_Sistema.pdf: presentación, despliegue y operación, módulos (con capturas),
+  1. EduMaster_AI_Documentacion_Sistema.pdf: presentación, instalación en otro equipo, operación, módulos (con capturas),
      seguridad, pruebas de carga y acta de aceptación.
   2. EduMaster_AI_Informe_Desarrollo.pdf: resumen ejecutivo, capturas principales, bitácora, backlog,
      decisiones, mapa de procesos y glosario.
@@ -51,8 +51,12 @@ FIGURES: dict[int, list[tuple[str, str]]] = {
     15: [("04-modelo-confirmar-aprobacion", "Aprobación humana antes de publicar el modelo en la institución."),
          ("08-oferta-riesgo-ia", "Riesgo de abandono por estudiante en la oferta del docente."),
          ("09-alerta-factores", "Alerta con los factores que la explican; el docente la atiende o descarta.")],
-    16: [("17-ia-tutor", "IA Tutor: «¿Qué hago ahora?» con motivo e impacto esperado.")],
-    17: [("06-red-neuronal", "Visualizador de la arquitectura con el modelo publicado y el inspector de capa.")],
+    16: [("17-ia-tutor", "IA Tutor: «¿Qué hago ahora?» con motivo e impacto esperado."),
+         ("27-recomendaciones-estudiante", "Bandeja de la estudiante: Vigentes · Historial · Cómo me han servido."),
+         ("28-acciones-docente", "Acciones sugeridas para el docente, calculadas en el momento."),
+         ("29-recomendaciones-metricas", "Métricas para la gestión: aceptación por tipo, semana y curso, y motivos de descarte.")],
+    17: [("06-red-neuronal", "Visualizador de la arquitectura con el modelo publicado y el inspector de capa."),
+         ("26-red-recorrido", "Recorrido real de la predicción de una estudiante, capa por capa hasta la salida.")],
     18: [("24-operacion", "Pantalla de Operación: latencia, errores y conexiones frente a los objetivos de §10.5.")],
 }
 
@@ -156,8 +160,10 @@ FIGURES_SIMPLE: dict[int, list[tuple[str, str]]] = {
     5: [("22-auditoria", "La «caja negra»: cada acción importante queda registrada.")],
     6: [("18-ruta-estudiante", "La malla curricular de la estudiante: etapas que se desbloquean en orden.")],
     8: [("10-leccion", "Una lección: el estudiante la marca y su progreso avanza.")],
-    9: [("09-alerta-factores", "El termómetro: riesgo con sus motivos; el docente decide qué hacer.")],
-    10: [("17-ia-tutor", "El GPS de estudio: «¿Qué hago ahora?» con su porqué.")],
+    9: [("09-alerta-factores", "El termómetro: riesgo con sus motivos; el docente decide qué hacer."),
+        ("26-red-recorrido", "La radiografía: los datos reales de la estudiante cruzan la red hasta la probabilidad.")],
+    10: [("17-ia-tutor", "El GPS de estudio: «¿Qué hago ahora?» con su porqué."),
+         ("27-recomendaciones-estudiante", "La bandeja de la estudiante: lo vigente, lo ya cerrado y cuánto le ha servido.")],
     11: [("19-notificaciones", "El timbre: el aviso llega al instante, sin recargar.")],
     12: [("21-verificacion-publica", "El diploma con código: cualquiera lo verifica sin cuenta.")],
     15: [("12-habilidades-heatmap", "El estimado y el oficial: mapa de calor de competencias.")],
@@ -249,7 +255,8 @@ def main() -> None:
 
     sistema = body_of([
         ("Presentación del sistema", "presentacion", readme_body()),
-        ("Despliegue y operación", "despliegue", read("runbooks.md")),
+        ("Instalar en otro equipo", "instalacion", read("despliegue.md")),
+        ("Operación (runbooks)", "despliegue", read("runbooks.md")),
         ("Módulos: funcionamiento y decisiones", "modulos", with_figures("modulos.md", FIGURES)),
         ("Seguridad", "seguridad", read("fase-7/seguridad.md")),
         ("Pruebas de carga · escenario aula", "carga-aula", read("fase-7/carga-aula.md")),
@@ -257,7 +264,7 @@ def main() -> None:
         ("Acta de aceptación (UAT)", "uat", read("fase-7/aceptacion-uat.md")),
     ])
     a = build("EduMaster_AI_Documentacion_Sistema", "Documentación del sistema", "Documentación del sistema",
-              "Despliegue, módulos con capturas, seguridad y aceptación", "02-dashboard-admin", sistema)
+              "Instalación, operación, módulos con capturas, seguridad y aceptación", "02-dashboard-admin", sistema)
 
     resumen = """
 <div class="note">EduMaster.ai es una plataforma de aprendizaje con IA construida según el Documento Maestro
@@ -265,15 +272,16 @@ def main() -> None:
 
 | Aspecto | Resultado |
 |---|---|
-| Periodo | Propuesto el 12-11-2026 · desarrollo del 17-11 al 19-11-2026 · exposición el 19-11-2026 |
+| Periodo | Propuesto el 12-11-2026 · desarrollo del 17-11 al 19-11-2026 · exposición de avance el 19-11-2026 · mejoras finales del 25-11 al 26-11-2026 |
 | Fases del §14 | 0 a 8 completas (ver backlog). Pendientes no bloqueantes: escaneo de dependencias en la CI y ranking aprendido (cabeza D) |
 | Arquitectura | Monolito modular: FastAPI + SQLAlchemy/Alembic, React 19 + TypeScript, PyTorch para entrenar y NumPy para predecir |
-| Despliegue | PC propio + Cloudflare Tunnel (HTTPS público), smoke test previo, respaldo cifrado y runbooks |
-| IA | Riesgo de abandono con red multitarea GRU calibrada (ROC-AUC 0,866 en prueba), aprobación humana por institución y rollback |
-| Calidad | 89 pruebas de API, 5 de ML, 8 de web y 20 recorridos E2E con Playwright; CI con 4 trabajos en cada cambio |
+| Despliegue | PC propio + Cloudflare Tunnel (HTTPS público), smoke test previo, respaldo cifrado, runbooks y guía para instalar en otro equipo con `actualizar.bat` |
+| IA | Riesgo de abandono con red multitarea GRU calibrada (ROC-AUC 0,866 en prueba), aprobación humana por institución, rollback y recorrido real de cada predicción por la red |
+| Recomendaciones | Motor de reglas explicable con 10 tipos de sugerencia, motivo de prioridad y de cierre, y una vista por rol |
+| Calidad | 98 pruebas de API, 5 de ML, 8 de web y 27 recorridos E2E con Playwright; CI con 4 trabajos en cada cambio |
 | Seguridad | OAuth2 con renovación rotatoria, RBAC/ABAC, aislamiento multi-institución, OWASP Top 10, cabeceras CSP/HSTS |
 | Rendimiento | Aula de 40 personas: dashboard p95 0,9 s (objetivo 2,5 s), inferencia 0,25 s (objetivo 0,8 s) |
-| Decisiones | 46 decisiones registradas (D01-D46), cada una con la sección del documento que la respalda |
+| Decisiones | 56 decisiones registradas (D01-D56), cada una con la sección del documento que la respalda |
 
 ### Hallazgos de las pruebas en entorno real (19-11-2026)
 
@@ -283,6 +291,15 @@ def main() -> None:
    comparte Wi-Fi; ahora es por IP + correo (D46). El resumen del docente contaba totales de toda la institución.
 3. **Revisión visual con capturas:** las acciones automáticas aparecían como «Usuario no identificado»; ahora se
    distinguen del sistema y de intentos de acceso.
+
+### Hallazgos de las mejoras finales (25 y 26-11-2026)
+
+4. **Límite por persona:** con todo el público en el mismo Wi-Fi, el límite general de la API solo por IP se agotaba;
+   ahora es por persona, con un tope por IP diez veces mayor (D49).
+5. **Simulación cuadro a cuadro del visualizador:** las ramas paralelas de la red se dibujaban en serie y entre 5 y 8
+   conexiones por recorrido cruzaban neuronas ajenas; con la topología real son 0 en 26 recorridos (D53).
+6. **Instalación limpia desde cero:** se probó en una carpeta nueva (46 s, smoke test en verde) y el instalador ya no
+   exige Node ni sigue adelante si fallan las migraciones (D56).
 """
     principales = "".join(figure(f, c) for f, c in [
         ("02-dashboard-admin", "Panel de la administración."),
